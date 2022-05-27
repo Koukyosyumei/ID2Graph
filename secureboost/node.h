@@ -413,10 +413,10 @@ struct Node
 
     string recursive_print(string prefix, bool isleft, bool show_purity, bool binary_color)
     {
-        string node_info = "";
+        string node_info;
         if (is_leaf())
         {
-            node_info += to_string(get_val());
+            node_info = to_string(get_val());
             vector<int> temp_idxs = get_idxs();
             if (show_purity) {
                 int cnt_idxs = temp_idxs.size();
@@ -433,7 +433,20 @@ struct Node
                     double purity = max(double(cnt_zero) / double(cnt_idxs),
                                         1 - double(cnt_zero)/double(cnt_idxs));
                     node_info += ", ";
-                    node_info += to_string(purity);
+
+                    if (binary_color){
+                        if (purity < 0.6){
+                            node_info += "\033[32m";
+                        } else if (purity < 0.8){
+                            node_info += "\033[33m";
+                        } else {
+                            node_info += "\033[31m";
+                        }
+                        node_info += to_string(purity);
+                        node_info += "\033[0m";
+                    } else {
+                        node_info += to_string(purity);
+                    }
                 }
             }
             else {
@@ -471,16 +484,8 @@ struct Node
             node_info += to_string(get_record_id());
         }
 
-        if (isleft)
-        {
-            node_info = prefix + "├──" + node_info;
-            node_info += "\n";
-        }
-        else
-        {
-            node_info = prefix + "└──" + node_info;
-            node_info += "\n";
-        }
+        node_info = prefix + "|--" + node_info;
+        node_info += "\n";
 
         if (!is_leaf())
         {

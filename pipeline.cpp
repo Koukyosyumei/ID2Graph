@@ -6,7 +6,7 @@
 using namespace std;
 
 const int min_leaf = 1;
-const int depth = 3;
+const int depth = 5;
 const double learning_rate = 0.4;
 const int boosting_rounds = 5;
 const double lam = 1.0;
@@ -18,7 +18,7 @@ const double subsample_cols = 1.0;
 int main()
 {
     // --- Load Data --- //
-    cout << "Data Loading" << endl;
+    cout << "Data Loading..." << endl;
 
     int num_row, num_col, num_party;
     cin >> num_row >> num_col >> num_party;
@@ -51,25 +51,23 @@ int main()
         cin >> y[j];
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf_1 = SecureBoostClassifier(subsample_cols,
-                                                      min_child_weight,
-                                                      depth, min_leaf,
-                                                      learning_rate,
-                                                      1,
-                                                      lam, const_gamma, eps);
-    SecureBoostClassifier clf_2 = SecureBoostClassifier(subsample_cols,
+    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
                                                       min_child_weight,
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
                                                       lam, const_gamma, eps);
 
-    vector<Party> temp_party;
-    temp_party.push_back(parties[0]);
-    clf_1.fit(temp_party, y);
-    cout << clf_1.estimators[0].get_root_node().print(true, true) << endl;
-    cout << temp_party[0].get_lookup_table().size() << endl;
-    cout << parties[0].get_lookup_table().size() << endl;                          
+    cout << "Training..." << endl;
+    clf.fit(parties, y);
+
+    for (int i = 0; i < clf.estimators.size(); i++){
+        cout << "Tree-" << i+1 << endl;
+        cout << clf.estimators[i].get_root_node().print(true, true) << endl;
+    }
+
+    //cout << temp_party[0].get_lookup_table().size() << endl;
+    //cout << parties[0].get_lookup_table().size() << endl;                          
 
     // --- Check Training --- //
     //clf.fit(parties, y);
