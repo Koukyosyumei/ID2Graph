@@ -10,7 +10,7 @@ const int depth = 3;
 const double learning_rate = 0.4;
 const int boosting_rounds = 2;
 const double lam = 1.0;
-const double gamma = 0.0;
+const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 1.0;
@@ -56,7 +56,7 @@ int main()
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
-                                                      lam, gamma, eps);
+                                                      lam, const_gamma, eps);
 
     vector<double> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<double> init_pred = clf.get_init_pred(y);

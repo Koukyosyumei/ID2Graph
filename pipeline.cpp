@@ -10,7 +10,7 @@ const int depth = 3;
 const double learning_rate = 0.4;
 const int boosting_rounds = 5;
 const double lam = 1.0;
-const double gamma = 0.0;
+const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 1.0;
@@ -56,12 +56,12 @@ int main()
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
-                                                      lam, gamma, eps);
+                                                      lam, const_gamma, eps);
 
     // --- Check Training --- //
     clf.fit(parties, y);
 
-    cout << clf.estimators[0].get_root_node().print(false) << endl;
+    cout << clf.estimators[0].get_root_node().print() << endl;
     /*
     vector<double> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)
