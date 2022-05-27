@@ -2,7 +2,7 @@
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "secureboost.h"
+#include "secureboost/secureboost.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -51,17 +51,30 @@ int main()
         cin >> y[j];
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
+    SecureBoostClassifier clf_1 = SecureBoostClassifier(subsample_cols,
+                                                      min_child_weight,
+                                                      depth, min_leaf,
+                                                      learning_rate,
+                                                      1,
+                                                      lam, const_gamma, eps);
+    SecureBoostClassifier clf_2 = SecureBoostClassifier(subsample_cols,
                                                       min_child_weight,
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
                                                       lam, const_gamma, eps);
 
-    // --- Check Training --- //
-    clf.fit(parties, y);
+    vector<Party> temp_party;
+    temp_party.push_back(parties[0]);
+    clf_1.fit(temp_party, y);
+    cout << clf_1.estimators[0].get_root_node().print() << endl;
+    cout << temp_party[0].get_lookup_table().size() << endl;
+    cout << parties[0].get_lookup_table().size() << endl;                              
 
-    cout << clf.estimators[0].get_root_node().print() << endl;
+    // --- Check Training --- //
+    //clf.fit(parties, y);
+
+    //cout << clf.estimators[0].get_root_node().print() << endl;
     /*
     vector<double> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)
