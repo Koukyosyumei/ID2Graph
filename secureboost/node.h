@@ -406,43 +406,63 @@ struct Node
         }
     }
 
-    string print(bool binary_color = true)
+    string print(bool show_purity=false, bool binary_color = true)
     {
-        return recursive_print("", false, binary_color);
+        return recursive_print("", false, show_purity, binary_color);
     }
 
-    string recursive_print(string prefix, bool isleft, bool binary_color = false)
+    string recursive_print(string prefix, bool isleft, bool show_purity, bool binary_color)
     {
-        string node_info;
+        string node_info = "";
         if (is_leaf())
         {
             node_info += to_string(get_val());
-            node_info += ", [";
             vector<int> temp_idxs = get_idxs();
-            int temp_id;
-            for (int i = 0; i < temp_idxs.size(); i++)
-            {
-                temp_id = temp_idxs[i];
-                if (binary_color)
+            if (show_purity) {
+                int cnt_idxs = temp_idxs.size();
+                if (cnt_idxs == 0){
+                    node_info += ", null";
+                }
+                else{
+                    int cnt_zero = 0;
+                    for (int i = 0; i < temp_idxs.size(); i++){
+                        if (y[temp_idxs[i]]==0){
+                            cnt_zero += 1;
+                        }
+                    }
+                    double purity = max(double(cnt_zero) / double(cnt_idxs),
+                                        1 - double(cnt_zero)/double(cnt_idxs));
+                    node_info += ", ";
+                    node_info += to_string(purity);
+                }
+            }
+            else {
+                node_info += ", [";
+                int temp_id;
+                for (int i = 0; i < temp_idxs.size(); i++)
                 {
-                    if (y[temp_id] == 0)
+                    temp_id = temp_idxs[i];
+                    if (binary_color)
                     {
-                        node_info += "\033[32m";
-                        node_info += to_string(temp_id);
-                        node_info += "\033[0m";
+                        if (y[temp_id] == 0)
+                        {
+                            node_info += "\033[32m";
+                            node_info += to_string(temp_id);
+                            node_info += "\033[0m";
+                        }
+                        else
+                        {
+                            node_info += to_string(temp_id);
+                        }
                     }
                     else
                     {
                         node_info += to_string(temp_id);
                     }
+                    node_info += ", ";
                 }
-                else
-                {
-                    node_info += to_string(temp_id);
-                }
-                node_info += ", ";
+                node_info += "]";
             }
-            node_info += "]";
         }
         else
         {
@@ -473,8 +493,8 @@ struct Node
             {
                 next_prefix += "     ";
             }
-            node_info += get_left().recursive_print(prefix + next_prefix, true, binary_color);
-            node_info += get_right().recursive_print(prefix + next_prefix, false, binary_color);
+            node_info += get_left().recursive_print(prefix + next_prefix, true, show_purity, binary_color);
+            node_info += get_right().recursive_print(prefix + next_prefix, false, show_purity, binary_color);
         }
 
         return node_info;

@@ -67,9 +67,9 @@ int main()
     vector<Party> temp_party;
     temp_party.push_back(parties[0]);
     clf_1.fit(temp_party, y);
-    cout << clf_1.estimators[0].get_root_node().print() << endl;
+    cout << clf_1.estimators[0].get_root_node().print(true, true) << endl;
     cout << temp_party[0].get_lookup_table().size() << endl;
-    cout << parties[0].get_lookup_table().size() << endl;                              
+    cout << parties[0].get_lookup_table().size() << endl;                          
 
     // --- Check Training --- //
     //clf.fit(parties, y);
