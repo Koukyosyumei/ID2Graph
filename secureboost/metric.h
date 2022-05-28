@@ -6,6 +6,20 @@ using namespace std;
 
 double roc_auc_score(vector<double> y_pred, vector<int> y_true)
 {
+    vector<double> thresholds = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+    vector<pair<double, double>> roc_points;
+    for (int i = 0; i < thresholds.size(); i++)
+    {
+        roc_points.push_back(get_fpr_and_tpr(y_pred, y_true, thresholds[i]));
+    }
+    vector<double> tpr_vec;
+    vector<double> fpr_vec;
+    for (int i = 0; i < roc_points.size(); i++)
+    {
+        tpr_vec.push_back(roc_points[i].first);
+        fpr_vec.push_back(roc_points[i].second);
+    }
+    return trapz(tpr_vec, fpr_vec);
 }
 
 double trapz(vector<double> x, vector<double> y)
