@@ -204,6 +204,8 @@ struct Node
     vector<int> idxs;
     double min_child_weight, lam, gamma, eps;
     int depth;
+    int active_party_id;
+    bool use_only_active_party;
 
     int party_id, record_id;
     int row_count, num_parties;
@@ -214,7 +216,7 @@ struct Node
     Node(vector<Party> *parties_, vector<double> y_, vector<double> gradient_,
          vector<double> hessian_, vector<int> idxs_,
          double min_child_weight_, double lam_, double gamma_, double eps_,
-         int depth_)
+         int depth_, int active_party_id_=-1, bool use_only_active_party_=false)
     {
         parties = parties_;
         y = y_;
@@ -226,6 +228,20 @@ struct Node
         gamma = gamma_;
         eps = eps_;
         depth = depth_;
+        active_party_id = active_party_id_;
+        use_only_active_party = use_only_active_party_;
+
+        try
+        {
+            if (use_only_active_party && active_party_id > parties->size())
+            {
+                throw invalid_argument("invalid active_party_id");
+            }
+        }
+        catch (std::exception &e)
+        {
+            std::cout << e.what() << std::endl;
+        }
 
         row_count = idxs.size();
         num_parties = parties->size();
@@ -320,11 +336,10 @@ struct Node
         double best_score = -1 * numeric_limits<double>::infinity();
         double temp_score, temp_left_grad, temp_left_hess;
         int best_party_id, best_col_id, best_threshold_id;
-        for (int i = 0; i < num_parties; i++)
-        {
-            vector<vector<pair<double, double>>> search_results =
-                parties->at(i).greedy_search_split(gradient, hessian, idxs);
 
+        if (use_only_active_party){
+            vector<vector<pair<double, double>>> search_results =
+                    parties->at(active_party_id).greedy_search_split(gradient, hessian, idxs);
             for (int j = 0; j < search_results.size(); j++)
             {
                 double temp_left_grad = 0;
@@ -339,14 +354,47 @@ struct Node
                         continue;
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
-                                              temp_left_hess, sum_hess - temp_left_hess);
+                                            temp_left_hess, sum_hess - temp_left_hess);
 
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
-                        best_party_id = i;
+                        best_party_id = active_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
+                    }
+                }
+            }            
+        }
+        else{
+            for (int i = 0; i < num_parties; i++)
+            {
+                vector<vector<pair<double, double>>> search_results =
+                    parties->at(i).greedy_search_split(gradient, hessian, idxs);
+
+                for (int j = 0; j < search_results.size(); j++)
+                {
+                    double temp_left_grad = 0;
+                    double temp_left_hess = 0;
+                    for (int k = 0; k < search_results[j].size(); k++)
+                    {
+                        temp_left_grad += search_results[j][k].first;
+                        temp_left_hess += search_results[j][k].second;
+
+                        if (temp_left_hess < min_child_weight ||
+                            sum_hess - temp_left_hess < min_child_weight)
+                            continue;
+
+                        temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
+                                                temp_left_hess, sum_hess - temp_left_hess);
+
+                        if (temp_score > best_score)
+                        {
+                            best_score = temp_score;
+                            best_party_id = i;
+                            best_col_id = j;
+                            best_threshold_id = k;
+                        }
                     }
                 }
             }
