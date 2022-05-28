@@ -18,6 +18,8 @@ struct SecureBoostBase
     double gamma;
     double eps;
     bool use_ispure;
+    int active_party_id;
+    bool is_rl;
 
     vector<double> init_pred;
     vector<XGBoostTree> estimators;
@@ -26,7 +28,8 @@ struct SecureBoostBase
                     double min_child_weight_ = -1 * numeric_limits<double>::infinity(),
                     int depth_ = 5, int min_leaf_ = 5,
                     double learning_rate_ = 0.4, int boosting_rounds_ = 5,
-                    double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1)
+                    double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
+                    int active_party_id_ = -1, bool is_rl_ = false)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
@@ -37,6 +40,8 @@ struct SecureBoostBase
         lam = lam_;
         gamma = gamma_;
         eps = eps_;
+        active_party_id = active_party_id_;
+        is_rl = is_rl_;
     }
 
     virtual vector<double> get_grad(vector<double> y_pred, vector<double> y) = 0;
@@ -82,7 +87,8 @@ struct SecureBoostBase
             vector<double> hess = get_hess(base_pred, y);
 
             XGBoostTree boosting_tree = XGBoostTree();
-            boosting_tree.fit(&parties, y, grad, hess, min_child_weight, lam, gamma, eps, min_leaf, depth);
+            boosting_tree.fit(&parties, y, grad, hess, min_child_weight,
+                              lam, gamma, eps, min_leaf, depth, active_party_id, is_rl && i == 0);
             vector<double> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)
                 base_pred[j] += learning_rate * pred_temp[j];
