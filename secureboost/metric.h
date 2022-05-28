@@ -11,6 +11,10 @@ double roc_auc_score(vector<double> y_pred, vector<int> y_true)
 double trapz(vector<double> x, vector<double> y)
 {
     double res = 0;
+    for (int i = 1; i < x.size(); i++)
+    {
+        res += (x[i] - x[i - 1]) * (y[i] + y[i - 1]) / 2;
+    }
     return res;
 }
 
