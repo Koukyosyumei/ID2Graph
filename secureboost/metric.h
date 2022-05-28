@@ -1,26 +1,9 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <iostream>
 using namespace std;
-
-double roc_auc_score(vector<double> y_pred, vector<int> y_true)
-{
-    vector<double> thresholds = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
-    vector<pair<double, double>> roc_points;
-    for (int i = 0; i < thresholds.size(); i++)
-    {
-        roc_points.push_back(get_fpr_and_tpr(y_pred, y_true, thresholds[i]));
-    }
-    vector<double> tpr_vec;
-    vector<double> fpr_vec;
-    for (int i = 0; i < roc_points.size(); i++)
-    {
-        tpr_vec.push_back(roc_points[i].first);
-        fpr_vec.push_back(roc_points[i].second);
-    }
-    return trapz(tpr_vec, fpr_vec);
-}
 
 double trapz(vector<double> x, vector<double> y)
 {
@@ -52,7 +35,10 @@ pair<double, double> get_fpr_and_tpr(vector<double> y_pred, vector<int> y_true, 
         std::cout << e.what() << std::endl;
     }
 
-    double tp, fp, tn, fn = 0;
+    double tp = 0;
+    double fp = 0;
+    double tn = 0;
+    double fn = 0;
 
     for (int i = 0; i < y_pred.size(); i++)
     {
@@ -82,5 +68,34 @@ pair<double, double> get_fpr_and_tpr(vector<double> y_pred, vector<int> y_true, 
 
     double tpr = tp / (tp + fn);
     double fpr = fp / (tn + fp);
-    return make_pair(tpr, fpr);
+    return make_pair(fpr, tpr);
+}
+
+vector<double> get_thresholds(vector<double> y_pred)
+{
+    vector<double> thresholds(y_pred.size());
+    copy(y_pred.begin(), y_pred.end(), thresholds.begin());
+    sort(thresholds.begin(), thresholds.end());
+    reverse(thresholds.begin(), thresholds.end());
+    thresholds.erase(unique(thresholds.begin(), thresholds.end()), thresholds.end());
+    thresholds.insert(thresholds.begin(), 1 + thresholds[0]);
+    return thresholds;
+}
+
+double roc_auc_score(vector<double> y_pred, vector<int> y_true)
+{
+    vector<double> thresholds = get_thresholds(y_pred);
+    vector<pair<double, double>> roc_points;
+    for (int i = 0; i < thresholds.size(); i++)
+    {
+        roc_points.push_back(get_fpr_and_tpr(y_pred, y_true, thresholds[i]));
+    }
+    vector<double> tpr_vec;
+    vector<double> fpr_vec;
+    for (int i = 0; i < roc_points.size(); i++)
+    {
+        tpr_vec.push_back(roc_points[i].first);
+        fpr_vec.push_back(roc_points[i].second);
+    }
+    return trapz(tpr_vec, fpr_vec);
 }
