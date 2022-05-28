@@ -7,7 +7,7 @@ using namespace std;
 
 const int min_leaf = 1;
 const int depth = 5;
-const double learning_rate = 0.4;
+const double learning_rate = 0.1;
 const int boosting_rounds = 5;
 const double lam = 1.0;
 const double const_gamma = 0.0;
@@ -56,23 +56,25 @@ int main()
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
-                                                      lam, const_gamma, eps);
+                                                      lam, const_gamma, eps,
+                                                      0, true);
 
     cout << "Training..." << endl;
     clf.fit(parties, y);
 
-    for (int i = 0; i < clf.estimators.size(); i++){
-        cout << "Tree-" << i+1 << endl;
+    for (int i = 0; i < clf.estimators.size(); i++)
+    {
+        cout << "Tree-" << i + 1 << endl;
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
-    //cout << temp_party[0].get_lookup_table().size() << endl;
-    //cout << parties[0].get_lookup_table().size() << endl;                          
+    // cout << temp_party[0].get_lookup_table().size() << endl;
+    // cout << parties[0].get_lookup_table().size() << endl;
 
     // --- Check Training --- //
-    //clf.fit(parties, y);
+    // clf.fit(parties, y);
 
-    //cout << clf.estimators[0].get_root_node().print() << endl;
+    // cout << clf.estimators[0].get_root_node().print() << endl;
     /*
     vector<double> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)

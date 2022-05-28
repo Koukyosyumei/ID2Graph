@@ -216,7 +216,7 @@ struct Node
     Node(vector<Party> *parties_, vector<double> y_, vector<double> gradient_,
          vector<double> hessian_, vector<int> idxs_,
          double min_child_weight_, double lam_, double gamma_, double eps_,
-         int depth_, int active_party_id_=-1, bool use_only_active_party_=false)
+         int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false)
     {
         parties = parties_;
         y = y_;
@@ -337,9 +337,10 @@ struct Node
         double temp_score, temp_left_grad, temp_left_hess;
         int best_party_id, best_col_id, best_threshold_id;
 
-        if (use_only_active_party){
+        if (use_only_active_party)
+        {
             vector<vector<pair<double, double>>> search_results =
-                    parties->at(active_party_id).greedy_search_split(gradient, hessian, idxs);
+                parties->at(active_party_id).greedy_search_split(gradient, hessian, idxs);
             for (int j = 0; j < search_results.size(); j++)
             {
                 double temp_left_grad = 0;
@@ -354,7 +355,7 @@ struct Node
                         continue;
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
-                                            temp_left_hess, sum_hess - temp_left_hess);
+                                              temp_left_hess, sum_hess - temp_left_hess);
 
                     if (temp_score > best_score)
                     {
@@ -364,9 +365,10 @@ struct Node
                         best_threshold_id = k;
                     }
                 }
-            }            
+            }
         }
-        else{
+        else
+        {
             for (int i = 0; i < num_parties; i++)
             {
                 vector<vector<pair<double, double>>> search_results =
@@ -386,7 +388,7 @@ struct Node
                             continue;
 
                         temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
-                                                temp_left_hess, sum_hess - temp_left_hess);
+                                                  temp_left_hess, sum_hess - temp_left_hess);
 
                         if (temp_score > best_score)
                         {
@@ -413,9 +415,9 @@ struct Node
                 right_idxs.push_back(idxs[i]);
 
         left = new Node(parties, y, gradient, hessian, left_idxs, min_child_weight,
-                        lam, gamma, eps, depth - 1);
+                        lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
         right = new Node(parties, y, gradient, hessian, right_idxs, min_child_weight,
-                         lam, gamma, eps, depth - 1);
+                         lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
     }
 
     bool is_leaf()
@@ -454,7 +456,7 @@ struct Node
         }
     }
 
-    string print(bool show_purity=false, bool binary_color = true)
+    string print(bool show_purity = false, bool binary_color = true)
     {
         return recursive_print("", false, show_purity, binary_color);
     }
@@ -466,38 +468,52 @@ struct Node
         {
             node_info = to_string(get_val());
             vector<int> temp_idxs = get_idxs();
-            if (show_purity) {
+            if (show_purity)
+            {
                 int cnt_idxs = temp_idxs.size();
-                if (cnt_idxs == 0){
+                if (cnt_idxs == 0)
+                {
                     node_info += ", null";
                 }
-                else{
+                else
+                {
                     int cnt_zero = 0;
-                    for (int i = 0; i < temp_idxs.size(); i++){
-                        if (y[temp_idxs[i]]==0){
+                    for (int i = 0; i < temp_idxs.size(); i++)
+                    {
+                        if (y[temp_idxs[i]] == 0)
+                        {
                             cnt_zero += 1;
                         }
                     }
                     double purity = max(double(cnt_zero) / double(cnt_idxs),
-                                        1 - double(cnt_zero)/double(cnt_idxs));
+                                        1 - double(cnt_zero) / double(cnt_idxs));
                     node_info += ", ";
 
-                    if (binary_color){
-                        if (purity < 0.6){
+                    if (binary_color)
+                    {
+                        if (purity < 0.6)
+                        {
                             node_info += "\033[32m";
-                        } else if (purity < 0.8){
+                        }
+                        else if (purity < 0.8)
+                        {
                             node_info += "\033[33m";
-                        } else {
+                        }
+                        else
+                        {
                             node_info += "\033[31m";
                         }
                         node_info += to_string(purity);
                         node_info += "\033[0m";
-                    } else {
+                    }
+                    else
+                    {
                         node_info += to_string(purity);
                     }
                 }
             }
-            else {
+            else
+            {
                 node_info += ", [";
                 int temp_id;
                 for (int i = 0; i < temp_idxs.size(); i++)
