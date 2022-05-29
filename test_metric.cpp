@@ -19,6 +19,7 @@ int main()
     assert(fpr_and_tpr.first == 0.25 && fpr_and_tpr.second == 0.5);
     fpr_and_tpr = get_fpr_and_tpr(y_pred, y_true, 0.9);
     assert(fpr_and_tpr.first == 0 && fpr_and_tpr.second == 0.25);
-
     assert(roc_auc_score(y_pred, y_true) == 0.6875);
+
+    cout << "test_metric: all passed!" << endl;
 }

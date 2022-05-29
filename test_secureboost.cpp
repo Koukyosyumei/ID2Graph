@@ -18,8 +18,6 @@ const double subsample_cols = 1.0;
 int main()
 {
     // --- Load Data --- //
-    cout << "Data Loading" << endl;
-
     int num_row, num_col, num_party;
     cin >> num_row >> num_col >> num_party;
     vector<double> y(num_row);
@@ -143,5 +141,5 @@ int main()
     for (int i = 0; i < test_predcit_proba.size(); i++)
         assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
 
-    cout << "All passed!" << endl;
+    cout << "test_secureboost: all passed!" << endl;
 }
