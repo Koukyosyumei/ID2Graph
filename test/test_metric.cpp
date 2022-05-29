@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include "secureboost/metric.h"
+#include "../secureboost/metric.h"
 using namespace std;
 
 int main()

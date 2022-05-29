@@ -2,7 +2,7 @@
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "secureboost/secureboost.h"
+#include "../secureboost/secureboost.h"
 using namespace std;
 
 const int min_leaf = 1;
