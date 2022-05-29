@@ -15,7 +15,7 @@ def convert_df_to_input(X_train, y_train, X_val, y_val, output_path, col_alloc=N
             f.write(f"{len(ca)}\n")
             for i in ca:
                 f.write(" ".join([str(x) for x in X_train[:, i]])+"\n")
-        f.write(" ".join([str(y) for y in y_train]))
+        f.write(" ".join([str(y) for y in y_train])+"\n")
         f.write(f"{row_num_val}\n")
         for i in range(col_num):
             f.write(" ".join([str(x) for x in X_val[:, i]])+"\n")
