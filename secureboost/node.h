@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
+#include "utils.h"
 using namespace std;
 
 struct Party
@@ -20,6 +21,7 @@ struct Party
     int party_id;             // id of this party
     int min_leaf;
     double subsample_cols; // ratio of subsampled columuns
+    int num_percentile_bin;
 
     int col_count; // the number of columns
 
@@ -29,7 +31,7 @@ struct Party
 
     Party() {}
     Party(vector<vector<double>> x_, vector<int> feature_id_, int party_id_,
-          int min_leaf_, double subsample_cols_)
+          int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 10)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
         x = x_;
@@ -37,6 +39,7 @@ struct Party
         party_id = party_id_;
         min_leaf = min_leaf_;
         subsample_cols = subsample_cols_;
+        num_percentile_bin = num_precentile_bin_;
 
         col_count = x.at(0).size();
     }
@@ -88,10 +91,21 @@ struct Party
 
     vector<double> get_percentiles(vector<double> x_col)
     {
-        vector<double> percentiles(x_col.size());
-        copy(x_col.begin(), x_col.end(), percentiles.begin());
-        sort(percentiles.begin(), percentiles.end());
-        return percentiles;
+        if (x_col.size() > num_percentile_bin)
+        {
+            vector<double> probs(num_percentile_bin);
+            for (int i = 1; i <= num_percentile_bin; i++)
+                probs[i] = double(i) / double(num_percentile_bin);
+            vector<double> percentiles = Quantile<double>(x_col, probs);
+            return percentiles;
+        }
+        else
+        {
+            vector<double> percentiles(x_col.size());
+            copy(x_col.begin(), x_col.end(), percentiles.begin());
+            sort(percentiles.begin(), percentiles.end());
+            return percentiles;
+        }
     }
 
     bool is_left(int record_id, vector<double> xi)
