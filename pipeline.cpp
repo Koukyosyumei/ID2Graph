@@ -3,6 +3,7 @@
 #include <vector>
 #include <cassert>
 #include "secureboost/secureboost.h"
+#include "secureboost/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -67,6 +68,10 @@ int main()
         cout << "Tree-" << i + 1 << endl;
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
+
+    vector<double> predict_proba = clf.predict_proba(X);
+    vector<int> y_true(y.begin(), y.end());
+    cout << roc_auc_score(predict_proba, y_true) << endl;
 
     // cout << temp_party[0].get_lookup_table().size() << endl;
     // cout << parties[0].get_lookup_table().size() << endl;
