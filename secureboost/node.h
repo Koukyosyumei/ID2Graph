@@ -31,7 +31,7 @@ struct Party
 
     Party() {}
     Party(vector<vector<double>> x_, vector<int> feature_id_, int party_id_,
-          int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 10)
+          int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
         x = x_;
