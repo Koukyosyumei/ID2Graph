@@ -80,6 +80,12 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
+    cout << "lookup talbe of party_id = 1 is:" << endl;
+    for (int i = 0; i < parties[1].lookup_table.size(); i++)
+        cout << i << ": " << parties[1].lookup_table.at(i).first << ", "
+             << parties[1].lookup_table.at(i).second << endl;
+    cout << endl;
+
     cout << "Evaluating ..." << endl;
     vector<double> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());

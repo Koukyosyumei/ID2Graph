@@ -26,7 +26,8 @@ struct Party
     int col_count; // the number of columns
 
     unordered_map<int, pair<int, double>> lookup_table; // record_id: (feature_id, threshold)
-    vector<vector<double>> temp_thresholds;             // feature_id->threshold
+    vector<int> temp_column_subsample;
+    vector<vector<double>> temp_thresholds; // feature_id->threshold
     int seed = 0;
 
     Party() {}
@@ -117,25 +118,24 @@ struct Party
                                                              vector<double> hessian,
                                                              vector<int> idxs)
     {
-        vector<int> column_subsample;
-        column_subsample.resize(col_count);
-        iota(column_subsample.begin(), column_subsample.end(), 0);
+        temp_column_subsample.resize(col_count);
+        iota(temp_column_subsample.begin(), temp_column_subsample.end(), 0);
         mt19937 engine(seed);
         seed += 1;
-        shuffle(column_subsample.begin(), column_subsample.end(), engine);
+        shuffle(temp_column_subsample.begin(), temp_column_subsample.end(), engine);
         int subsample_col_count = subsample_cols * col_count;
 
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
-        vector<vector<pair<double, double>>> split_candidates_grad_hess(column_subsample.size());
-        temp_thresholds = vector<vector<double>>(column_subsample.size());
+        vector<vector<pair<double, double>>> split_candidates_grad_hess(temp_column_subsample.size());
+        temp_thresholds = vector<vector<double>>(temp_column_subsample.size());
 
         int row_count = idxs.size();
         int recoed_id = 0;
 
         for (int i = 0; i < subsample_col_count; i++)
         {
-            int k = column_subsample[i];
+            int k = temp_column_subsample[i];
             vector<double> x_col(row_count);
             vector<int> x_col_idxs(row_count);
 
@@ -191,7 +191,7 @@ struct Party
         int row_count = idxs.size();
         vector<double> x_col(row_count);
         for (int r = 0; r < row_count; r++)
-            x_col[r] = x[idxs[r]][feature_opt_id];
+            x_col[r] = x[idxs[r]][temp_column_subsample[feature_opt_id]];
 
         vector<int> left_idxs;
         double threshold = temp_thresholds[feature_opt_id][threshold_opt_id];
@@ -205,7 +205,7 @@ struct Party
     int insert_lookup_table(int feature_opt_id, int threshold_opt_id)
     {
         lookup_table.emplace(lookup_table.size(),
-                             make_pair(feature_opt_id,
+                             make_pair(temp_column_subsample[feature_opt_id],
                                        temp_thresholds[feature_opt_id][threshold_opt_id]));
         return lookup_table.size() - 1;
     }
