@@ -25,7 +25,7 @@ int main()
     vector<double> y_train(num_row_train);
     vector<Party> parties(num_party);
 
-    cout << "Loading datasets..." << endl;
+    cout << "Loading datasets ..." << endl;
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
@@ -71,7 +71,7 @@ int main()
                                                       lam, const_gamma, eps,
                                                       0, true);
 
-    cout << "Training..." << endl;
+    cout << "Training ..." << endl;
     clf.fit(parties, y_train);
 
     for (int i = 0; i < clf.estimators.size(); i++)
@@ -80,6 +80,7 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
+    cout << "Evaluating ..." << endl;
     vector<double> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
     cout << "Train AUC: " << roc_auc_score(predict_proba_train, y_true_train) << endl;
