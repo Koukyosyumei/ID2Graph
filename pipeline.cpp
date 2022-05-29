@@ -6,15 +6,15 @@
 #include "secureboost/metric.h"
 using namespace std;
 
-const int min_leaf = 1;
-const int depth = 3;
-const double learning_rate = 0.1;
-const int boosting_rounds = 5;
+const int min_leaf = 2;
+const int depth = 5;
+const double learning_rate = 0.4;
+const int boosting_rounds = 3;
 const double lam = 1.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
-const double subsample_cols = 1.0;
+const double subsample_cols = 0.5;
 
 int main()
 {
@@ -23,7 +23,6 @@ int main()
     cin >> num_row_train >> num_col >> num_party;
     vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
     vector<double> y_train(num_row_train);
-    vector<double> y_val(num_row_val);
     vector<Party> parties(num_party);
 
     cout << "Loading datasets..." << endl;
@@ -47,12 +46,12 @@ int main()
         Party party(x, feature_idxs, i, min_leaf, subsample_cols);
         parties[i] = party;
     }
-
     for (int j = 0; j < num_row_train; j++)
         cin >> y_train[j];
 
     cin >> num_row_val;
     vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
+    vector<double> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
     {
         for (int j = 0; j < num_row_val; j++)
@@ -60,7 +59,6 @@ int main()
             cin >> X_val[j][i];
         }
     }
-
     for (int j = 0; j < num_row_val; j++)
         cin >> y_val[j];
 
@@ -82,22 +80,10 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
-    vector<double> predict_proba = clf.predict_proba(X_train);
-    vector<int> y_true(y_train.begin(), y_train.end());
-    cout << roc_auc_score(predict_proba, y_true) << endl;
-
-    // cout << temp_party[0].get_lookup_table().size() << endl;
-    // cout << parties[0].get_lookup_table().size() << endl;
-
-    // --- Check Training --- //
-    // clf.fit(parties, y);
-
-    // cout << clf.estimators[0].get_root_node().print() << endl;
-    /*
-    vector<double> predict_proba = clf.predict_proba(X);
-    for (int i = 0; i < predict_proba.size(); i++)
-    {
-        cout << predict_proba[i] << " ";
-    }
-    */
+    vector<double> predict_proba_train = clf.predict_proba(X_train);
+    vector<int> y_true_train(y_train.begin(), y_train.end());
+    cout << "Train AUC: " << roc_auc_score(predict_proba_train, y_true_train) << endl;
+    vector<double> predict_proba_val = clf.predict_proba(X_val);
+    vector<int> y_true_val(y_val.begin(), y_val.end());
+    cout << "Val AUC: " << roc_auc_score(predict_proba_val, y_true_val) << endl;
 }

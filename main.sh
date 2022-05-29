@@ -1,2 +1,2 @@
 g++ -o pipeline.out pipeline.cpp
-./pipeline.out < data/givemesomecredit/givemesomecredit.in
+./pipeline.out < data/breastcancer/breast_cancer.in
