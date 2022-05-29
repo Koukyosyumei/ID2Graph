@@ -518,6 +518,9 @@ struct Node
                             node_info += "\033[31m";
                         }
                         node_info += to_string(purity);
+                        node_info += " (";
+                        node_info += to_string(cnt_idxs);
+                        node_info += ")";
                         node_info += "\033[0m";
                     }
                     else
