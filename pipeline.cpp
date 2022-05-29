@@ -7,7 +7,7 @@
 using namespace std;
 
 const int min_leaf = 1;
-const int depth = 5;
+const int depth = 3;
 const double learning_rate = 0.1;
 const int boosting_rounds = 5;
 const double lam = 1.0;
@@ -19,28 +19,28 @@ const double subsample_cols = 1.0;
 int main()
 {
     // --- Load Data --- //
-    cout << "Data Loading..." << endl;
-
-    int num_row, num_col, num_party;
-    cin >> num_row >> num_col >> num_party;
-    vector<double> y(num_row);
-    vector<vector<double>> X(num_row, vector<double>(num_col));
+    int num_row_train, num_row_val, num_col, num_party;
+    cin >> num_row_train >> num_col >> num_party;
+    vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
+    vector<double> y_train(num_row_train);
+    vector<double> y_val(num_row_val);
     vector<Party> parties(num_party);
 
+    cout << "Loading datasets..." << endl;
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
         int num_col = 0;
         cin >> num_col;
         vector<int> feature_idxs(num_col);
-        vector<vector<double>> x(num_row, vector<double>(num_col));
+        vector<vector<double>> x(num_row_train, vector<double>(num_col));
         for (int j = 0; j < num_col; j++)
         {
             feature_idxs[j] = temp_count_feature;
-            for (int k = 0; k < num_row; k++)
+            for (int k = 0; k < num_row_train; k++)
             {
                 cin >> x[k][j];
-                X[k][temp_count_feature] = x[k][j];
+                X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
         }
@@ -48,8 +48,21 @@ int main()
         parties[i] = party;
     }
 
-    for (int j = 0; j < num_row; j++)
-        cin >> y[j];
+    for (int j = 0; j < num_row_train; j++)
+        cin >> y_train[j];
+
+    cin >> num_row_val;
+    vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
+    for (int i = 0; i < num_col; i++)
+    {
+        for (int j = 0; j < num_row_val; j++)
+        {
+            cin >> X_val[j][i];
+        }
+    }
+
+    for (int j = 0; j < num_row_val; j++)
+        cin >> y_val[j];
 
     // --- Check Initialization --- //
     SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
@@ -61,7 +74,7 @@ int main()
                                                       0, true);
 
     cout << "Training..." << endl;
-    clf.fit(parties, y);
+    clf.fit(parties, y_train);
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
@@ -69,8 +82,8 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
-    vector<double> predict_proba = clf.predict_proba(X);
-    vector<int> y_true(y.begin(), y.end());
+    vector<double> predict_proba = clf.predict_proba(X_train);
+    vector<int> y_true(y_train.begin(), y_train.end());
     cout << roc_auc_score(predict_proba, y_true) << endl;
 
     // cout << temp_party[0].get_lookup_table().size() << endl;
