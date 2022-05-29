@@ -3,6 +3,9 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <set>
+#include <numeric>
+#include <array>
 using namespace std;
 
 double trapz(vector<double> x, vector<double> y)
@@ -15,87 +18,57 @@ double trapz(vector<double> x, vector<double> y)
     return res;
 }
 
-pair<double, double> get_fpr_and_tpr(vector<double> y_pred, vector<int> y_true, double threshold)
+vector<double> get_thresholds_idxs(vector<double> y_pred)
 {
-
-    try
+    vector<double> thresholds_idxs;
+    set<double> s{};
+    reverse(y_pred.begin(), y_pred.end());
+    int y_pred_size = y_pred.size();
+    for (int i = 0; i < y_pred_size; i++)
     {
-        if (y_pred.size() != y_true.size())
+        if (s.insert(y_pred[i]).second)
         {
-            string err_msg = "";
-            err_msg += "the length of y_pred is ";
-            err_msg += to_string(y_pred.size());
-            err_msg += ", but the length of y_true is ";
-            err_msg += to_string(y_true.size());
-            throw invalid_argument(err_msg);
+            thresholds_idxs.push_back(y_pred_size - i);
         }
     }
-    catch (std::exception &e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-
-    double tp = 0;
-    double fp = 0;
-    double tn = 0;
-    double fn = 0;
-
-    for (int i = 0; i < y_pred.size(); i++)
-    {
-        if (y_pred[i] >= threshold)
-        {
-            if (y_true[i] == 1)
-            {
-                tp += 1;
-            }
-            else
-            {
-                fp += 1;
-            }
-        }
-        else
-        {
-            if (y_true[i] == 0)
-            {
-                tn += 1;
-            }
-            else
-            {
-                fn += 1;
-            }
-        }
-    }
-
-    double tpr = tp / (tp + fn);
-    double fpr = fp / (tn + fp);
-    return make_pair(fpr, tpr);
-}
-
-vector<double> get_thresholds(vector<double> y_pred)
-{
-    vector<double> thresholds(y_pred.size());
-    copy(y_pred.begin(), y_pred.end(), thresholds.begin());
-    sort(thresholds.begin(), thresholds.end());
-    reverse(thresholds.begin(), thresholds.end());
-    thresholds.erase(unique(thresholds.begin(), thresholds.end()), thresholds.end());
-    thresholds.insert(thresholds.begin(), 1 + thresholds[0]);
-    return thresholds;
+    return thresholds_idxs;
 }
 
 double roc_auc_score(vector<double> y_pred, vector<int> y_true)
 {
-    vector<double> thresholds = get_thresholds(y_pred);
-    vector<pair<double, double>> roc_points;
-    for (int i = 0; i < thresholds.size(); i++)
+    vector<int> temp_idxs(y_pred.size());
+    iota(temp_idxs.begin(), temp_idxs.end(), 0);
+    sort(temp_idxs.begin(), temp_idxs.end(), [&y_pred](size_t i, size_t j)
+         { return y_pred[i] < y_pred[j]; });
+    vector<int> temp_y_true(y_true.size());
+    copy(y_true.begin(), y_true.end(), temp_y_true.begin());
+    for (int i = 0; i < y_pred.size(); i++)
     {
-        roc_points.push_back(get_fpr_and_tpr(y_pred, y_true, thresholds[i]));
+        y_true[i] = temp_y_true[temp_idxs[i]];
     }
-    vector<double> tpr_vec;
-    vector<double> fpr_vec;
-    for (int i = 0; i < roc_points.size(); i++)
+    sort(y_pred.begin(), y_pred.end());
+
+    vector<double> thresholds_idxs = get_thresholds_idxs(y_pred);
+
+    vector<double> tps = {0};
+    for (int i = 1; i < y_true.size(); i++)
     {
-        tpr_vec.push_back(roc_points[i].first);
-        fpr_vec.push_back(roc_points[i].second);
+        tps.push_back(y_true[i] + tps[i - 1]);
     }
-    return trapz(tpr_vec, fpr_vec);
+    for (int i = 0; i < tps.size(); i++)
+    {
+        tps[i] = tps[i] / tps[tps.size() - 1];
+    }
+
+    vector<double> fps = {1};
+    for (int i = 1; i < y_true.size(); i++)
+    {
+        fps.push_back(1 - y_true[i] + fps[i - 1]);
+    }
+    for (int i = 0; i < fps.size(); i++)
+    {
+        fps[i] = fps[i] / fps[fps.size() - 1];
+    }
+
+    return trapz(tps, fps);
 }
