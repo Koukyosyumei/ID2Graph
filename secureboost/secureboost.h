@@ -3,7 +3,6 @@
 #include <limits>
 #include <iostream>
 #include "tree.h"
-#include "utils.h"
 using namespace std;
 
 struct SecureBoostBase
@@ -83,6 +82,7 @@ struct SecureBoostBase
 
         for (int i = 0; i < boosting_rounds; i++)
         {
+            cout << "round " << i + 1 << endl;
             vector<double> grad = get_grad(base_pred, y);
             vector<double> hess = get_hess(base_pred, y);
 
