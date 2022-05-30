@@ -104,6 +104,11 @@ struct Party
         {
             vector<double> percentiles(x_col.size());
             copy(x_col.begin(), x_col.end(), percentiles.begin());
+            percentiles.erase(remove_if(begin(percentiles),
+                                        end(percentiles),
+                                        [](const auto &value)
+                                        { return isnan(value); }),
+                              end(percentiles));
             sort(percentiles.begin(), percentiles.end());
             return percentiles;
         }
@@ -160,7 +165,7 @@ struct Party
 
                 for (int r = current_min_idx; r < row_count; r++)
                 {
-                    if (x_col[r] <= percentiles[p])
+                    if ((!isnan(x_col[r])) && (x_col[r] <= percentiles[p]))
                     {
                         temp_grad += gradient[idxs[x_col_idxs[r]]];
                         temp_hess += hessian[idxs[x_col_idxs[r]]];

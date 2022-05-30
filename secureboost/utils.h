@@ -34,6 +34,11 @@ static inline std::vector<T> Quantile(const std::vector<T> &inData, const std::v
     }
 
     std::vector<T> data = inData;
+    data.erase(std::remove_if(std::begin(data),
+                              std::end(data),
+                              [](const auto &value)
+                              { return std::isnan(value); }),
+               std::end(data));
     std::sort(data.begin(), data.end());
     std::vector<T> quantiles;
 

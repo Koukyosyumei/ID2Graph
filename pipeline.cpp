@@ -8,14 +8,14 @@ using namespace std;
 
 const int min_leaf = 1;
 const int depth = 3;
-const int max_bin = 64;
-const double learning_rate = 0.3;
+const int max_bin = 256;
+const double learning_rate = 0.4;
 const int boosting_rounds = 2;
 const double lam = 1.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
-const double subsample_cols = 0.8;
+const double subsample_cols = 0.5;
 
 int main()
 {
@@ -40,6 +40,10 @@ int main()
             for (int k = 0; k < num_row_train; k++)
             {
                 cin >> x[k][j];
+                if (x[k][j] == -1)
+                {
+                    x[k][j] = nan("");
+                }
                 X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
@@ -58,6 +62,10 @@ int main()
         for (int j = 0; j < num_row_val; j++)
         {
             cin >> X_val[j][i];
+            if (X_val[j][i] == -1)
+            {
+                X_val[j][i] = nan("");
+            }
         }
     }
     for (int j = 0; j < num_row_val; j++)
@@ -70,7 +78,7 @@ int main()
                                                       learning_rate,
                                                       boosting_rounds,
                                                       lam, const_gamma, eps,
-                                                      0, true);
+                                                      0, true, 0.5);
 
     cout << "Training ..." << endl;
     clf.fit(parties, y_train);
@@ -81,13 +89,11 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
-    /*
     cout << "lookup talbe of party_id = 1 is:" << endl;
     for (int i = 0; i < parties[1].lookup_table.size(); i++)
         cout << i << ": " << parties[1].lookup_table.at(i).first << ", "
              << parties[1].lookup_table.at(i).second << endl;
     cout << endl;
-    */
 
     cout << "Evaluating ..." << endl;
     vector<double> predict_proba_train = clf.predict_proba(X_train);

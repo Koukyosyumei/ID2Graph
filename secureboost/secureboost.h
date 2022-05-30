@@ -19,6 +19,7 @@ struct SecureBoostBase
     bool use_ispure;
     int active_party_id;
     bool is_rl;
+    double init_value;
 
     vector<double> init_pred;
     vector<XGBoostTree> estimators;
@@ -28,7 +29,7 @@ struct SecureBoostBase
                     int depth_ = 5, int min_leaf_ = 5,
                     double learning_rate_ = 0.4, int boosting_rounds_ = 5,
                     double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
-                    int active_party_id_ = -1, bool is_rl_ = false)
+                    int active_party_id_ = -1, bool is_rl_ = false, double init_value_ = 1.0)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
@@ -41,6 +42,7 @@ struct SecureBoostBase
         eps = eps_;
         active_party_id = active_party_id_;
         is_rl = is_rl_;
+        init_value = init_value_;
     }
 
     virtual vector<double> get_grad(vector<double> &y_pred, vector<double> &y) = 0;
@@ -141,7 +143,7 @@ struct SecureBoostClassifier : public SecureBoostBase
 
     vector<double> get_init_pred(vector<double> &y)
     {
-        vector<double> init_pred(y.size(), 1);
+        vector<double> init_pred(y.size(), init_value);
         return init_pred;
     }
 
