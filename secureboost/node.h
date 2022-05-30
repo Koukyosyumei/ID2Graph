@@ -109,7 +109,7 @@ struct Party
         }
     }
 
-    bool is_left(int record_id, vector<double> xi)
+    bool is_left(int record_id, vector<double> &xi)
     {
         return xi[feature_id[lookup_table[record_id].first]] <= lookup_table[record_id].second;
     }
@@ -225,6 +225,7 @@ struct Node
     int row_count, num_parties;
     double val, score;
     Node *left, *right;
+    int is_leaf_flag = -1; // -1:not calculated yer, 0: is not leaf, 1: is leaf
 
     Node() {}
     Node(vector<Party> *parties_, vector<double> y_, vector<double> gradient_,
@@ -263,7 +264,16 @@ struct Node
         val = compute_weight();
         tuple<int, int, int> best_split = find_split();
 
-        if (!is_leaf())
+        if (is_leaf())
+        {
+            is_leaf_flag = 1;
+        }
+        else
+        {
+            is_leaf_flag = 0;
+        }
+
+        if (is_leaf_flag == 0)
         {
             party_id = get<0>(best_split);
             record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
@@ -436,28 +446,42 @@ struct Node
 
     bool is_leaf()
     {
-        return is_pure() || std::isinf(score) || depth <= 0;
+        if (is_leaf_flag == -1)
+        {
+            return is_pure() || std::isinf(score) || depth <= 0;
+        }
+        else
+        {
+            return is_leaf_flag;
+        }
     }
 
     bool is_pure()
     {
-        vector<double> y_temp(row_count);
+        set<double> s{};
         for (int i = 0; i < row_count; i++)
-            y_temp[i] = y[idxs[i]];
-        set<double> y_set_temp(y_temp.begin(), y_temp.end());
-        return y_set_temp.size() == 1;
+        {
+            if (s.insert(y[idxs[i]]).second)
+            {
+                if (s.size() == 2)
+                    return false;
+            }
+        }
+        return true;
     }
 
-    vector<double> predict(vector<vector<double>> x_new)
+    vector<double> predict(vector<vector<double>> &x_new)
     {
         int x_new_size = x_new.size();
         vector<double> y_pred(x_new_size);
         for (int i = 0; i < x_new_size; i++)
+        {
             y_pred[i] = predict_row(x_new[i]);
+        }
         return y_pred;
     }
 
-    double predict_row(vector<double> xi)
+    double predict_row(vector<double> &xi)
     {
         if (is_leaf())
             return val;
@@ -505,11 +529,11 @@ struct Node
 
                     if (binary_color)
                     {
-                        if (purity < 0.6)
+                        if (purity < 0.7)
                         {
                             node_info += "\033[32m";
                         }
-                        else if (purity < 0.8)
+                        else if (purity < 0.9)
                         {
                             node_info += "\033[33m";
                         }
