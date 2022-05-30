@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <set>
 using namespace std;
 
 double sigmoid(double x)
@@ -12,6 +13,21 @@ double sigmoid(double x)
         return 1.0 - 1e-15;
     else
         return 1.0 / (1.0 + exp(-1 * x));
+}
+
+template <typename T>
+vector<T> remove_duplicates(vector<T> &inData)
+{
+    vector<double> outData;
+    set<double> s{};
+    for (int i = 0; i < inData.size(); i++)
+    {
+        if (s.insert(inData[i]).second)
+        {
+            outData.push_back(inData[i]);
+        }
+    }
+    return outData;
 }
 
 template <typename T>
