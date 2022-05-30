@@ -31,7 +31,7 @@ struct Party
     int seed = 0;
 
     Party() {}
-    Party(vector<vector<double>> x_, vector<int> feature_id_, int party_id_,
+    Party(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
           int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
@@ -45,7 +45,7 @@ struct Party
         col_count = x.at(0).size();
     }
 
-    void validate_arguments(vector<vector<double>> x_, vector<int> feature_id_, int party_id_,
+    void validate_arguments(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
                             int min_leaf_, double subsample_cols_)
     {
         try
@@ -90,7 +90,7 @@ struct Party
         return lookup_table;
     }
 
-    vector<double> get_percentiles(vector<double> x_col)
+    vector<double> get_percentiles(vector<double> &x_col)
     {
         if (x_col.size() > num_percentile_bin)
         {
@@ -114,9 +114,9 @@ struct Party
         return xi[feature_id[lookup_table[record_id].first]] <= lookup_table[record_id].second;
     }
 
-    vector<vector<pair<double, double>>> greedy_search_split(vector<double> gradient,
-                                                             vector<double> hessian,
-                                                             vector<int> idxs)
+    vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
+                                                             vector<double> &hessian,
+                                                             vector<int> &idxs)
     {
         temp_column_subsample.resize(col_count);
         iota(temp_column_subsample.begin(), temp_column_subsample.end(), 0);
@@ -185,7 +185,7 @@ struct Party
         return split_candidates_grad_hess;
     }
 
-    vector<int> split_rows(vector<int> idxs, int feature_opt_id, int threshold_opt_id)
+    vector<int> split_rows(vector<int> &idxs, int feature_opt_id, int threshold_opt_id)
     {
         // feature_opt_idがthreshold_opt_id以下のindexを返す
         int row_count = idxs.size();

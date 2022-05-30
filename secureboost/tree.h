@@ -26,7 +26,7 @@ struct XGBoostTree
         return dtree;
     }
 
-    vector<double> predict(vector<vector<double>> X)
+    vector<double> predict(vector<vector<double>> &X)
     {
         return dtree.predict(X);
     }

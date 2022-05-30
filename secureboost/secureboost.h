@@ -43,9 +43,9 @@ struct SecureBoostBase
         is_rl = is_rl_;
     }
 
-    virtual vector<double> get_grad(vector<double> y_pred, vector<double> y) = 0;
-    virtual vector<double> get_hess(vector<double> y_pred, vector<double> y) = 0;
-    virtual vector<double> get_init_pred(vector<double> y) = 0;
+    virtual vector<double> get_grad(vector<double> &y_pred, vector<double> &y) = 0;
+    virtual vector<double> get_hess(vector<double> &y_pred, vector<double> &y) = 0;
+    virtual vector<double> get_init_pred(vector<double> &y) = 0;
 
     void load_estimators(vector<XGBoostTree> _estimators)
     {
@@ -57,7 +57,7 @@ struct SecureBoostBase
         return estimators;
     }
 
-    void fit(vector<Party> &parties, vector<double> y)
+    void fit(vector<Party> &parties, vector<double> &y)
     {
         int row_count = y.size();
         vector<double> base_pred;
@@ -97,7 +97,7 @@ struct SecureBoostBase
         }
     }
 
-    vector<double> predict_raw(vector<vector<double>> X)
+    vector<double> predict_raw(vector<vector<double>> &X)
     {
         int row_count = X.size();
         vector<double> y_pred;
@@ -118,7 +118,7 @@ struct SecureBoostClassifier : public SecureBoostBase
 {
     using SecureBoostBase::SecureBoostBase;
 
-    vector<double> get_grad(vector<double> y_pred, vector<double> y)
+    vector<double> get_grad(vector<double> &y_pred, vector<double> &y)
     {
         int element_num = y_pred.size();
         vector<double> grad(element_num);
@@ -127,7 +127,7 @@ struct SecureBoostClassifier : public SecureBoostBase
         return grad;
     }
 
-    vector<double> get_hess(vector<double> y_pred, vector<double> y)
+    vector<double> get_hess(vector<double> &y_pred, vector<double> &y)
     {
         int element_num = y_pred.size();
         vector<double> hess(element_num);
@@ -139,13 +139,13 @@ struct SecureBoostClassifier : public SecureBoostBase
         return hess;
     }
 
-    vector<double> get_init_pred(vector<double> y)
+    vector<double> get_init_pred(vector<double> &y)
     {
         vector<double> init_pred(y.size(), 1);
         return init_pred;
     }
 
-    vector<double> predict_proba(vector<vector<double>> x)
+    vector<double> predict_proba(vector<vector<double>> &x)
     {
         vector<double> raw_score = predict_raw(x);
         int row_count = x.size();
