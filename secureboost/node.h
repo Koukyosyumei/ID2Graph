@@ -97,13 +97,15 @@ struct Party
             vector<double> probs(num_percentile_bin);
             for (int i = 1; i <= num_percentile_bin; i++)
                 probs[i] = double(i) / double(num_percentile_bin);
-            vector<double> percentiles = Quantile<double>(x_col, probs);
+            vector<double> percentiles_candidate = Quantile<double>(x_col, probs);
+            vector<double> percentiles = remove_duplicates<double>(percentiles_candidate);
             return percentiles;
         }
         else
         {
-            vector<double> percentiles(x_col.size());
-            copy(x_col.begin(), x_col.end(), percentiles.begin());
+            vector<double> x_col_wo_duplicates = remove_duplicates<double>(x_col);
+            vector<double> percentiles(x_col_wo_duplicates.size());
+            copy(x_col_wo_duplicates.begin(), x_col_wo_duplicates.end(), percentiles.begin());
             percentiles.erase(remove_if(begin(percentiles),
                                         end(percentiles),
                                         [](const auto &value)
@@ -165,11 +167,18 @@ struct Party
 
                 for (int r = current_min_idx; r < row_count; r++)
                 {
-                    if ((!isnan(x_col[r])) && (x_col[r] <= percentiles[p]))
+                    if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad += gradient[idxs[x_col_idxs[r]]];
-                        temp_hess += hessian[idxs[x_col_idxs[r]]];
-                        cumulative_left_size += 1;
+                        if (!isnan(x_col[r]))
+                        {
+                            temp_grad += gradient[idxs[x_col_idxs[r]]];
+                            temp_hess += hessian[idxs[x_col_idxs[r]]];
+                            cumulative_left_size += 1;
+                        }
+                        else
+                        {
+                            cout << "detect nan" << endl;
+                        }
                     }
                     else
                     {
@@ -201,7 +210,7 @@ struct Party
         vector<int> left_idxs;
         double threshold = temp_thresholds[feature_opt_id][threshold_opt_id];
         for (int r = 0; r < row_count; r++)
-            if (x_col[r] <= threshold)
+            if ((!isnan(x_col[r])) && (x_col[r] <= threshold))
                 left_idxs.push_back(idxs[r]);
 
         return left_idxs;
@@ -436,6 +445,7 @@ struct Node
 
     void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id)
     {
+        // TODO: remove idx with nan values from right_idxs;
         vector<int> left_idxs = parties->at(best_party_id).split_rows(idxs, best_col_id, best_threshold_id);
         vector<int> right_idxs;
         for (int i = 0; i < idxs.size(); i++)
