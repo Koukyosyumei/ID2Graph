@@ -6,15 +6,16 @@
 #include "secureboost/metric.h"
 using namespace std;
 
-const int min_leaf = 2;
-const int depth = 5;
-const double learning_rate = 0.4;
-const int boosting_rounds = 3;
+const int min_leaf = 1;
+const int depth = 3;
+const int max_bin = 64;
+const double learning_rate = 0.3;
+const int boosting_rounds = 2;
 const double lam = 1.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
-const double subsample_cols = 0.5;
+const double subsample_cols = 0.8;
 
 int main()
 {
@@ -43,7 +44,7 @@ int main()
             }
             temp_count_feature += 1;
         }
-        Party party(x, feature_idxs, i, min_leaf, subsample_cols);
+        Party party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -80,11 +81,13 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
+    /*
     cout << "lookup talbe of party_id = 1 is:" << endl;
     for (int i = 0; i < parties[1].lookup_table.size(); i++)
         cout << i << ": " << parties[1].lookup_table.at(i).first << ", "
              << parties[1].lookup_table.at(i).second << endl;
     cout << endl;
+    */
 
     cout << "Evaluating ..." << endl;
     vector<double> predict_proba_train = clf.predict_proba(X_train);
