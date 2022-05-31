@@ -9,18 +9,20 @@ using namespace std;
 const int min_leaf = 1;
 const int depth = 3;
 const int max_bin = 256;
-const double learning_rate = 0.4;
+const double learning_rate = 0.3;
 const int boosting_rounds = 2;
 const double lam = 1.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 0.5;
+const bool use_missing_value = false;
 
 int main()
 {
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
+    int num_nan_cell = 0;
     cin >> num_row_train >> num_col >> num_party;
     vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
     vector<double> y_train(num_row_train);
@@ -40,15 +42,16 @@ int main()
             for (int k = 0; k < num_row_train; k++)
             {
                 cin >> x[k][j];
-                if (x[k][j] == -1)
+                if (use_missing_value && x[k][j] == -1)
                 {
                     x[k][j] = nan("");
+                    num_nan_cell += 1;
                 }
                 X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
         }
-        Party party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin);
+        Party party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -62,7 +65,7 @@ int main()
         for (int j = 0; j < num_row_val; j++)
         {
             cin >> X_val[j][i];
-            if (X_val[j][i] == -1)
+            if (use_missing_value && X_val[j][i] == -1)
             {
                 X_val[j][i] = nan("");
             }
@@ -70,6 +73,8 @@ int main()
     }
     for (int j = 0; j < num_row_val; j++)
         cin >> y_val[j];
+
+    cout << "num of nan is " << num_nan_cell << endl;
 
     // --- Check Initialization --- //
     SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
@@ -89,11 +94,15 @@ int main()
         cout << clf.estimators[i].get_root_node().print(true, true) << endl;
     }
 
-    cout << "lookup talbe of party_id = 1 is:" << endl;
-    for (int i = 0; i < parties[1].lookup_table.size(); i++)
-        cout << i << ": " << parties[1].lookup_table.at(i).first << ", "
-             << parties[1].lookup_table.at(i).second << endl;
-    cout << endl;
+    for (int p = 0; p < num_party; p++)
+    {
+        cout << "lookup talbe of party_id = " << p << endl;
+        for (int i = 0; i < parties[p].lookup_table.size(); i++)
+            cout << i << ": " << get<0>(parties[p].lookup_table.at(i)) << ", "
+                 << get<1>(parties[p].lookup_table.at(i)) << ", "
+                 << get<2>(parties[p].lookup_table.at(i)) << endl;
+        cout << endl;
+    }
 
     cout << "Evaluating ..." << endl;
     vector<double> predict_proba_train = clf.predict_proba(X_train);
