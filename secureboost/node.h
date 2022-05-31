@@ -22,17 +22,20 @@ struct Party
     int min_leaf;
     double subsample_cols; // ratio of subsampled columuns
     int num_percentile_bin;
+    bool use_missing_value;
 
     int col_count; // the number of columns
+    int subsample_col_count;
 
-    unordered_map<int, pair<int, double>> lookup_table; // record_id: (feature_id, threshold)
+    unordered_map<int, tuple<int, double, int>> lookup_table; // record_id: (feature_id, threshold, missing_value_dir)
     vector<int> temp_column_subsample;
     vector<vector<double>> temp_thresholds; // feature_id->threshold
     int seed = 0;
 
     Party() {}
     Party(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
-          int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256)
+          int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256,
+          bool use_missing_value_ = false)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
         x = x_;
@@ -41,8 +44,10 @@ struct Party
         min_leaf = min_leaf_;
         subsample_cols = subsample_cols_;
         num_percentile_bin = num_precentile_bin_;
+        use_missing_value = use_missing_value_;
 
         col_count = x.at(0).size();
+        subsample_col_count = subsample_cols * col_count;
     }
 
     void validate_arguments(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
@@ -85,7 +90,7 @@ struct Party
         }
     }
 
-    unordered_map<int, pair<int, double>> get_lookup_table()
+    unordered_map<int, tuple<int, double, int>> get_lookup_table()
     {
         return lookup_table;
     }
@@ -106,11 +111,6 @@ struct Party
             vector<double> x_col_wo_duplicates = remove_duplicates<double>(x_col);
             vector<double> percentiles(x_col_wo_duplicates.size());
             copy(x_col_wo_duplicates.begin(), x_col_wo_duplicates.end(), percentiles.begin());
-            percentiles.erase(remove_if(begin(percentiles),
-                                        end(percentiles),
-                                        [](const auto &value)
-                                        { return isnan(value); }),
-                              end(percentiles));
             sort(percentiles.begin(), percentiles.end());
             return percentiles;
         }
@@ -118,7 +118,31 @@ struct Party
 
     bool is_left(int record_id, vector<double> &xi)
     {
-        return xi[feature_id[lookup_table[record_id].first]] <= lookup_table[record_id].second;
+        bool flag;
+        double x_criterion = xi[feature_id[get<0>(lookup_table[record_id])]];
+        if (isnan(x_criterion))
+        {
+            try
+            {
+                if (!use_missing_value)
+                {
+                    throw std::runtime_error("given data contains NaN, but use_missing_value is false");
+                }
+                else
+                {
+                    flag = get<2>(lookup_table[record_id]) == 0;
+                }
+            }
+            catch (std::exception &e)
+            {
+                std::cout << e.what() << std::endl;
+            }
+        }
+        else
+        {
+            flag = x_criterion <= get<1>(lookup_table[record_id]);
+        }
+        return flag;
     }
 
     vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
@@ -130,12 +154,16 @@ struct Party
         mt19937 engine(seed);
         seed += 1;
         shuffle(temp_column_subsample.begin(), temp_column_subsample.end(), engine);
-        int subsample_col_count = subsample_cols * col_count;
 
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
-        vector<vector<pair<double, double>>> split_candidates_grad_hess(temp_column_subsample.size());
-        temp_thresholds = vector<vector<double>>(temp_column_subsample.size());
+        int num_thresholds;
+        if (use_missing_value)
+            num_thresholds = subsample_col_count * 2;
+        else
+            num_thresholds = subsample_col_count;
+        vector<vector<pair<double, double>>> split_candidates_grad_hess(num_thresholds);
+        temp_thresholds = vector<vector<double>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
@@ -144,13 +172,25 @@ struct Party
         {
             int k = temp_column_subsample[i];
             vector<double> x_col(row_count);
-            vector<int> x_col_idxs(row_count);
 
+            int not_missing_values_count = 0;
+            int missing_values_count = 0;
             for (int r = 0; r < row_count; r++)
-                x_col[r] = x[idxs[r]][k];
-
+            {
+                if (!isnan(x[idxs[r]][k]))
+                {
+                    x_col[not_missing_values_count] = x[idxs[r]][k];
+                    not_missing_values_count += 1;
+                }
+                else
+                {
+                    missing_values_count += 1;
+                }
+            }
+            x_col.resize(not_missing_values_count);
             vector<double> percentiles = get_percentiles(x_col);
 
+            vector<int> x_col_idxs(not_missing_values_count);
             iota(x_col_idxs.begin(), x_col_idxs.end(), 0);
             sort(x_col_idxs.begin(), x_col_idxs.end(), [&x_col](size_t i1, size_t i2)
                  { return x_col[i1] < x_col[i2]; });
@@ -165,20 +205,13 @@ struct Party
                 double temp_hess = 0;
                 int temp_left_size = 0;
 
-                for (int r = current_min_idx; r < row_count; r++)
+                for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        if (!isnan(x_col[r]))
-                        {
-                            temp_grad += gradient[idxs[x_col_idxs[r]]];
-                            temp_hess += hessian[idxs[x_col_idxs[r]]];
-                            cumulative_left_size += 1;
-                        }
-                        else
-                        {
-                            cout << "detect nan" << endl;
-                        }
+                        temp_grad += gradient[idxs[x_col_idxs[r]]];
+                        temp_hess += hessian[idxs[x_col_idxs[r]]];
+                        cumulative_left_size += 1;
                     }
                     else
                     {
@@ -194,33 +227,99 @@ struct Party
                     temp_thresholds[i].push_back(percentiles[p]);
                 }
             }
+
+            if (use_missing_value)
+            {
+                int current_max_idx = not_missing_values_count - 1;
+                int cumulative_right_size = 0;
+                for (int p = percentiles.size() - 1; p >= 0; p--)
+                {
+                    double temp_grad = 0;
+                    double temp_hess = 0;
+                    int temp_left_size = 0;
+
+                    for (int r = current_max_idx; r >= 0; r--)
+                    {
+                        if (x_col[r] >= percentiles[p])
+                        {
+                            temp_grad += gradient[idxs[x_col_idxs[r]]];
+                            temp_hess += hessian[idxs[x_col_idxs[r]]];
+                            cumulative_right_size += 1;
+                        }
+                        else
+                        {
+                            current_max_idx = r;
+                            break;
+                        }
+                    }
+
+                    if (cumulative_right_size >= min_leaf &&
+                        row_count - cumulative_right_size >= min_leaf)
+                    {
+                        split_candidates_grad_hess[i + subsample_col_count].push_back(make_pair(temp_grad,
+                                                                                                temp_hess));
+                        temp_thresholds[i + subsample_col_count].push_back(percentiles[p]);
+                    }
+                }
+            }
         }
 
         return split_candidates_grad_hess;
     }
 
-    vector<int> split_rows(vector<int> &idxs, int feature_opt_id, int threshold_opt_id)
+    vector<int> split_rows(vector<int> &idxs, int feature_opt_pos, int threshold_opt_pos)
     {
         // feature_opt_idがthreshold_opt_id以下のindexを返す
+        int feature_opt_id, missing_dir;
+        feature_opt_id = temp_column_subsample[feature_opt_pos % subsample_col_count];
+        if (feature_opt_pos > subsample_col_count)
+        {
+            missing_dir = 1;
+        }
+        else
+        {
+            missing_dir = 0;
+        }
         int row_count = idxs.size();
         vector<double> x_col(row_count);
         for (int r = 0; r < row_count; r++)
-            x_col[r] = x[idxs[r]][temp_column_subsample[feature_opt_id]];
+            x_col[r] = x[idxs[r]][feature_opt_id];
 
         vector<int> left_idxs;
-        double threshold = temp_thresholds[feature_opt_id][threshold_opt_id];
+        double threshold = temp_thresholds[feature_opt_pos][threshold_opt_pos];
         for (int r = 0; r < row_count; r++)
-            if ((!isnan(x_col[r])) && (x_col[r] <= threshold))
+            if (((!isnan(x_col[r])) && (x_col[r] <= threshold)) ||
+                ((isnan(x_col[r])) && (missing_dir == 1)))
                 left_idxs.push_back(idxs[r]);
 
         return left_idxs;
     }
 
-    int insert_lookup_table(int feature_opt_id, int threshold_opt_id)
+    int insert_lookup_table(int feature_opt_pos, int threshold_opt_pos)
     {
+        int feature_opt_id, missing_dir;
+        double threshold_opt;
+        feature_opt_id = temp_column_subsample[feature_opt_pos % subsample_col_count];
+        threshold_opt = temp_thresholds[feature_opt_pos][threshold_opt_pos];
+
+        if (use_missing_value)
+        {
+            if (feature_opt_pos > subsample_col_count)
+            {
+                missing_dir = 1;
+            }
+            else
+            {
+                missing_dir = 0;
+            }
+        }
+        else
+        {
+            missing_dir = -1;
+        }
+
         lookup_table.emplace(lookup_table.size(),
-                             make_pair(temp_column_subsample[feature_opt_id],
-                                       temp_thresholds[feature_opt_id][threshold_opt_id]));
+                             make_tuple(feature_opt_id, threshold_opt, missing_dir));
         return lookup_table.size() - 1;
     }
 };
