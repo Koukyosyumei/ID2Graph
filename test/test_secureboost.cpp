@@ -88,8 +88,8 @@ int main()
     for (int i = 0; i < idxs_root.size(); i++)
         assert(idxs_root[i] == test_idxs_root[i]);
     assert(clf.estimators[0].dtree.depth == 3);
-    assert(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id).first == 0);
-    assert(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id).second == 16);
+    assert(get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) == 0);
+    assert(get<1>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) == 16);
     assert(clf.estimators[0].dtree.is_leaf() == 0);
 
     vector<int> test_idxs_left = {0, 2, 7};
@@ -109,18 +109,15 @@ int main()
     assert(clf.estimators[0].dtree.right->val == -0.8347166357912786);
     Node right_node = *clf.estimators[0].dtree.right;
     assert(right_node.party_id == 1);
-    assert(right_node.parties->at(right_node.party_id)
-               .lookup_table.at(right_node.record_id)
-               .first == 0);
+    assert(get<0>(right_node.parties->at(right_node.party_id)
+                      .lookup_table.at(right_node.record_id)) == 0);
 
     Node right_right_node = *right_node.right;
     assert(right_right_node.party_id == 0);
-    assert(right_right_node.parties->at(right_right_node.party_id)
-               .lookup_table.at(right_right_node.record_id)
-               .first == 0);
-    assert(right_right_node.parties->at(right_right_node.party_id)
-               .lookup_table.at(right_right_node.record_id)
-               .second == 25);
+    assert(get<0>(right_right_node.parties->at(right_right_node.party_id)
+                      .lookup_table.at(right_right_node.record_id)) == 0);
+    assert(get<1>(right_right_node.parties->at(right_right_node.party_id)
+                      .lookup_table.at(right_right_node.record_id)) == 25);
 
     assert(clf.estimators[0].dtree.right->right->left->is_leaf());
     assert(clf.estimators[0].dtree.right->right->right->is_leaf());
