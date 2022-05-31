@@ -90,7 +90,7 @@ struct SecureBoostBase
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, grad, hess, min_child_weight,
-                              lam, gamma, eps, min_leaf, depth, active_party_id, is_rl && i == 0);
+                              lam, gamma, eps, min_leaf, depth, active_party_id, (is_rl && (i == 0)));
             vector<double> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)
                 base_pred[j] += learning_rate * pred_temp[j];
