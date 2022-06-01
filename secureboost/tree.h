@@ -62,4 +62,9 @@ struct XGBoostTree
 
         return y_train_pred;
     }
+
+    string print(bool show_purity = false, bool binary_color = true)
+    {
+        return dtree.print(show_purity, binary_color);
+    }
 };
