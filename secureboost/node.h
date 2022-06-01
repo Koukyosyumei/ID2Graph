@@ -626,16 +626,23 @@ struct Node
         {
             vector<int> temp_idxs = get_idxs();
             int cnt_idxs = temp_idxs.size();
-            int cnt_zero = 0;
-            for (int i = 0; i < temp_idxs.size(); i++)
+            if (cnt_idxs == 0)
             {
-                if (y[temp_idxs[i]] == 0)
-                {
-                    cnt_zero += 1;
-                }
+                leaf_purity = 0.0;
             }
-            leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
-                              1 - double(cnt_zero) / double(cnt_idxs));
+            else
+            {
+                int cnt_zero = 0;
+                for (int i = 0; i < temp_idxs.size(); i++)
+                {
+                    if (y[temp_idxs[i]] == 0)
+                    {
+                        cnt_zero += 1;
+                    }
+                }
+                leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
+                                  1 - double(cnt_zero) / double(cnt_idxs));
+            }
         }
         else
         {
