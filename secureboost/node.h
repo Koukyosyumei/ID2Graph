@@ -23,6 +23,7 @@ struct Party
     double subsample_cols; // ratio of subsampled columuns
     int num_percentile_bin;
     bool use_missing_value;
+    int seed;
 
     int col_count; // the number of columns
     int subsample_col_count;
@@ -30,12 +31,11 @@ struct Party
     unordered_map<int, tuple<int, double, int>> lookup_table; // record_id: (feature_id, threshold, missing_value_dir)
     vector<int> temp_column_subsample;
     vector<vector<double>> temp_thresholds; // feature_id->threshold
-    int seed = 0;
 
     Party() {}
     Party(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
           int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256,
-          bool use_missing_value_ = false)
+          bool use_missing_value_ = false, int seed_ = 0)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
         x = x_;
@@ -45,6 +45,7 @@ struct Party
         subsample_cols = subsample_cols_;
         num_percentile_bin = num_precentile_bin_;
         use_missing_value = use_missing_value_;
+        seed = seed_;
 
         col_count = x.at(0).size();
         subsample_col_count = subsample_cols * col_count;
