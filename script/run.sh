@@ -1,2 +1,4 @@
-script/run_training.sh > result.ans
-script/run_extract_result.sh
+TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=result)
+
+script/run_training.sh > "${TEMPD}/result.ans"
+script/run_extract_result.sh -o ${TEMPD}
