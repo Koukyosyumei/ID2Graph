@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import os
 import numpy as np
+import random
 from sklearn.model_selection import train_test_split
 
 
@@ -45,7 +46,9 @@ def convert_df_to_input(
     row_num_val = X_val.shape[0]
 
     if col_alloc is None:
-        col_alloc = np.array_split(list(range(col_num)), parties_num)
+        col_alloc = np.array_split(
+            random.sample(list(range(col_num)), col_num), parties_num
+        )
 
     with open(output_path, mode="w") as f:
         f.write(f"{row_num_train} {col_num} {parties_num}\n")
@@ -63,19 +66,26 @@ def convert_df_to_input(
                 )
         f.write(" ".join([str(y) for y in y_train]) + "\n")
         f.write(f"{row_num_val}\n")
-        for i in range(col_num):
-            f.write(
-                " ".join(
-                    [str(x) if not np.isnan(x) else replace_nan for x in X_val[:, i]]
+        for ca in col_alloc:
+            for i in ca:
+                f.write(
+                    " ".join(
+                        [
+                            str(x) if not np.isnan(x) else replace_nan
+                            for x in X_val[:, i]
+                        ]
+                    )
+                    + "\n"
                 )
-                + "\n"
-            )
         f.write(" ".join([str(y) for y in y_val]))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
+
+    random.seed(parsed_args.seed)
+    np.random.seed(parsed_args.seed)
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
