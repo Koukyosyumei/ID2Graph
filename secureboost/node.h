@@ -619,6 +619,40 @@ struct Node
         return recursive_print("", false, show_purity, binary_color);
     }
 
+    double get_leaf_purity(bool samplesize_weight = false)
+    {
+        double leaf_purity = 0;
+        if (is_leaf())
+        {
+            vector<int> temp_idxs = get_idxs();
+            int cnt_idxs = temp_idxs.size();
+            int cnt_zero = 0;
+            for (int i = 0; i < temp_idxs.size(); i++)
+            {
+                if (y[temp_idxs[i]] == 0)
+                {
+                    cnt_zero += 1;
+                }
+            }
+            leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
+                              1 - double(cnt_zero) / double(cnt_idxs));
+        }
+        else
+        {
+            if (samplesize_weight)
+            {
+                int left_size = left->get_idxs().size();
+                int right_size = right->get_idxs().size();
+                leaf_purity = (left_size * left->get_leaf_purity() + right_size * right->get_leaf_purity()) / (left_size + right_size);
+            }
+            else
+            {
+                leaf_purity = (left->get_leaf_purity() + right->get_leaf_purity()) / 2;
+            }
+        }
+        return leaf_purity;
+    }
+
     string recursive_print(string prefix, bool isleft, bool show_purity, bool binary_color)
     {
         string node_info;

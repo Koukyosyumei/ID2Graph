@@ -67,4 +67,9 @@ struct XGBoostTree
     {
         return dtree.print(show_purity, binary_color);
     }
+
+    double get_leaf_purity(double samplesize_weight = false)
+    {
+        return dtree.get_leaf_purity(samplesize_weight);
+    }
 };
