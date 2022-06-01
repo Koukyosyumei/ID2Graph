@@ -170,6 +170,7 @@ struct Party
 
         for (int i = 0; i < subsample_col_count; i++)
         {
+            // extract the necessary data
             int k = temp_column_subsample[i];
             vector<double> x_col(row_count);
 
@@ -188,7 +189,6 @@ struct Party
                 }
             }
             x_col.resize(not_missing_values_count);
-            vector<double> percentiles = get_percentiles(x_col);
 
             vector<int> x_col_idxs(not_missing_values_count);
             iota(x_col_idxs.begin(), x_col_idxs.end(), 0);
@@ -197,6 +197,10 @@ struct Party
 
             sort(x_col.begin(), x_col.end());
 
+            // get percentiles of x_col
+            vector<double> percentiles = get_percentiles(x_col);
+
+            // enumerate all threshold value (missing value goto right)
             int current_min_idx = 0;
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
@@ -228,6 +232,7 @@ struct Party
                 }
             }
 
+            // enumerate missing value goto left
             if (use_missing_value)
             {
                 int current_max_idx = not_missing_values_count - 1;
