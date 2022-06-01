@@ -32,7 +32,14 @@ def add_args(parser):
 
 
 def convert_df_to_input(
-    X_train, y_train, X_val, y_val, output_path, col_alloc=None, parties_num=2
+    X_train,
+    y_train,
+    X_val,
+    y_val,
+    output_path,
+    col_alloc=None,
+    parties_num=2,
+    replace_nan="-9999",
 ):
     row_num_train, col_num = X_train.shape
     row_num_val = X_val.shape[0]
@@ -47,7 +54,10 @@ def convert_df_to_input(
             for i in ca:
                 f.write(
                     " ".join(
-                        [str(x) if not np.isnan(x) else "-1" for x in X_train[:, i]]
+                        [
+                            str(x) if not np.isnan(x) else replace_nan
+                            for x in X_train[:, i]
+                        ]
                     )
                     + "\n"
                 )
@@ -55,7 +65,9 @@ def convert_df_to_input(
         f.write(f"{row_num_val}\n")
         for i in range(col_num):
             f.write(
-                " ".join([str(x) if not np.isnan(x) else "-1" for x in X_val[:, i]])
+                " ".join(
+                    [str(x) if not np.isnan(x) else replace_nan for x in X_val[:, i]]
+                )
                 + "\n"
             )
         f.write(" ".join([str(y) for y in y_val]))
@@ -82,20 +94,52 @@ if __name__ == "__main__":
             ]
         ]
         y = df["SeriousDlqin2yrs"]
-        X_train, X_val, y_train, y_val = train_test_split(
-            X,
-            y,
-            test_size=0.33,
-            random_state=parsed_args.seed,
-            stratify=y,
-        )
 
-        convert_df_to_input(
-            X_train.values,
-            y_train.values,
-            X_val.values,
-            y_val.values,
-            os.path.join(parsed_args.path_to_dir, "givemesomecredit.in"),
-            col_alloc=None,
-            parties_num=2,
-        )
+    elif parsed_args.dataset_type == "ucicreditcard":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
+        X = df[
+            [
+                "LIMIT_BAL",
+                "SEX",
+                "EDUCATION",
+                "MARRIAGE",
+                "AGE",
+                "PAY_0",
+                "PAY_2",
+                "PAY_3",
+                "PAY_4",
+                "PAY_5",
+                "PAY_6",
+                "BILL_AMT1",
+                "BILL_AMT2",
+                "BILL_AMT3",
+                "BILL_AMT4",
+                "BILL_AMT5",
+                "BILL_AMT6",
+                "PAY_AMT1",
+                "PAY_AMT2",
+                "PAY_AMT3",
+                "PAY_AMT4",
+                "PAY_AMT5",
+                "PAY_AMT6",
+            ]
+        ]
+        y = df["default.payment.next.month"]
+
+    X_train, X_val, y_train, y_val = train_test_split(
+        X,
+        y,
+        test_size=0.33,
+        random_state=parsed_args.seed,
+        stratify=y,
+    )
+
+    convert_df_to_input(
+        X_train.values,
+        y_train.values,
+        X_val.values,
+        y_val.values,
+        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}.in"),
+        col_alloc=None,
+        parties_num=2,
+    )
