@@ -16,6 +16,10 @@ struct XGBoostTree
     {
         vector<int> idxs(y.size());
         iota(idxs.begin(), idxs.end(), 0);
+        for (int i = 0; i < parties->size(); i++)
+        {
+            parties->at(i).subsample_columns();
+        }
         dtree = Node(parties, y, gradient, hessian, idxs,
                      min_child_weight, lam, gamma, eps, depth,
                      active_party_id, use_only_active_party);

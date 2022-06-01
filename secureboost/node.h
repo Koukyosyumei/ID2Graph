@@ -146,16 +146,19 @@ struct Party
         return flag;
     }
 
-    vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
-                                                             vector<double> &hessian,
-                                                             vector<int> &idxs)
+    void subsample_columns()
     {
         temp_column_subsample.resize(col_count);
         iota(temp_column_subsample.begin(), temp_column_subsample.end(), 0);
         mt19937 engine(seed);
         seed += 1;
         shuffle(temp_column_subsample.begin(), temp_column_subsample.end(), engine);
+    }
 
+    vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
+                                                             vector<double> &hessian,
+                                                             vector<int> &idxs)
+    {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
         int num_thresholds;
