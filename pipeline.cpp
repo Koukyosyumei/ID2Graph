@@ -16,7 +16,7 @@ const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 0.5;
-const bool use_missing_value = false;
+const bool use_missing_value = true;
 
 int main()
 {
@@ -29,6 +29,7 @@ int main()
     vector<Party> parties(num_party);
 
     cout << "Loading datasets ..." << endl;
+    cout << num_row_train << " " << num_col << " " << num_party << endl;
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
@@ -58,6 +59,7 @@ int main()
         cin >> y_train[j];
 
     cin >> num_row_val;
+    cout << num_row_val << endl;
     vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
     vector<double> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
