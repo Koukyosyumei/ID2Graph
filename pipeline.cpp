@@ -9,14 +9,14 @@ using namespace std;
 const int min_leaf = 1;
 const int depth = 3;
 const int max_bin = 256;
-const double learning_rate = 0.3;
+const double learning_rate = 0.4;
 const int boosting_rounds = 2;
 const double lam = 1.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
-const double subsample_cols = 0.5;
-const bool use_missing_value = true;
+const double subsample_cols = 0.8;
+const bool use_missing_value = false;
 
 int main()
 {
@@ -43,7 +43,7 @@ int main()
             for (int k = 0; k < num_row_train; k++)
             {
                 cin >> x[k][j];
-                if (use_missing_value && x[k][j] == -1)
+                if (use_missing_value && x[k][j] == -9999)
                 {
                     x[k][j] = nan("");
                     num_nan_cell += 1;
@@ -67,7 +67,7 @@ int main()
         for (int j = 0; j < num_row_val; j++)
         {
             cin >> X_val[j][i];
-            if (use_missing_value && X_val[j][i] == -1)
+            if (use_missing_value && X_val[j][i] == -9999)
             {
                 X_val[j][i] = nan("");
             }
@@ -93,7 +93,7 @@ int main()
     for (int i = 0; i < clf.estimators.size(); i++)
     {
         cout << "Tree-" << i + 1 << endl;
-        cout << clf.estimators[i].get_root_node().print(true, true) << endl;
+        cout << clf.estimators[i].print(true, true) << endl;
     }
 
     for (int p = 0; p < num_party; p++)
