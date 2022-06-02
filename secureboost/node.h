@@ -622,13 +622,12 @@ struct Node
         return recursive_print("", false, show_purity, binary_color);
     }
 
-    double get_leaf_purity(bool samplesize_weight = false)
+    double get_leaf_purity()
     {
         double leaf_purity = 0;
         if (is_leaf())
         {
-            vector<int> temp_idxs = get_idxs();
-            int cnt_idxs = temp_idxs.size();
+            int cnt_idxs = idxs.size();
             if (cnt_idxs == 0)
             {
                 leaf_purity = 0.0;
@@ -636,29 +635,21 @@ struct Node
             else
             {
                 int cnt_zero = 0;
-                for (int i = 0; i < temp_idxs.size(); i++)
+                for (int i = 0; i < idxs.size(); i++)
                 {
-                    if (y[temp_idxs[i]] == 0)
+                    if (y[idxs[i]] == 0)
                     {
                         cnt_zero += 1;
                     }
                 }
                 leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
                                   1 - double(cnt_zero) / double(cnt_idxs));
+                leaf_purity = leaf_purity * (double(cnt_idxs) / double(y.size()));
             }
         }
         else
         {
-            if (samplesize_weight)
-            {
-                int left_size = left->get_idxs().size();
-                int right_size = right->get_idxs().size();
-                leaf_purity = (left_size * left->get_leaf_purity() + right_size * right->get_leaf_purity()) / (left_size + right_size);
-            }
-            else
-            {
-                leaf_purity = (left->get_leaf_purity() + right->get_leaf_purity()) / 2;
-            }
+            leaf_purity = left->get_leaf_purity() + right->get_leaf_purity();
         }
         return leaf_purity;
     }
@@ -669,10 +660,9 @@ struct Node
         if (is_leaf())
         {
             node_info = to_string(get_val());
-            vector<int> temp_idxs = get_idxs();
             if (show_purity)
             {
-                int cnt_idxs = temp_idxs.size();
+                int cnt_idxs = idxs.size();
                 if (cnt_idxs == 0)
                 {
                     node_info += ", null";
@@ -680,9 +670,9 @@ struct Node
                 else
                 {
                     int cnt_zero = 0;
-                    for (int i = 0; i < temp_idxs.size(); i++)
+                    for (int i = 0; i < idxs.size(); i++)
                     {
-                        if (y[temp_idxs[i]] == 0)
+                        if (y[idxs[i]] == 0)
                         {
                             cnt_zero += 1;
                         }
@@ -707,7 +697,9 @@ struct Node
                         }
                         node_info += to_string(purity);
                         node_info += " (";
-                        node_info += to_string(cnt_idxs);
+                        node_info += to_string(cnt_zero);
+                        node_info += ", ";
+                        node_info += to_string(cnt_idxs - cnt_zero);
                         node_info += ")";
                         node_info += "\033[0m";
                     }
@@ -721,9 +713,9 @@ struct Node
             {
                 node_info += ", [";
                 int temp_id;
-                for (int i = 0; i < temp_idxs.size(); i++)
+                for (int i = 0; i < idxs.size(); i++)
                 {
-                    temp_id = temp_idxs[i];
+                    temp_id = idxs[i];
                     if (binary_color)
                     {
                         if (y[temp_id] == 0)

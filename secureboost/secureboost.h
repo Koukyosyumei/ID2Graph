@@ -2,6 +2,7 @@
 #include <iterator>
 #include <limits>
 #include <iostream>
+#include <cmath>
 #include "tree.h"
 using namespace std;
 
@@ -20,16 +21,19 @@ struct SecureBoostBase
     int active_party_id;
     bool is_rl;
     double init_value;
+    bool save_loss;
 
     vector<double> init_pred;
     vector<XGBoostTree> estimators;
+    vector<double> logging_loss;
 
     SecureBoostBase(double subsample_cols_ = 0.8,
                     double min_child_weight_ = -1 * numeric_limits<double>::infinity(),
                     int depth_ = 5, int min_leaf_ = 5,
                     double learning_rate_ = 0.4, int boosting_rounds_ = 5,
                     double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
-                    int active_party_id_ = -1, bool is_rl_ = false, double init_value_ = 1.0)
+                    int active_party_id_ = -1, bool is_rl_ = false,
+                    double init_value_ = 1.0, bool save_loss_ = true)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
@@ -43,10 +47,12 @@ struct SecureBoostBase
         active_party_id = active_party_id_;
         is_rl = is_rl_;
         init_value = init_value_;
+        save_loss = save_loss_;
     }
 
     virtual vector<double> get_grad(vector<double> &y_pred, vector<double> &y) = 0;
     virtual vector<double> get_hess(vector<double> &y_pred, vector<double> &y) = 0;
+    virtual double get_loss(vector<double> &y_pred, vector<double> &y) = 0;
     virtual vector<double> get_init_pred(vector<double> &y) = 0;
 
     void load_estimators(vector<XGBoostTree> _estimators)
@@ -84,7 +90,6 @@ struct SecureBoostBase
 
         for (int i = 0; i < boosting_rounds; i++)
         {
-            cout << "round " << i + 1 << endl;
             vector<double> grad = get_grad(base_pred, y);
             vector<double> hess = get_hess(base_pred, y);
 
@@ -96,6 +101,12 @@ struct SecureBoostBase
                 base_pred[j] += learning_rate * pred_temp[j];
 
             estimators.push_back(boosting_tree);
+
+            if (save_loss)
+            {
+                logging_loss.push_back(get_loss(base_pred, y));
+                cout << "round " << i + 1 << ": " << logging_loss[i] << endl;
+            }
         }
     }
 
@@ -119,6 +130,24 @@ struct SecureBoostBase
 struct SecureBoostClassifier : public SecureBoostBase
 {
     using SecureBoostBase::SecureBoostBase;
+
+    double get_loss(vector<double> &y_pred, vector<double> &y)
+    {
+        double loss = 0;
+        double n = y_pred.size();
+        for (int i = 0; i < n; i++)
+        {
+            if (y[i] == 1)
+            {
+                loss += log(1 + exp(-1 * y_pred[i])) / n;
+            }
+            else
+            {
+                loss += log(1 + exp(y_pred[i])) / n;
+            }
+        }
+        return loss;
+    }
 
     vector<double> get_grad(vector<double> &y_pred, vector<double> &y)
     {
