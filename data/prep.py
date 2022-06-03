@@ -4,6 +4,7 @@ import os
 import numpy as np
 import random
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_breast_cancer
 
 
 def add_args(parser):
@@ -40,7 +41,7 @@ def convert_df_to_input(
     output_path,
     col_alloc=None,
     parties_num=2,
-    replace_nan="-9999",
+    replace_nan="-1",
 ):
     row_num_train, col_num = X_train.shape
     row_num_val = X_val.shape[0]
@@ -89,6 +90,10 @@ if __name__ == "__main__":
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
+        pos_df = df[df["SeriousDlqin2yrs"] == 0]
+        neg_df = df[df["SeriousDlqin2yrs"] == 1]
+        pos_df = pos_df.sample(neg_df.shape[0] * 1)
+        df = pd.concat([pos_df, neg_df])
         X = df[
             [
                 "RevolvingUtilizationOfUnsecuredLines",
@@ -102,8 +107,8 @@ if __name__ == "__main__":
                 "NumberOfTime60-89DaysPastDueNotWorse",
                 "NumberOfDependents",
             ]
-        ]
-        y = df["SeriousDlqin2yrs"]
+        ].values
+        y = df["SeriousDlqin2yrs"].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
@@ -133,22 +138,27 @@ if __name__ == "__main__":
                 "PAY_AMT5",
                 "PAY_AMT6",
             ]
-        ]
-        y = df["default.payment.next.month"]
+        ].values
+        y = df["default.payment.next.month"].values
+
+    elif parsed_args.dataset_type == "breastcancer":
+        data = load_breast_cancer()
+        X = data["data"]
+        y = data["target"]
 
     X_train, X_val, y_train, y_val = train_test_split(
         X,
         y,
-        test_size=0.33,
+        test_size=1 / 3,
         random_state=parsed_args.seed,
         stratify=y,
     )
 
     convert_df_to_input(
-        X_train.values,
-        y_train.values,
-        X_val.values,
-        y_val.values,
+        X_train,
+        y_train,
+        X_val,
+        y_val,
         os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}.in"),
         col_alloc=None,
         parties_num=2,
