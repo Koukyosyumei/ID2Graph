@@ -8,15 +8,16 @@ using namespace std;
 
 const int min_leaf = 1;
 const int depth = 3;
-const int max_bin = 256;
-const double learning_rate = 0.4;
-const int boosting_rounds = 2;
-const double lam = 1.0;
+const int max_bin = 32;
+const double learning_rate = 0.3;
+const int boosting_rounds = 20;
+const double lam = 0.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 0.8;
 const bool use_missing_value = false;
+const int completelly_secure_round = 0;
 
 int main()
 {
@@ -29,7 +30,9 @@ int main()
     vector<Party> parties(num_party);
 
     cout << "Loading datasets ..." << endl;
-    cout << num_row_train << " " << num_col << " " << num_party << endl;
+    cout << "train size is " << num_row_train
+         << ", column size is " << num_col
+         << ", party size is  " << num_party << endl;
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
@@ -43,7 +46,7 @@ int main()
             for (int k = 0; k < num_row_train; k++)
             {
                 cin >> x[k][j];
-                if (use_missing_value && x[k][j] == -9999)
+                if (use_missing_value && x[k][j] == -1)
                 {
                     x[k][j] = nan("");
                     num_nan_cell += 1;
@@ -67,7 +70,7 @@ int main()
         for (int j = 0; j < num_row_val; j++)
         {
             cin >> X_val[j][i];
-            if (use_missing_value && X_val[j][i] == -9999)
+            if (use_missing_value && X_val[j][i] == -1)
             {
                 X_val[j][i] = nan("");
             }
@@ -85,14 +88,15 @@ int main()
                                                       learning_rate,
                                                       boosting_rounds,
                                                       lam, const_gamma, eps,
-                                                      0, true, 0.5);
+                                                      0, completelly_secure_round,
+                                                      0.5, true);
 
     cout << "Training ..." << endl;
     clf.fit(parties, y_train);
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
-        cout << "Tree-" << i + 1 << endl;
+        cout << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << endl;
         cout << clf.estimators[i].print(true, true) << endl;
     }
 
