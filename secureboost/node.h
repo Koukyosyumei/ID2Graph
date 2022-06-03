@@ -779,7 +779,6 @@ struct Node
             node_info += ", ";
             node_info += to_string(get_record_id());
             node_info = prefix + "|--" + node_info;
-            node_info += "\n";
 
             string next_prefix = "";
             if (isleft)
@@ -795,22 +794,15 @@ struct Node
                                                                                          show_purity, binary_color, target_party_id);
             pair<string, bool> right_node_info_and_skip_flag = get_right().recursive_print(prefix + next_prefix, false,
                                                                                            show_purity, binary_color, target_party_id);
-            if (left_node_info_and_skip_flag.second)
+            if (left_node_info_and_skip_flag.second && right_node_info_and_skip_flag.second)
             {
-                node_info += prefix + "     |--" + left->print_leaf(show_purity, binary_color);
+                node_info += " -> " + print_leaf(show_purity, binary_color);
                 node_info += "\n";
             }
             else
             {
+                node_info += "\n";
                 node_info += left_node_info_and_skip_flag.first;
-            }
-            if (right_node_info_and_skip_flag.second)
-            {
-                node_info += prefix + "     |--" + right->print_leaf(show_purity, binary_color);
-                node_info += "\n";
-            }
-            else
-            {
                 node_info += right_node_info_and_skip_flag.first;
             }
 
