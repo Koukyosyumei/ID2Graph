@@ -6,7 +6,7 @@ do
 done
 
 g++ -o pipeline.out pipeline.cpp
-for i in $(seq 1 2)
+for i in $(seq 1 5)
 do 
     echo "random seed is $i"
     python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -s $i

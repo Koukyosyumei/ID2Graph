@@ -5,7 +5,12 @@ do
   esac
 done
 
-cat "${VALUE_O}/result.ans" | grep -oP '(?<=Tree-1: )(.*)' > "${VALUE_O}/temp_lp_tree_1.out"
-cat "${VALUE_O}/result.ans" | grep -oP '(?<=Tree-2: )(.*)' > "${VALUE_O}/temp_lp_tree_2.out"
+ROUND_NUM=$(cat ${VALUE_O}/result.ans | grep -oP '(?<=round)(.*?)(?=:)' | tail -n1)
+for i in $(seq 1 ${ROUND_NUM})
+do 
+  cat "${VALUE_O}/result.ans" | grep -oP "(?<=Tree-${i}: )(.*)" > "${VALUE_O}/temp_lp_tree_${i}.out"
+  cat "${VALUE_O}/result.ans" | grep -oP "(?<=round ${i}: )(.*)" > "${VALUE_O}/temp_loss_tree_${i}.out"
+done
+
 cat "${VALUE_O}/result.ans" | grep -oP '(?<=Train AUC: )(.*)' > "${VALUE_O}/temp_train_auc.out"
 cat "${VALUE_O}/result.ans" | grep -oP '(?<=Val AUC: )(.*)' > "${VALUE_O}/temp_val_auc.out"
