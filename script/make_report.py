@@ -77,6 +77,8 @@ if __name__ == "__main__":
     )
     plt.xlabel("round")
     plt.title("loss")
+
+    plt.tight_layout()
     plt.savefig(os.path.join(parsed_args.path_to_dir, "result.png"))
 
     with open(
