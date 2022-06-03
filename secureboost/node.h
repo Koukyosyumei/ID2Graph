@@ -770,7 +770,7 @@ struct Node
             {
                 node_info = print_leaf(show_purity, binary_color);
             }
-            node_info = prefix + "|--" + node_info;
+            node_info = prefix + "|-- " + node_info;
             node_info += "\n";
         }
         else
@@ -778,7 +778,7 @@ struct Node
             node_info += to_string(get_party_id());
             node_info += ", ";
             node_info += to_string(get_record_id());
-            node_info = prefix + "|--" + node_info;
+            node_info = prefix + "|-- " + node_info;
 
             string next_prefix = "";
             if (isleft)
