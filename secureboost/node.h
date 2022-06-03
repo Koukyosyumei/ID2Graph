@@ -563,8 +563,16 @@ struct Node
 
         left = new Node(parties, y, gradient, hessian, left_idxs, min_child_weight,
                         lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+        if (left->is_leaf_flag == 1)
+        {
+            left->party_id = party_id;
+        }
         right = new Node(parties, y, gradient, hessian, right_idxs, min_child_weight,
                          lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+        if (right->is_leaf_flag == 1)
+        {
+            right->party_id = party_id;
+        }
     }
 
     bool is_leaf()
@@ -617,11 +625,6 @@ struct Node
         }
     }
 
-    string print(bool show_purity = false, bool binary_color = true)
-    {
-        return recursive_print("", false, show_purity, binary_color);
-    }
-
     double get_leaf_purity()
     {
         double leaf_purity = 0;
@@ -654,102 +657,130 @@ struct Node
         return leaf_purity;
     }
 
-    string recursive_print(string prefix, bool isleft, bool show_purity, bool binary_color)
+    string print(bool show_purity = false, bool binary_color = true, int target_party_id = 1)
     {
-        string node_info;
-        if (is_leaf())
+        pair<string, bool> result = recursive_print("", false, show_purity, binary_color, target_party_id);
+        if (result.second)
         {
-            node_info = to_string(get_val());
-            if (show_purity)
-            {
-                int cnt_idxs = idxs.size();
-                if (cnt_idxs == 0)
-                {
-                    node_info += ", null";
-                }
-                else
-                {
-                    int cnt_zero = 0;
-                    for (int i = 0; i < idxs.size(); i++)
-                    {
-                        if (y[idxs[i]] == 0)
-                        {
-                            cnt_zero += 1;
-                        }
-                    }
-                    double purity = max(double(cnt_zero) / double(cnt_idxs),
-                                        1 - double(cnt_zero) / double(cnt_idxs));
-                    node_info += ", ";
+            return "";
+        }
+        else
+        {
+            return result.first;
+        }
+    }
 
-                    if (binary_color)
-                    {
-                        if (purity < 0.7)
-                        {
-                            node_info += "\033[32m";
-                        }
-                        else if (purity < 0.9)
-                        {
-                            node_info += "\033[33m";
-                        }
-                        else
-                        {
-                            node_info += "\033[31m";
-                        }
-                        node_info += to_string(purity);
-                        node_info += " (";
-                        node_info += to_string(cnt_zero);
-                        node_info += ", ";
-                        node_info += to_string(cnt_idxs - cnt_zero);
-                        node_info += ")";
-                        node_info += "\033[0m";
-                    }
-                    else
-                    {
-                        node_info += to_string(purity);
-                    }
-                }
+    string print_leaf(bool show_purity, bool binary_color)
+    {
+        string node_info = to_string(get_val());
+        if (show_purity)
+        {
+            int cnt_idxs = idxs.size();
+            if (cnt_idxs == 0)
+            {
+                node_info += ", null";
             }
             else
             {
-                node_info += ", [";
-                int temp_id;
+                int cnt_zero = 0;
                 for (int i = 0; i < idxs.size(); i++)
                 {
-                    temp_id = idxs[i];
-                    if (binary_color)
+                    if (y[idxs[i]] == 0)
                     {
-                        if (y[temp_id] == 0)
-                        {
-                            node_info += "\033[32m";
-                            node_info += to_string(temp_id);
-                            node_info += "\033[0m";
-                        }
-                        else
-                        {
-                            node_info += to_string(temp_id);
-                        }
+                        cnt_zero += 1;
+                    }
+                }
+                double purity = max(double(cnt_zero) / double(cnt_idxs),
+                                    1 - double(cnt_zero) / double(cnt_idxs));
+                node_info += ", ";
+
+                if (binary_color)
+                {
+                    if (purity < 0.7)
+                    {
+                        node_info += "\033[32m";
+                    }
+                    else if (purity < 0.9)
+                    {
+                        node_info += "\033[33m";
+                    }
+                    else
+                    {
+                        node_info += "\033[31m";
+                    }
+                    node_info += to_string(purity);
+                    node_info += " (";
+                    node_info += to_string(cnt_zero);
+                    node_info += ", ";
+                    node_info += to_string(cnt_idxs - cnt_zero);
+                    node_info += ")";
+                    node_info += "\033[0m";
+                }
+                else
+                {
+                    node_info += to_string(purity);
+                }
+            }
+        }
+        else
+        {
+            node_info += ", [";
+            int temp_id;
+            for (int i = 0; i < idxs.size(); i++)
+            {
+                temp_id = idxs[i];
+                if (binary_color)
+                {
+                    if (y[temp_id] == 0)
+                    {
+                        node_info += "\033[32m";
+                        node_info += to_string(temp_id);
+                        node_info += "\033[0m";
                     }
                     else
                     {
                         node_info += to_string(temp_id);
                     }
-                    node_info += ", ";
                 }
-                node_info += "]";
+                else
+                {
+                    node_info += to_string(temp_id);
+                }
+                node_info += ", ";
             }
+            node_info += "]";
+        }
+
+        return node_info;
+    }
+
+    pair<string, bool> recursive_print(string prefix, bool isleft, bool show_purity,
+                                       bool binary_color, int target_party_id = -1)
+    {
+        string node_info;
+        bool skip_flag;
+        if (is_leaf())
+        {
+            skip_flag = target_party_id != -1 && party_id != target_party_id;
+            if (skip_flag)
+            {
+                node_info = "";
+            }
+            else
+            {
+                node_info = print_leaf(show_purity, binary_color);
+            }
+            node_info = prefix + "|--" + node_info;
+            node_info += "\n";
         }
         else
         {
             node_info += to_string(get_party_id());
             node_info += ", ";
             node_info += to_string(get_record_id());
-        }
+            node_info = prefix + "|--" + node_info;
+            node_info += "\n";
 
-        node_info = prefix + "|--" + node_info;
-        node_info += "\n";
-
-        if (!is_leaf())
-        {
             string next_prefix = "";
             if (isleft)
             {
@@ -759,10 +790,33 @@ struct Node
             {
                 next_prefix += "     ";
             }
-            node_info += get_left().recursive_print(prefix + next_prefix, true, show_purity, binary_color);
-            node_info += get_right().recursive_print(prefix + next_prefix, false, show_purity, binary_color);
+
+            pair<string, bool> left_node_info_and_skip_flag = get_left().recursive_print(prefix + next_prefix, true,
+                                                                                         show_purity, binary_color, target_party_id);
+            pair<string, bool> right_node_info_and_skip_flag = get_right().recursive_print(prefix + next_prefix, false,
+                                                                                           show_purity, binary_color, target_party_id);
+            if (left_node_info_and_skip_flag.second)
+            {
+                node_info += prefix + "     |--" + left->print_leaf(show_purity, binary_color);
+                node_info += "\n";
+            }
+            else
+            {
+                node_info += left_node_info_and_skip_flag.first;
+            }
+            if (right_node_info_and_skip_flag.second)
+            {
+                node_info += prefix + "     |--" + right->print_leaf(show_purity, binary_color);
+                node_info += "\n";
+            }
+            else
+            {
+                node_info += right_node_info_and_skip_flag.first;
+            }
+
+            skip_flag = false;
         }
 
-        return node_info;
+        return make_pair(node_info, skip_flag);
     }
 };
