@@ -139,21 +139,47 @@ int main()
     for (int i = 0; i < test_predcit_proba.size(); i++)
         assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
 
-    cout << "test_secureboost: all passed!" << endl;
+    vector<vector<int>> test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                        {0, 0, 0, 0, 0, 0, 0, 0},
+                                        {1, 0, 0, 0, 0, 0, 0, 1},
+                                        {0, 0, 0, 0, 0, 0, 1, 0},
+                                        {0, 0, 0, 0, 0, 1, 0, 0},
+                                        {0, 0, 0, 0, 1, 0, 0, 0},
+                                        {0, 0, 0, 1, 0, 0, 0, 0},
+                                        {1, 0, 1, 0, 0, 0, 0, 0}};
 
-    for (int i = 0; i < clf.estimators.size(); i++)
+    vector<vector<vector<int>>> vec_adj_mat = extract_adjacency_matrix_from_forest(&clf);
+    for (int i = 0; i < vec_adj_mat.size(); i++)
     {
-        cout << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << endl;
-        cout << clf.estimators[i].print(false, true) << endl;
-    }
-
-    vector<vector<int>> adj_mat = extract_adjacency_matrix_from_tree(&clf.estimators[0]);
-    for (int i = 0; i < adj_mat.size(); i++)
-    {
-        for (int j = 0; j < adj_mat.size(); j++)
+        for (int j = 0; j < vec_adj_mat[i].size(); j++)
         {
-            cout << adj_mat[i][j] << " ";
+            for (int k = 0; k < vec_adj_mat[i].size(); k++)
+            {
+                assert(vec_adj_mat[i][j][k] == test_adj_mat[j][k]);
+            }
         }
-        cout << endl;
     }
+
+    vector<vector<int>> test_adj_mat_1 = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 1, 1, 0, 0},
+                                          {1, 0, 0, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 0, 0, 1, 0},
+                                          {0, 1, 0, 0, 0, 1, 0, 0},
+                                          {0, 1, 0, 0, 1, 0, 0, 0},
+                                          {0, 0, 0, 1, 0, 0, 0, 0},
+                                          {1, 0, 1, 0, 0, 0, 0, 0}};
+
+    vector<vector<vector<int>>> vec_adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, 1);
+    for (int i = 0; i < vec_adj_mat_1.size(); i++)
+    {
+        for (int j = 0; j < vec_adj_mat_1[i].size(); j++)
+        {
+            for (int k = 0; k < vec_adj_mat_1[i].size(); k++)
+            {
+                assert(vec_adj_mat_1[i][j][k] == test_adj_mat_1[j][k]);
+            }
+        }
+    }
+
+    cout << "test_secureboost: all passed!" << endl;
 }
