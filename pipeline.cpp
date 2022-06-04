@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     string filepath = argv[1];
     filepath += "/adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf);
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1);
     adj_mat_file << vec_adi_mat.size() << endl;
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
