@@ -2,7 +2,8 @@
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "../secureboost/secureboost.h"
+//#include "../secureboost/secureboost.h"
+#include "../secureboost/attack.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -139,4 +140,20 @@ int main()
         assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
 
     cout << "test_secureboost: all passed!" << endl;
+
+    for (int i = 0; i < clf.estimators.size(); i++)
+    {
+        cout << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << endl;
+        cout << clf.estimators[i].print(false, true) << endl;
+    }
+
+    vector<vector<int>> adj_mat = extract_adjacency_matrix_from_tree(&clf.estimators[0]);
+    for (int i = 0; i < adj_mat.size(); i++)
+    {
+        for (int j = 0; j < adj_mat.size(); j++)
+        {
+            cout << adj_mat[i][j] << " ";
+        }
+        cout << endl;
+    }
 }

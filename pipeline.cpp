@@ -1,8 +1,9 @@
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "secureboost/secureboost.h"
+#include "secureboost/attack.h"
 #include "secureboost/metric.h"
 using namespace std;
 
@@ -19,7 +20,7 @@ const double subsample_cols = 0.8;
 const bool use_missing_value = false;
 const int completelly_secure_round = 0;
 
-int main()
+int main(int argc, char *argv[])
 {
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
@@ -117,4 +118,24 @@ int main()
     vector<double> predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
     cout << "Val AUC: " << roc_auc_score(predict_proba_val, y_true_val) << endl;
+
+    std::ofstream adj_mat_file;
+    string filepath = argv[1];
+    filepath += "/adj_mat.txt";
+    adj_mat_file.open(filepath, std::ios::out);
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf);
+    adj_mat_file << vec_adi_mat.size() << endl;
+    for (int i = 0; i < vec_adi_mat.size(); i++)
+    {
+        adj_mat_file << vec_adi_mat[i].size() << endl;
+        for (int j = 0; j < vec_adi_mat[i].size(); j++)
+        {
+            for (int k = 0; k < vec_adi_mat[i].size(); k++)
+            {
+                adj_mat_file << vec_adi_mat[i][j][k] << " ";
+            }
+            adj_mat_file << endl;
+        }
+    }
+    adj_mat_file.close();
 }
