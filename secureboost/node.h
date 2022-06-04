@@ -657,7 +657,7 @@ struct Node
         return leaf_purity;
     }
 
-    string print(bool show_purity = false, bool binary_color = true, int target_party_id = 1)
+    string print(bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
         pair<string, bool> result = recursive_print("", false, show_purity, binary_color, target_party_id);
         if (result.second)
