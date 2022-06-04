@@ -5,7 +5,7 @@
 using namespace std;
 
 void travase_nodes_to_extract_adjacency_matrix(Node *node,
-                                               vector<vector<int>> *adj_mat)
+                                               vector<vector<int>> &adj_mat)
 {
     if (node->is_leaf())
     {
@@ -13,8 +13,8 @@ void travase_nodes_to_extract_adjacency_matrix(Node *node,
         {
             for (int j = i + 1; j < node->idxs.size(); j++)
             {
-                adj_mat->at(node->idxs[i])[node->idxs[j]] += 1;
-                adj_mat->at(node->idxs[j])[node->idxs[i]] += 1;
+                adj_mat[node->idxs[i]][node->idxs[j]] += 1;
+                adj_mat[node->idxs[j]][node->idxs[i]] += 1;
             }
         }
     }
@@ -29,7 +29,7 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree)
 {
     int num_row = tree->dtree.idxs.size();
     vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
-    travase_nodes_to_extract_adjacency_matrix(&tree->dtree, &adj_mat);
+    travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat);
     return adj_mat;
 }
 
@@ -40,4 +40,5 @@ vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(SecureBoostBase
     {
         result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i]);
     }
+    return result;
 }
