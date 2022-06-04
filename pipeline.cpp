@@ -120,8 +120,9 @@ int main(int argc, char *argv[])
     cout << "Val AUC: " << roc_auc_score(predict_proba_val, y_true_val) << endl;
 
     std::ofstream adj_mat_file;
-    string filepath = argv[1];
-    filepath += "/adj_mat.txt";
+    string folderpath = argv[1];
+    string fileprefix = argv[2];
+    string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
     vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1);
     adj_mat_file << vec_adi_mat.size() << endl;
