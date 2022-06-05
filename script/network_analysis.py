@@ -101,8 +101,9 @@ if __name__ == "__main__":
         print("with community: ", withcom_roc_auc_score)
 
         print("saving a graph ...")
+        plt.style.use("ggplot")
         pos = nx.spring_layout(G)
-        cmap = cm.get_cmap("viridis", max(partition.values()) + 1)
+        cmap = cm.get_cmap("cool", max(partition.values()) + 1)
         nx.draw_networkx(
             G,
             pos,
