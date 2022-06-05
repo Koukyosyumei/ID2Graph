@@ -60,18 +60,17 @@ if __name__ == "__main__":
         )
         with open(path_to_adj_mat_file, mode="r") as f:
             lines = f.readlines()
-            round_num = lines[0]
-            line_idx = 1
-            list_adj_mat = []
-            for i in range(int(round_num)):
-                dim = int(lines[line_idx])
-                line_idx += 1
-                temp_adj_mat = []
-                for j in range(dim):
-                    temp_row = lines[line_idx].split(" ")[:-1]
-                    temp_adj_mat.append(temp_row)
-                    line_idx += 1
-                list_adj_mat.append(np.array(temp_adj_mat).astype(int))
+
+            round_num = int(lines[0])
+            node_num = int(lines[1])
+            adj_mat = np.zeros((node_num, node_num))
+
+            for i in range(round_num):
+                for j in range(node_num):
+                    temp_row = lines[i * node_num + 2 + j].split(" ")[1:-1]
+                    for k in temp_row:
+                        adj_mat[j][int(k)] += 1
+                        adj_mat[int(k)][j] += 1
 
         kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
         baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
@@ -79,7 +78,7 @@ if __name__ == "__main__":
         print("baseline: ", baseline_roc_auc_score)
 
         print("creating a graph ...")
-        G = nx.from_numpy_matrix(sum(list_adj_mat[0:2]))
+        G = nx.from_numpy_matrix(adj_mat)
         partition = community_louvain.best_partition(G)
         com_labels = list(partition.values())
         com_num = len(list(set(com_labels)))
@@ -98,11 +97,13 @@ if __name__ == "__main__":
         withcom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_with_com.labels_)
         withcom_roc_auc_score = max(1 - withcom_roc_auc_score, withcom_roc_auc_score)
         print("with community: ", withcom_roc_auc_score)
-        """
-        cmap = cm.get_cmap("viridis", max(partition.values()) + 1)
+
         print("saving a graph ...")
+        pos = nx.spring_layout(G)
+        cmap = cm.get_cmap("viridis", max(partition.values()) + 1)
         nx.draw_networkx(
             G,
+            pos,
             with_labels=False,
             alpha=0.3,
             node_size=60,
@@ -112,4 +113,3 @@ if __name__ == "__main__":
             node_color=list(partition.values()),
         )
         plt.savefig(path_to_adj_mat_file.split(".")[0] + "_plot.png")
-        """

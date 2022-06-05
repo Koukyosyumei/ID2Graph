@@ -126,14 +126,18 @@ int main(int argc, char *argv[])
     adj_mat_file.open(filepath, std::ios::out);
     vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1);
     adj_mat_file << vec_adi_mat.size() << endl;
+    adj_mat_file << vec_adi_mat[0].size() << endl;
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
-        adj_mat_file << vec_adi_mat[i].size() << endl;
         for (int j = 0; j < vec_adi_mat[i].size(); j++)
         {
-            for (int k = 0; k < vec_adi_mat[i].size(); k++)
+            adj_mat_file << j << " ";
+            for (int k = j + 1; k < vec_adi_mat[i].size(); k++)
             {
-                adj_mat_file << vec_adi_mat[i][j][k] << " ";
+                if (vec_adi_mat[i][j][k] == 1)
+                {
+                    adj_mat_file << k << " ";
+                }
             }
             adj_mat_file << endl;
         }
