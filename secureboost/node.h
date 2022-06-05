@@ -761,7 +761,7 @@ struct Node
         bool skip_flag;
         if (is_leaf())
         {
-            skip_flag = target_party_id != -1 && party_id != target_party_id;
+            skip_flag = depth <= 0 && target_party_id != -1 && party_id != target_party_id;
             if (skip_flag)
             {
                 node_info = "";

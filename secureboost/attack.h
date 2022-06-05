@@ -1,0 +1,69 @@
+#include <iostream>
+#include <limits>
+#include <vector>
+#include "secureboost.h"
+using namespace std;
+
+bool travase_nodes_to_extract_adjacency_matrix(Node *node,
+                                               vector<vector<int>> &adj_mat,
+                                               int target_party_id = -1)
+{
+    bool skip_flag;
+    if (node->is_leaf())
+    {
+        skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
+        if (!skip_flag)
+        {
+            for (int i = 0; i < node->idxs.size(); i++)
+            {
+                for (int j = i + 1; j < node->idxs.size(); j++)
+                {
+                    adj_mat[node->idxs[i]][node->idxs[j]] += 1;
+                    adj_mat[node->idxs[j]][node->idxs[i]] += 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        skip_flag = false;
+        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->left, adj_mat, target_party_id);
+        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->right, adj_mat, target_party_id);
+
+        if (left_skip_flag && right_skip_flag)
+        {
+            for (int i = 0; i < node->idxs.size(); i++)
+            {
+                for (int j = i + 1; j < node->idxs.size(); j++)
+                {
+                    adj_mat[node->idxs[i]][node->idxs[j]] += 1;
+                    adj_mat[node->idxs[j]][node->idxs[i]] += 1;
+                }
+            }
+        }
+    }
+    return skip_flag;
+}
+
+vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1)
+{
+    int num_row = tree->dtree.idxs.size();
+    vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
+    bool skip_flag = travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat, target_party_id);
+    if (skip_flag)
+    {
+        adj_mat = vector<vector<int>>(num_row, vector<int>(num_row, 0));
+    }
+    return adj_mat;
+}
+
+vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
+                                                                 int target_party_id = -1)
+{
+    vector<vector<vector<int>>> result(model->estimators.size());
+    for (int i = 0; i < model->estimators.size(); i++)
+    {
+        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id);
+    }
+    return result;
+}

@@ -2,7 +2,8 @@
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "../secureboost/secureboost.h"
+//#include "../secureboost/secureboost.h"
+#include "../secureboost/attack.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -137,6 +138,48 @@ int main()
                                          0.55699226, 0.79959955};
     for (int i = 0; i < test_predcit_proba.size(); i++)
         assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
+
+    vector<vector<int>> test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                        {0, 0, 0, 0, 0, 0, 0, 0},
+                                        {1, 0, 0, 0, 0, 0, 0, 1},
+                                        {0, 0, 0, 0, 0, 0, 1, 0},
+                                        {0, 0, 0, 0, 0, 1, 0, 0},
+                                        {0, 0, 0, 0, 1, 0, 0, 0},
+                                        {0, 0, 0, 1, 0, 0, 0, 0},
+                                        {1, 0, 1, 0, 0, 0, 0, 0}};
+
+    vector<vector<vector<int>>> vec_adj_mat = extract_adjacency_matrix_from_forest(&clf);
+    for (int i = 0; i < vec_adj_mat.size(); i++)
+    {
+        for (int j = 0; j < vec_adj_mat[i].size(); j++)
+        {
+            for (int k = 0; k < vec_adj_mat[i].size(); k++)
+            {
+                assert(vec_adj_mat[i][j][k] == test_adj_mat[j][k]);
+            }
+        }
+    }
+
+    vector<vector<int>> test_adj_mat_1 = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 1, 1, 0, 0},
+                                          {1, 0, 0, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 0, 0, 1, 0},
+                                          {0, 1, 0, 0, 0, 1, 0, 0},
+                                          {0, 1, 0, 0, 1, 0, 0, 0},
+                                          {0, 0, 0, 1, 0, 0, 0, 0},
+                                          {1, 0, 1, 0, 0, 0, 0, 0}};
+
+    vector<vector<vector<int>>> vec_adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, 1);
+    for (int i = 0; i < vec_adj_mat_1.size(); i++)
+    {
+        for (int j = 0; j < vec_adj_mat_1[i].size(); j++)
+        {
+            for (int k = 0; k < vec_adj_mat_1[i].size(); k++)
+            {
+                assert(vec_adj_mat_1[i][j][k] == test_adj_mat_1[j][k]);
+            }
+        }
+    }
 
     cout << "test_secureboost: all passed!" << endl;
 }
