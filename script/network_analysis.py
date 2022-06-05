@@ -4,6 +4,11 @@ import os
 import networkx as nx
 from matplotlib import pyplot as plt
 import glob
+from sklearn.cluster import KMeans
+from community import community_louvain
+from sklearn import preprocessing
+import matplotlib.cm as cm
+from sklearn import metrics
 
 
 def add_args(parser):
@@ -32,6 +37,21 @@ if __name__ == "__main__":
                 int(first_line[1]),
                 int(first_line[2]),
             )
+
+            start_line_num_of_active_party = 3 + int(lines[1][:-1])
+            X_train = np.array(
+                [
+                    lines[col_idx][:-1].split(" ")
+                    for col_idx in range(
+                        start_line_num_of_active_party,
+                        start_line_num_of_active_party
+                        + int(lines[start_line_num_of_active_party - 1][:-1]),
+                    )
+                ]
+            )
+            min_max_scaler = preprocessing.MinMaxScaler()
+            X_train_minmax = min_max_scaler.fit_transform(X_train.T)
+
             y_train = lines[num_col + num_party + 1].split(" ")
             y_train = [int(y) for y in y_train]
 
@@ -53,7 +73,28 @@ if __name__ == "__main__":
                     line_idx += 1
                 list_adj_mat.append(np.array(temp_adj_mat).astype(int))
 
+        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
+        baseline_roc_auc_score = max(1 - baseline_roc_auc_score, baseline_roc_auc_score)
+        print("baseline: ", baseline_roc_auc_score)
+
+        print("creating a graph ...")
         G = nx.from_numpy_matrix(sum(list_adj_mat[0:2]))
+        partition = community_louvain.best_partition(G)
+        com_labels = list(partition.values())
+        com_num = len(list(set(com_labels)))
+        X_com = np.zeros((X_train.shape[1], com_num))
+        for i, j in enumerate(com_labels):
+            X_com[i, j] = 1
+        kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
+            np.hstack([X_train_minmax, X_com])
+        )
+        withcom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_with_com.labels_)
+        withcom_roc_auc_score = max(1 - withcom_roc_auc_score, withcom_roc_auc_score)
+        print("with community: ", withcom_roc_auc_score)
+        """
+        cmap = cm.get_cmap("viridis", max(partition.values()) + 1)
+        print("saving a graph ...")
         nx.draw_networkx(
             G,
             with_labels=False,
@@ -61,6 +102,8 @@ if __name__ == "__main__":
             node_size=60,
             linewidths=0.1,
             width=0.1,
-            node_color=y_train,
+            cmap=cmap,
+            node_color=list(partition.values()),
         )
         plt.savefig(path_to_adj_mat_file.split(".")[0] + "_plot.png")
+        """
