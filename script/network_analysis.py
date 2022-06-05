@@ -81,6 +81,7 @@ if __name__ == "__main__":
         G = nx.from_numpy_matrix(
             adj_mat, create_using=nx.MultiGraph, parallel_edges=False
         )
+        print("detecting communities ...")
         partition = community_louvain.best_partition(G)
         com_labels = list(partition.values())
         com_num = len(list(set(com_labels)))
