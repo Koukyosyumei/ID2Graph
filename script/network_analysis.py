@@ -78,7 +78,9 @@ if __name__ == "__main__":
         print("baseline: ", baseline_roc_auc_score)
 
         print("creating a graph ...")
-        G = nx.from_numpy_matrix(adj_mat)
+        G = nx.from_numpy_matrix(
+            adj_mat, create_using=nx.MultiGraph, parallel_edges=False
+        )
         partition = community_louvain.best_partition(G)
         com_labels = list(partition.values())
         com_num = len(list(set(com_labels)))
