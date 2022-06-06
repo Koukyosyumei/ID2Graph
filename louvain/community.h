@@ -67,6 +67,8 @@ struct Community
         node2community[node] = comm;
     }
 
+    // calculate the current modularity
+    // Note that each community consists of only ond node due to contraction
     double modularity()
     {
         double q = 0.;
