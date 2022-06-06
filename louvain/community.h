@@ -10,10 +10,12 @@ struct Community
     vector<double> neigh_weight;
     vector<unsigned int> neigh_pos;
     unsigned int neigh_last;
-    Graph g;                // network to compute communities for
-    int size;               // nummber of nodes in the network and size of all vectors
-    vector<int> n2c;        // community to which each node belongs
-    vector<double> in, tot; // used to compute the modularity participation of each community
+    Graph g;                    // network to compute communities for
+    int num_nodes;              // nummber of nodes in the network and num_nodes of all vectors
+    vector<int> node2community; // community to which each node belongs
+    vector<double> in;          // in[c] = total weights within c-th commynity (\sum_{(i, j) \in c} w_(i, j))
+    vector<double> tot;         // tot[c]
+    // used to compute the modularity participation of each community
 
     // number of pass for one level computation
     // if -1, compute as many pass as needed to increase modularity
@@ -27,19 +29,19 @@ struct Community
     Community(Graph gc, int nbp, double minm)
     {
         g = gc;
-        size = g.num_nodes;
+        num_nodes = g.num_nodes;
 
-        neigh_weight.resize(size, -1);
-        neigh_pos.resize(size);
+        neigh_weight.resize(num_nodes, -1);
+        neigh_pos.resize(num_nodes);
         neigh_last = 0;
 
-        n2c.resize(size);
-        in.resize(size);
-        tot.resize(size);
+        node2community.resize(num_nodes);
+        in.resize(num_nodes);
+        tot.resize(num_nodes);
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < num_nodes; i++)
         {
-            n2c[i] = i;
+            node2community[i] = i;
             in[i] = g.get_num_selfloops(i);
             tot[i] = g.get_weighted_degree(i);
         }
@@ -48,41 +50,54 @@ struct Community
         min_modularity = minm;
     }
 
-    // remove the node from its current community with which it has dnodecomm links
-    void remove(int node, int comm, double dnodecomm)
+    // remove the node from its current community with which it has weights_from_node_to_comm links
+    void remove(int node, int comm, double weights_from_node_to_comm)
     {
         tot[comm] -= g.get_weighted_degree(node);
-        in[comm] -= 2 * dnodecomm + g.get_num_selfloops(node);
-        n2c[node] = -1;
+        in[comm] -= 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
+        node2community[node] = -1;
     }
 
-    // insert the node in comm with which it shares dnodecomm links
-    void insert(int node, int comm, double dnodecomm)
+    // insert the node in comm with which it shares weights_from_node_to_comm links
+    void insert(int node, int comm, double weights_from_node_to_comm)
     {
         tot[comm] += g.get_weighted_degree(node);
-        in[comm] += 2 * dnodecomm + g.get_num_selfloops(node);
-        n2c[node] = comm;
+        in[comm] += 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
+        node2community[node] = comm;
+    }
+
+    double modularity()
+    {
+        double q = 0.;
+        double m2 = (double)g.total_weight;
+
+        for (int i = 0; i < num_nodes; i++)
+        {
+            if (tot[i] > 0)
+                q += (double)in[i] / m2 - ((double)tot[i] / m2) * ((double)tot[i] / m2);
+        }
+
+        return q;
     }
 
     // compute the gain of modularity if node where inserted in comm
-    // given that node has dnodecomm links to comm.  The formula is:
+    // given that node has weights_from_node_to_comm links to comm.  The formula is:
     // [(In(comm)+2d(node,comm))/2m - ((tot(comm)+deg(node))/2m)^2]-
     // [In(comm)/2m - (tot(comm)/2m)^2 - (deg(node)/2m)^2]
-    // where In(comm)    = number of half-links strictly inside comm
-    //       Tot(comm)   = number of half-links inside or outside comm (sum(degrees))
-    //       d(node,com) = number of links from node to comm
+    // where In(comm)    = number or total weights of half-links strictly inside comm
+    //       Tot(comm)   = number or total weights of half-links inside or outside comm (sum(degrees))
+    //       d(node,com) = number or total weights of links from node to comm
     //       deg(node)   = node degree
-    //       m           = number of links
-    double modularity_gain(int node, int comm, double dnodecomm, double w_degree)
+    //       m           = number or wegihts of all links
+    double modularity_gain(int node, int comm, double weights_from_node_to_comm, double w_degree)
     {
-        double totc = (double)tot[comm];
-        double degc = (double)w_degree;
-        double m2 = (double)g.total_weight;
-        double dnc = (double)dnodecomm;
-
-        return (dnc - totc * degc / m2);
+        // ignore const (1/2m)
+        return ((double)weights_from_node_to_comm -
+                (double)tot[comm] * (double)w_degree / (double)g.total_weight);
     }
 
+    // compute the set of neighboring communities of node
+    // for each community, gives the number of links from node to comm
     void neigh_comm(unsigned int node)
     {
         for (unsigned int i = 0; i < neigh_last; i++)
@@ -91,16 +106,16 @@ struct Community
 
         pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(node);
 
-        unsigned int deg = g.get_num_neighbors(node);
+        unsigned int degree = g.get_num_neighbors(node);
 
-        neigh_pos[0] = n2c[node];
+        neigh_pos[0] = node2community[node];
         neigh_weight[neigh_pos[0]] = 0;
         neigh_last = 1;
 
-        for (unsigned int i = 0; i < deg; i++)
+        for (unsigned int i = 0; i < degree; i++)
         {
             unsigned int neigh = *(p.first + i);
-            unsigned int neigh_comm = n2c[neigh];
+            unsigned int neigh_comm = node2community[neigh];
             double neigh_w = (g.weights.size() == 0) ? 1. : *(p.second + i);
 
             if (neigh != node)
@@ -115,42 +130,28 @@ struct Community
         }
     }
 
-    double modularity()
-    {
-        double q = 0.;
-        double m2 = (double)g.total_weight;
-
-        for (int i = 0; i < size; i++)
-        {
-            if (tot[i] > 0)
-                q += (double)in[i] / m2 - ((double)tot[i] / m2) * ((double)tot[i] / m2);
-        }
-
-        return q;
-    }
-
     void partition2graph()
     {
-        vector<int> renumber(size, -1);
-        for (int node = 0; node < size; node++)
+        vector<int> renumber(num_nodes, -1);
+        for (int node = 0; node < num_nodes; node++)
         {
-            renumber[n2c[node]]++;
+            renumber[node2community[node]]++;
         }
 
         int final = 0;
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < num_nodes; i++)
             if (renumber[i] != -1)
                 renumber[i] = final++;
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < num_nodes; i++)
         {
             pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(i);
 
-            int deg = g.get_num_neighbors(i);
-            for (int j = 0; j < deg; j++)
+            int degree = g.get_num_neighbors(i);
+            for (int j = 0; j < degree; j++)
             {
                 int neigh = *(p.first + j);
-                cout << renumber[n2c[i]] << " " << renumber[n2c[neigh]] << endl;
+                cout << renumber[node2community[i]] << " " << renumber[node2community[neigh]] << endl;
             }
         }
     }
@@ -158,14 +159,14 @@ struct Community
     Graph partition2graph_binary()
     {
         // Renumber communities
-        vector<int> renumber(size, -1);
-        for (int node = 0; node < size; node++)
+        vector<int> renumber(num_nodes, -1);
+        for (int node = 0; node < num_nodes; node++)
         {
-            renumber[n2c[node]]++;
+            renumber[node2community[node]]++;
         }
 
         int final = 0;
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < num_nodes; i++)
             if (renumber[i] != -1)
                 renumber[i] = final++;
 
@@ -173,12 +174,12 @@ struct Community
         vector<vector<int>> comm_nodes(final);
         vector<vector<int>> communities(final);
         // printf("%s %d \n", __FILE__, __LINE__);
-        for (int node = 0; node < size; node++)
+        for (int node = 0; node < num_nodes; node++)
         {
             // TODO add node handling
-            vector<int> &comm = communities[renumber[n2c[node]]];
+            vector<int> &comm = communities[renumber[node2community[node]]];
             comm.insert(comm.end(), g.nodes[node].begin(), g.nodes[node].end());
-            comm_nodes[renumber[n2c[node]]].push_back(node);
+            comm_nodes[renumber[node2community[node]]].push_back(node);
         }
 
         Graph g2(communities);
@@ -196,11 +197,11 @@ struct Community
             for (int node = 0; node < comm_size; node++)
             {
                 pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(comm_nodes[comm][node]);
-                int deg = g.get_num_neighbors(comm_nodes[comm][node]);
-                for (int i = 0; i < deg; i++)
+                int degree = g.get_num_neighbors(comm_nodes[comm][node]);
+                for (int i = 0; i < degree; i++)
                 {
                     int neigh = *(p.first + i);
-                    int neigh_comm = renumber[n2c[neigh]];
+                    int neigh_comm = renumber[node2community[neigh]];
                     double neigh_weight = (g.weights.size() == 0) ? 1. : *(p.second + i);
 
                     it = m.find(neigh_comm);
@@ -232,12 +233,12 @@ struct Community
         double new_mod = modularity();
         double cur_mod = new_mod;
 
-        vector<int> random_order(size);
-        for (int i = 0; i < size; i++)
+        vector<int> random_order(num_nodes);
+        for (int i = 0; i < num_nodes; i++)
             random_order[i] = i;
-        for (int i = 0; i < size - 1; i++)
+        for (int i = 0; i < num_nodes - 1; i++)
         {
-            int rand_pos = rand() % (size - i) + i;
+            int rand_pos = rand() % (num_nodes - i) + i;
             int tmp = random_order[i];
             random_order[i] = random_order[rand_pos];
             random_order[rand_pos] = tmp;
@@ -254,11 +255,11 @@ struct Community
             nb_pass_done++;
 
             // for each node: remove the node from its community and insert it in the best community
-            for (int node_tmp = 0; node_tmp < size; node_tmp++)
+            for (int node_tmp = 0; node_tmp < num_nodes; node_tmp++)
             {
                 //      int node = node_tmp;
                 int node = random_order[node_tmp];
-                int node_comm = n2c[node];
+                int node_comm = node2community[node];
                 double w_degree = g.get_weighted_degree(node);
 
                 // computation of all neighboring communities of current node
