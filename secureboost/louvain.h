@@ -17,10 +17,33 @@ struct Graph
     vector<unsigned int> links;
     vector<float> weights; // TODO check if `double` works or not
 
-    Graph();
-    Graph(vector<vector<int>> &c_nodes);
-    Graph(int nb_nodes, int nb_links, double total_weight,
-          int *degrees, int *links, float *weights);
+    Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
+          vector<unsigned int> &links_, vector<float> &weights_)
+    {
+        num_nodes = num_nodes_;
+        degrees = degrees_;
+        links = links_;
+        weights = weights_;
+
+        // initilize first graph without contraction
+        for (unsigned int i = 0; i < num_nodes; i++)
+        {
+            vector<int> n;
+            n.push_back(i);
+            nodes.push_back(n);
+        }
+
+        // compute total weight
+        for (unsigned int i = 0; i < num_nodes; i++)
+        {
+            total_weight += (double)get_weighted_degree(i);
+        }
+    }
+
+    void add_nose(vector<int> &n)
+    {
+        nodes.push_back(n);
+    }
 
     // return pointers to the first neighbor and weight of the node
     pair<vector<unsigned int>::iterator, vector<float>::iterator> get_neighbors(unsigned int node)
@@ -74,7 +97,7 @@ struct Graph
     }
 
     // retrn the weighed degree of the node
-    double weighted_degree(unsigned int node)
+    double get_weighted_degree(unsigned int node)
     {
         if (weights.size() == 0)
         {
