@@ -12,7 +12,7 @@ struct Louvain
     int ndp;
     int verbose;
 
-    Community c;
+    Community community;
     Graph g;
 
     Louvain(int max_itr_ = 1000, double precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
@@ -28,15 +28,15 @@ struct Louvain
         bool improvement = true;
 
         g = gc;
-        c = Community(gc, ndp, precision);
-        double mod = c.modularity(), new_mod;
+        community = Community(gc, ndp, precision);
+        double mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
         {
-            improvement = c.one_level();
-            new_mod = c.modularity();
-            g = c.partition2graph_binary();
-            c = Community(g, -1, precision);
+            improvement = community.one_level();
+            new_mod = community.modularity();
+            g = community.partition2graph_binary();
+            community = Community(g, -1, precision);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)
