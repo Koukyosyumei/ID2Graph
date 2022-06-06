@@ -26,6 +26,7 @@ struct Community
     // if 0. even a minor increase is enough to go for one more pass
     double min_modularity;
 
+    Community(){};
     Community(Graph gc, int nbp, double minm)
     {
         g = gc;
