@@ -16,8 +16,8 @@ struct Graph
     vector<unsigned int> links;
     vector<float> weights; // TODO check if `double` works or not
 
-    Graph();
-    Graph::Graph(vector<vector<int>> &node2original_records)
+    Graph(){};
+    Graph(vector<vector<int>> &node2original_records)
     {
         num_nodes = 0;
         num_links = 0;
@@ -57,7 +57,7 @@ struct Graph
         nodes.push_back(n);
     }
 
-    // return pointers to the first neighbor and weight of the node
+    // return pointers to the first neighbor and weight of the edge between the node and the neighbor
     pair<vector<unsigned int>::iterator, vector<float>::iterator> get_neighbors(unsigned int node)
     {
         if (node == 0)
