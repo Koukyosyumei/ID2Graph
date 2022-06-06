@@ -54,4 +54,6 @@ int main()
     {
         assert(c.neigh_weight[i] == test_neigh_weight[i]);
     }
+
+    cout << "test_louvain: all passed!" << endl;
 }
