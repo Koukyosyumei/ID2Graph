@@ -98,25 +98,24 @@ struct Community
 
     // compute the set of neighboring communities of node
     // for each community, gives the number of links from node to comm
-    void neigh_comm(unsigned int node)
+    void compute_neigh_comms(unsigned int node)
     {
+        // initialize neigh_weight up to the previous neigh_last
         for (unsigned int i = 0; i < neigh_last; i++)
             neigh_weight[neigh_pos[i]] = -1;
         neigh_last = 0;
 
-        pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(node);
-
         unsigned int degree = g.get_num_neighbors(node);
-
         neigh_pos[0] = node2community[node];
         neigh_weight[neigh_pos[0]] = 0;
         neigh_last = 1;
 
+        pair<vector<unsigned int>::iterator, vector<float>::iterator> pointer2neigh_weight = g.get_neighbors(node);
         for (unsigned int i = 0; i < degree; i++)
         {
-            unsigned int neigh = *(p.first + i);
+            unsigned int neigh = *(pointer2neigh_weight.first + i);
             unsigned int neigh_comm = node2community[neigh];
-            double neigh_w = (g.weights.size() == 0) ? 1. : *(p.second + i);
+            double neigh_w = (g.weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
 
             if (neigh != node)
             {
@@ -130,74 +129,52 @@ struct Community
         }
     }
 
-    void partition2graph()
-    {
-        vector<int> renumber(num_nodes, -1);
-        for (int node = 0; node < num_nodes; node++)
-        {
-            renumber[node2community[node]]++;
-        }
-
-        int final = 0;
-        for (int i = 0; i < num_nodes; i++)
-            if (renumber[i] != -1)
-                renumber[i] = final++;
-
-        for (int i = 0; i < num_nodes; i++)
-        {
-            pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(i);
-
-            int degree = g.get_num_neighbors(i);
-            for (int j = 0; j < degree; j++)
-            {
-                int neigh = *(p.first + j);
-                cout << renumber[node2community[i]] << " " << renumber[node2community[neigh]] << endl;
-            }
-        }
-    }
-
     Graph partition2graph_binary()
     {
         // Renumber communities
+        // renumber[c] = the new index of the community whose current index is `c`
         vector<int> renumber(num_nodes, -1);
+
+        // calculate the size of each community
         for (int node = 0; node < num_nodes; node++)
         {
             renumber[node2community[node]]++;
         }
 
+        // increment `final` if c-th commynity has one or more nodes (renumber[c] != -1)
         int final = 0;
         for (int i = 0; i < num_nodes; i++)
             if (renumber[i] != -1)
                 renumber[i] = final++;
 
         // Compute communities
-        vector<vector<int>> comm_nodes(final);
-        vector<vector<int>> communities(final);
-        // printf("%s %d \n", __FILE__, __LINE__);
+        vector<vector<int>> comm2nodes(final);  // community id to current node idx
+        vector<vector<int>> communities(final); // current node idx to original data records
         for (int node = 0; node < num_nodes; node++)
         {
             // TODO add node handling
             vector<int> &comm = communities[renumber[node2community[node]]];
             comm.insert(comm.end(), g.nodes[node].begin(), g.nodes[node].end());
-            comm_nodes[renumber[node2community[node]]].push_back(node);
+            comm2nodes[renumber[node2community[node]]].push_back(node);
         }
 
         Graph g2(communities);
 
-        g2.num_nodes = comm_nodes.size();
-        g2.degrees.resize(comm_nodes.size());
+        // the size of contracted graph is equal to the number of communities
+        g2.num_nodes = comm2nodes.size();
+        g2.degrees.resize(comm2nodes.size());
 
-        int comm_deg = comm_nodes.size();
+        int comm_deg = comm2nodes.size();
         for (int comm = 0; comm < comm_deg; comm++)
         {
             map<int, float> m;
             map<int, float>::iterator it;
 
-            int comm_size = comm_nodes[comm].size();
+            int comm_size = comm2nodes[comm].size();
             for (int node = 0; node < comm_size; node++)
             {
-                pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(comm_nodes[comm][node]);
-                int degree = g.get_num_neighbors(comm_nodes[comm][node]);
+                pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(comm2nodes[comm][node]);
+                int degree = g.get_num_neighbors(comm2nodes[comm][node]);
                 for (int i = 0; i < degree; i++)
                 {
                     int neigh = *(p.first + i);
@@ -263,7 +240,7 @@ struct Community
                 double w_degree = g.get_weighted_degree(node);
 
                 // computation of all neighboring communities of current node
-                neigh_comm(node);
+                compute_neigh_comms(node);
                 // remove node from its current community
                 remove(node, node_comm, neigh_weight[node_comm]);
 
