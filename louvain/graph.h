@@ -13,21 +13,21 @@ struct Graph
     // cumulative degree for each node, deg(0) = degrees[0]
     // deg(k) = degrees[k] - degrees[k-1]
     vector<unsigned long> degrees;
-    vector<vector<int>> nodes;
+    vector<vector<int>> nodes; // current node idx to original record idxs
     vector<unsigned int> links;
     vector<float> weights; // TODO check if `double` works or not
 
     Graph();
-    Graph::Graph(vector<vector<int>> &c_nodes)
+    Graph::Graph(vector<vector<int>> &node2original_records)
     {
         num_nodes = 0;
         num_links = 0;
         total_weight = 0;
 
-        nodes.reserve(c_nodes.size());
-        for (size_t i = 0; i < c_nodes.size(); i++)
+        nodes.reserve(node2original_records.size());
+        for (size_t i = 0; i < node2original_records.size(); i++)
         {
-            nodes.push_back(c_nodes[i]);
+            nodes.push_back(node2original_records[i]);
         }
     }
     Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
