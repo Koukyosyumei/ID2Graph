@@ -2,6 +2,7 @@
 #include <fstream>
 #include <limits>
 #include <vector>
+#include <numeric>
 #include <cassert>
 #include "secureboost/attack.h"
 #include "secureboost/metric.h"
@@ -131,7 +132,10 @@ int main(int argc, char *argv[])
     {
         for (int j = 0; j < vec_adi_mat[i].size(); j++)
         {
-            adj_mat_file << j << " ";
+            // adj_mat_file << j << " ";
+            adj_mat_file << accumulate(vec_adi_mat[i][j].begin() + j + 1,
+                                       vec_adi_mat[i][j].end(), 0)
+                         << " ";
             for (int k = j + 1; k < vec_adi_mat[i].size(); k++)
             {
                 if (vec_adi_mat[i][j][k] == 1)
