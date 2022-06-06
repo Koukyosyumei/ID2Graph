@@ -7,18 +7,20 @@ using namespace std;
 
 struct Louvain
 {
+    int max_itr;
     double precision;
     int ndp;
-    int max_itr;
+    int verbose;
 
     Community c;
     Graph g;
 
-    Louvain(int max_itr_ = 1000, double precision_ = 0.000001, int ndp_ = -1)
+    Louvain(int max_itr_ = 1000, double precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
     {
         max_itr = max_itr_;
         precision = precision_;
         ndp = ndp_;
+        verbose = verbose_;
     }
 
     void fit(Graph gc)
@@ -36,6 +38,12 @@ struct Louvain
             g = c.partition2graph_binary();
             c = Community(g, -1, precision);
             mod = new_mod;
+
+            if (verbose > 0 && i % verbose == 0)
+            {
+                cout << i << ": " << mod << endl;
+            }
+
             if (!improvement)
             {
                 break;
