@@ -17,6 +17,19 @@ struct Graph
     vector<unsigned int> links;
     vector<float> weights; // TODO check if `double` works or not
 
+    Graph();
+    Graph::Graph(vector<vector<int>> &c_nodes)
+    {
+        num_nodes = 0;
+        num_links = 0;
+        total_weight = 0;
+
+        nodes.reserve(c_nodes.size());
+        for (size_t i = 0; i < c_nodes.size(); i++)
+        {
+            nodes.push_back(c_nodes[i]);
+        }
+    }
     Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
           vector<unsigned int> &links_, vector<float> &weights_)
     {
