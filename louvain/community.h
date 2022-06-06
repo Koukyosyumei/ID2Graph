@@ -119,7 +119,6 @@ struct Community
             unsigned int neigh = *(pointer2neigh_weight.first + i);
             unsigned int neigh_comm = node2community[neigh];
             double neigh_w = (g.weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
-
             if (neigh != node)
             {
                 if (neigh_weight[neigh_comm] == -1)
@@ -182,13 +181,13 @@ struct Community
                 {
                     int neigh = *(p.first + i);
                     int neigh_comm = renumber[node2community[neigh]];
-                    double neigh_weight = (g.weights.size() == 0) ? 1. : *(p.second + i);
+                    double neigh_weight_i = (g.weights.size() == 0) ? 1. : *(p.second + i);
 
                     it = m.find(neigh_comm);
                     if (it == m.end())
-                        m.insert(make_pair(neigh_comm, neigh_weight));
+                        m.insert(make_pair(neigh_comm, neigh_weight_i));
                     else
-                        it->second += neigh_weight;
+                        it->second += neigh_weight_i;
                 }
             }
             g2.degrees[comm] = (comm == 0) ? m.size() : g2.degrees[comm - 1] + m.size();
