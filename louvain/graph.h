@@ -5,7 +5,6 @@ using namespace std;
 
 struct Graph
 {
-    vector<int> actual_nodes;
     unsigned long num_nodes;
     unsigned long num_links;
     double total_weight;
