@@ -125,22 +125,21 @@ int main(int argc, char *argv[])
     string fileprefix = argv[2];
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1);
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, true);
     adj_mat_file << vec_adi_mat.size() << endl;
     adj_mat_file << vec_adi_mat[0].size() << endl;
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
         for (int j = 0; j < vec_adi_mat[i].size(); j++)
         {
-            // adj_mat_file << j << " ";
-            adj_mat_file << accumulate(vec_adi_mat[i][j].begin() + j + 1,
-                                       vec_adi_mat[i][j].end(), 0)
+            adj_mat_file << count_if(vec_adi_mat[i][j].begin() + j + 1, vec_adi_mat[i][j].end(), [](int x)
+                                     { return x != 0; })
                          << " ";
             for (int k = j + 1; k < vec_adi_mat[i].size(); k++)
             {
-                if (vec_adi_mat[i][j][k] == 1)
+                if (vec_adi_mat[i][j][k] != 0)
                 {
-                    adj_mat_file << k << " ";
+                    adj_mat_file << k << " " << vec_adi_mat[i][j][k] << " ";
                 }
             }
             adj_mat_file << endl;

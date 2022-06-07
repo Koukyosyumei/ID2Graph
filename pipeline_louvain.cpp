@@ -9,21 +9,21 @@ using namespace std;
 
 int main()
 {
-    int round_num, node_num, adj_num, temp_adj_idx;
+    int round_num, node_num, temp_adj_num, temp_adj_idx, temp_adj_weight;
     cin >> round_num >> node_num;
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i >= 0)
+        if (i <= 0)
         {
             for (int j = 0; j < node_num; j++)
             {
-                cin >> adj_num;
-                for (int k = 0; k < adj_num; k++)
+                cin >> temp_adj_num;
+                for (int k = 0; k < temp_adj_num; k++)
                 {
-                    cin >> temp_adj_idx;
-                    adj_matrix[j][temp_adj_idx] += 1;
-                    adj_matrix[temp_adj_idx][j] += 1;
+                    cin >> temp_adj_idx >> temp_adj_weight;
+                    adj_matrix[j][temp_adj_idx] += temp_adj_weight;
+                    adj_matrix[temp_adj_idx][j] += temp_adj_weight;
                 }
             }
         }
