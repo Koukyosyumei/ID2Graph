@@ -14,7 +14,7 @@ int main()
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i < 1)
+        if (i >= 0)
         {
             for (int j = 0; j < node_num; j++)
             {
