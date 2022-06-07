@@ -55,6 +55,11 @@ if __name__ == "__main__":
             y_train = lines[num_col + num_party + 1].split(" ")
             y_train = [int(y) for y in y_train]
 
+        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
+        baseline_roc_auc_score = max(1 - baseline_roc_auc_score, baseline_roc_auc_score)
+        print("baseline: ", baseline_roc_auc_score)
+
         path_to_adj_mat_file = os.path.join(
             parsed_args.path_to_dir, f"{round_idx}_adj_mat.txt"
         )
@@ -71,11 +76,6 @@ if __name__ == "__main__":
                     for k in temp_row:
                         adj_mat[j][int(k)] += 1
                         adj_mat[int(k)][j] += 1
-
-        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
-        baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
-        baseline_roc_auc_score = max(1 - baseline_roc_auc_score, baseline_roc_auc_score)
-        print("baseline: ", baseline_roc_auc_score)
 
         print("creating a graph ...")
         G = nx.from_numpy_matrix(
