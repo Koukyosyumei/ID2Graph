@@ -52,9 +52,11 @@ if __name__ == "__main__":
             y_train = [int(y) for y in y_train]
 
         kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
-        baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
-        baseline_roc_auc_score = max(1 - baseline_roc_auc_score, baseline_roc_auc_score)
-        print("baseline: ", baseline_roc_auc_score)
+        baseline_f1 = max(
+            metrics.f1_score(y_train, kmeans.labels_),
+            metrics.f1_score(y_train, 1 - kmeans.labels_),
+        )
+        print("baseline: ", baseline_f1)
 
         path_to_adj_mat_file = os.path.join(
             parsed_args.path_to_dir, f"{round_idx}_communities.out"
@@ -70,14 +72,11 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k), i] += 1
 
-        kmeans_only_com = KMeans(n_clusters=2, random_state=0).fit(X_com)
-        onlycom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_only_com.labels_)
-        onlycom_roc_auc_score = max(1 - onlycom_roc_auc_score, onlycom_roc_auc_score)
-        print("only community: ", onlycom_roc_auc_score)
-
         kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
             np.hstack([X_train_minmax, X_com])
         )
-        withcom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_with_com.labels_)
-        withcom_roc_auc_score = max(1 - withcom_roc_auc_score, withcom_roc_auc_score)
-        print("with community: ", withcom_roc_auc_score)
+        with_com_f1 = max(
+            metrics.f1_score(y_train, kmeans_with_com.labels_),
+            metrics.f1_score(y_train, 1 - kmeans_with_com.labels_),
+        )
+        print("with community: ", with_com_f1)
