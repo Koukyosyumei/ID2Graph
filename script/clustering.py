@@ -70,11 +70,6 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k), i] += 1
 
-        kmeans_only_com = KMeans(n_clusters=2, random_state=0).fit(X_com)
-        onlycom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_only_com.labels_)
-        onlycom_roc_auc_score = max(1 - onlycom_roc_auc_score, onlycom_roc_auc_score)
-        print("only community: ", onlycom_roc_auc_score)
-
         kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
             np.hstack([X_train_minmax, X_com])
         )
