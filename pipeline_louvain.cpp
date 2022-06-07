@@ -14,14 +14,17 @@ int main()
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        for (int j = 0; j < node_num; j++)
+        if (i < 1)
         {
-            cin >> adj_num;
-            for (int k = 0; k < adj_num; k++)
+            for (int j = 0; j < node_num; j++)
             {
-                cin >> temp_adj_idx;
-                adj_matrix[j][temp_adj_idx] += 1;
-                adj_matrix[temp_adj_idx][j] += 1;
+                cin >> adj_num;
+                for (int k = 0; k < adj_num; k++)
+                {
+                    cin >> temp_adj_idx;
+                    adj_matrix[j][temp_adj_idx] += 1;
+                    adj_matrix[temp_adj_idx][j] += 1;
+                }
             }
         }
     }
