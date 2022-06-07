@@ -1,0 +1,83 @@
+import numpy as np
+import argparse
+import os
+import glob
+from sklearn.cluster import KMeans
+from sklearn import preprocessing
+from sklearn import metrics
+
+
+def add_args(parser):
+    parser.add_argument(
+        "-p",
+        "--path_to_dir",
+        type=str,
+    )
+
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parsed_args = add_args(parser)
+    list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
+
+    for path_to_input_file in list_input_files:
+        round_idx = path_to_input_file.split("_")[-1].split(".")[0]
+        with open(path_to_input_file, mode="r") as f:
+            lines = f.readlines()
+            first_line = lines[0].split(" ")
+            num_row, num_col, num_party = (
+                int(first_line[0]),
+                int(first_line[1]),
+                int(first_line[2]),
+            )
+
+            start_line_num_of_active_party = 3 + int(lines[1][:-1])
+            X_train = np.array(
+                [
+                    lines[col_idx][:-1].split(" ")
+                    for col_idx in range(
+                        start_line_num_of_active_party,
+                        start_line_num_of_active_party
+                        + int(lines[start_line_num_of_active_party - 1][:-1]),
+                    )
+                ]
+            )
+            min_max_scaler = preprocessing.MinMaxScaler()
+            X_train_minmax = min_max_scaler.fit_transform(X_train.T)
+
+            y_train = lines[num_col + num_party + 1].split(" ")
+            y_train = [int(y) for y in y_train]
+
+        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        baseline_roc_auc_score = metrics.roc_auc_score(y_train, kmeans.labels_)
+        baseline_roc_auc_score = max(1 - baseline_roc_auc_score, baseline_roc_auc_score)
+        print("baseline: ", baseline_roc_auc_score)
+
+        path_to_adj_mat_file = os.path.join(
+            parsed_args.path_to_dir, f"{round_idx}_communities.out"
+        )
+        with open(path_to_adj_mat_file, mode="r") as f:
+            lines = f.readlines()
+            comm_num = int(lines[0])
+            node_num = int(lines[1])
+            X_com = np.zeros((node_num, comm_num))
+
+            for i in range(comm_num):
+                temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
+                for k in temp_nodes_in_comm:
+                    X_com[int(k), i] += 1
+
+        kmeans_only_com = KMeans(n_clusters=2, random_state=0).fit(X_com)
+        onlycom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_only_com.labels_)
+        onlycom_roc_auc_score = max(1 - onlycom_roc_auc_score, onlycom_roc_auc_score)
+        print("only community: ", onlycom_roc_auc_score)
+
+        kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
+            np.hstack([X_train_minmax, X_com])
+        )
+        withcom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_with_com.labels_)
+        withcom_roc_auc_score = max(1 - withcom_roc_auc_score, withcom_roc_auc_score)
+        print("with community: ", withcom_roc_auc_score)
