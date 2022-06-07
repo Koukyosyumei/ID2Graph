@@ -51,6 +51,7 @@ int main()
     Louvain louvain = Louvain();
     louvain.fit(g);
 
+    cout << louvain.g.nodes.size() << endl;
     for (int i = 0; i < louvain.g.nodes.size(); i++)
     {
         for (int j = 0; j < louvain.g.nodes[i].size(); j++)
