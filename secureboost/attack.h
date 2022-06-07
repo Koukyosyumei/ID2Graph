@@ -4,6 +4,35 @@
 #include "secureboost.h"
 using namespace std;
 
+bool travase_nodes_to_extract_weighted_adjacency_matrix(Node *node,
+                                                        int max_depth,
+                                                        vector<vector<int>> &adj_mat,
+                                                        int target_party_id = -1)
+{
+    bool skip_flag = false;
+    if (node->is_leaf())
+    {
+        skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
+    }
+    else
+    {
+        travase_nodes_to_extract_weighted_adjacency_matrix(node->left, max_depth, adj_mat, target_party_id);
+        travase_nodes_to_extract_weighted_adjacency_matrix(node->right, max_depth, adj_mat, target_party_id);
+    }
+    if (!skip_flag)
+    {
+        for (int i = 0; i < node->idxs.size(); i++)
+        {
+            for (int j = i + 1; j < node->idxs.size(); j++)
+            {
+                adj_mat[node->idxs[i]][node->idxs[j]] += (max_depth - node->depth);
+                adj_mat[node->idxs[j]][node->idxs[i]] += (max_depth - node->depth);
+            }
+        }
+    }
+    return skip_flag;
+}
+
 bool travase_nodes_to_extract_adjacency_matrix(Node *node,
                                                vector<vector<int>> &adj_mat,
                                                int target_party_id = -1)
@@ -45,11 +74,20 @@ bool travase_nodes_to_extract_adjacency_matrix(Node *node,
     return skip_flag;
 }
 
-vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1)
+vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
+                                                       bool is_weighted = true)
 {
     int num_row = tree->dtree.idxs.size();
     vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
-    bool skip_flag = travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat, target_party_id);
+    bool skip_flag;
+    if (is_weighted)
+    {
+        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+    }
+    else
+    {
+        skip_flag = travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat, target_party_id);
+    }
     if (skip_flag)
     {
         adj_mat = vector<vector<int>>(num_row, vector<int>(num_row, 0));
@@ -58,12 +96,13 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
 }
 
 vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
-                                                                 int target_party_id = -1)
+                                                                 int target_party_id = -1,
+                                                                 bool is_weighted = true)
 {
     vector<vector<vector<int>>> result(model->estimators.size());
     for (int i = 0; i < model->estimators.size(); i++)
     {
-        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id);
+        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
     }
     return result;
 }

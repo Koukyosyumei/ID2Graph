@@ -31,10 +31,11 @@ int main(int argc, char *argv[])
     vector<double> y_train(num_row_train);
     vector<Party> parties(num_party);
 
-    cout << "Loading datasets ..." << endl;
+    cout << "Loading datasets ..."
+         << "\n";
     cout << "train size is " << num_row_train
          << ", column size is " << num_col
-         << ", party size is  " << num_party << endl;
+         << ", party size is  " << num_party << "\n";
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
         cin >> y_train[j];
 
     cin >> num_row_val;
-    cout << num_row_val << endl;
+    cout << num_row_val << "\n";
     vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
     vector<double> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
     for (int j = 0; j < num_row_val; j++)
         cin >> y_val[j];
 
-    cout << "num of nan is " << num_nan_cell << endl;
+    cout << "num of nan is " << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
     SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
@@ -93,57 +94,58 @@ int main(int argc, char *argv[])
                                                       0, completelly_secure_round,
                                                       0.5, true);
 
-    cout << "Training ..." << endl;
+    cout << "Training ..."
+         << "\n";
     clf.fit(parties, y_train);
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
-        cout << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << endl;
-        cout << clf.estimators[i].print(true, true) << endl;
+        cout << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
+        cout << clf.estimators[i].print(true, true) << "\n";
     }
 
     for (int p = 0; p < num_party; p++)
     {
-        cout << "lookup talbe of party_id = " << p << endl;
+        cout << "lookup talbe of party_id = " << p << "\n";
         for (int i = 0; i < parties[p].lookup_table.size(); i++)
             cout << i << ": " << get<0>(parties[p].lookup_table.at(i)) << ", "
                  << get<1>(parties[p].lookup_table.at(i)) << ", "
-                 << get<2>(parties[p].lookup_table.at(i)) << endl;
-        cout << endl;
+                 << get<2>(parties[p].lookup_table.at(i)) << "\n";
+        cout << "\n";
     }
 
-    cout << "Evaluating ..." << endl;
+    cout << "Evaluating ..."
+         << "\n";
     vector<double> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    cout << "Train AUC: " << roc_auc_score(predict_proba_train, y_true_train) << endl;
+    cout << "Train AUC: " << roc_auc_score(predict_proba_train, y_true_train) << "\n";
     vector<double> predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    cout << "Val AUC: " << roc_auc_score(predict_proba_val, y_true_val) << endl;
+    cout << "Val AUC: " << roc_auc_score(predict_proba_val, y_true_val) << "\n";
 
     std::ofstream adj_mat_file;
     string folderpath = argv[1];
     string fileprefix = argv[2];
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1);
-    adj_mat_file << vec_adi_mat.size() << endl;
-    adj_mat_file << vec_adi_mat[0].size() << endl;
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, true);
+    adj_mat_file << vec_adi_mat.size() << "\n";
+    adj_mat_file << vec_adi_mat[0].size() << "\n";
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
         for (int j = 0; j < vec_adi_mat[i].size(); j++)
         {
-            // adj_mat_file << j << " ";
-            adj_mat_file << accumulate(vec_adi_mat[i][j].begin() + j + 1,
-                                       vec_adi_mat[i][j].end(), 0)
+            adj_mat_file << count_if(vec_adi_mat[i][j].begin() + j + 1, vec_adi_mat[i][j].end(), [](int x)
+                                     { return x != 0; })
                          << " ";
             for (int k = j + 1; k < vec_adi_mat[i].size(); k++)
             {
-                if (vec_adi_mat[i][j][k] == 1)
+                if (vec_adi_mat[i][j][k] != 0)
                 {
-                    adj_mat_file << k << " ";
+                    adj_mat_file << k << " " << vec_adi_mat[i][j][k] << " ";
                 }
             }
-            adj_mat_file << endl;
+            adj_mat_file << "\n";
         }
     }
     adj_mat_file.close();
