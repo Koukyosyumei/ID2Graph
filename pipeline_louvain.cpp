@@ -3,18 +3,22 @@
 #include <limits>
 #include <vector>
 #include <numeric>
+#include <cmath>
 #include <cassert>
 #include "louvain/louvain.h"
 using namespace std;
 
+const float eta = 0.4;
+
 int main()
 {
-    int round_num, node_num, temp_adj_num, temp_adj_idx, temp_adj_weight;
+    int round_num, node_num, temp_adj_num, temp_adj_idx;
+    float temp_adj_weight;
     cin >> round_num >> node_num;
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i <= 0)
+        if (i <= 5)
         {
             for (int j = 0; j < node_num; j++)
             {
@@ -22,8 +26,8 @@ int main()
                 for (int k = 0; k < temp_adj_num; k++)
                 {
                     cin >> temp_adj_idx >> temp_adj_weight;
-                    adj_matrix[j][temp_adj_idx] += temp_adj_weight;
-                    adj_matrix[temp_adj_idx][j] += temp_adj_weight;
+                    adj_matrix[j][temp_adj_idx] += pow(eta, float(i)) * temp_adj_weight;
+                    adj_matrix[temp_adj_idx][j] += pow(eta, float(i)) * temp_adj_weight;
                 }
             }
         }
