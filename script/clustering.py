@@ -1,13 +1,9 @@
 import numpy as np
 import argparse
 import os
-import networkx as nx
-from matplotlib import pyplot as plt
 import glob
 from sklearn.cluster import KMeans
-from community import community_louvain
 from sklearn import preprocessing
-import matplotlib.cm as cm
 from sklearn import metrics
 
 
@@ -26,7 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
     list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
-    print(list_input_files)
+
     for path_to_input_file in list_input_files:
         round_idx = path_to_input_file.split("_")[-1].split(".")[0]
         with open(path_to_input_file, mode="r") as f:
@@ -61,33 +57,18 @@ if __name__ == "__main__":
         print("baseline: ", baseline_roc_auc_score)
 
         path_to_adj_mat_file = os.path.join(
-            parsed_args.path_to_dir, f"{round_idx}_adj_mat.txt"
+            parsed_args.path_to_dir, f"{round_idx}_communities.out"
         )
         with open(path_to_adj_mat_file, mode="r") as f:
             lines = f.readlines()
-
-            round_num = int(lines[0])
+            comm_num = int(lines[0])
             node_num = int(lines[1])
-            adj_mat = np.zeros((node_num, node_num))
+            X_com = np.zeros((node_num, comm_num))
 
-            for i in range(round_num):
-                for j in range(node_num):
-                    temp_row = lines[i * node_num + 2 + j].split(" ")[1:-1]
-                    for k in temp_row:
-                        adj_mat[j][int(k)] += 1
-                        adj_mat[int(k)][j] += 1
-
-        print("creating a graph ...")
-        G = nx.from_numpy_matrix(
-            adj_mat, create_using=nx.MultiGraph, parallel_edges=False
-        )
-        print("detecting communities ...")
-        partition = community_louvain.best_partition(G)
-        com_labels = list(partition.values())
-        com_num = len(list(set(com_labels)))
-        X_com = np.zeros((X_train.shape[1], com_num))
-        for i, j in enumerate(com_labels):
-            X_com[i, j] = 1
+            for i in range(comm_num):
+                temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
+                for k in temp_nodes_in_comm:
+                    X_com[int(k), i] += 1
 
         kmeans_only_com = KMeans(n_clusters=2, random_state=0).fit(X_com)
         onlycom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_only_com.labels_)
@@ -100,20 +81,3 @@ if __name__ == "__main__":
         withcom_roc_auc_score = metrics.roc_auc_score(y_train, kmeans_with_com.labels_)
         withcom_roc_auc_score = max(1 - withcom_roc_auc_score, withcom_roc_auc_score)
         print("with community: ", withcom_roc_auc_score)
-
-        print("saving a graph ...")
-        plt.style.use("ggplot")
-        pos = nx.spring_layout(G)
-        cmap = cm.get_cmap("cool", max(partition.values()) + 1)
-        nx.draw_networkx(
-            G,
-            pos,
-            with_labels=False,
-            alpha=0.3,
-            node_size=60,
-            linewidths=0.1,
-            width=0.1,
-            cmap=cmap,
-            node_color=list(partition.values()),
-        )
-        plt.savefig(path_to_adj_mat_file.split(".")[0] + "_plot.png")
