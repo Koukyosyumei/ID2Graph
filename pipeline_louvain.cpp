@@ -14,18 +14,18 @@ int main()
 {
     int round_num, node_num, temp_adj_num, temp_adj_idx;
     float temp_adj_weight;
-    cin >> round_num >> node_num;
+    scanf("%d %d", &round_num, &node_num);
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i <= 5)
+        if (i >= 0)
         {
             for (int j = 0; j < node_num; j++)
             {
-                cin >> temp_adj_num;
+                scanf("%d", &temp_adj_num);
                 for (int k = 0; k < temp_adj_num; k++)
                 {
-                    cin >> temp_adj_idx >> temp_adj_weight;
+                    scanf("%d %f", &temp_adj_idx, &temp_adj_weight);
                     adj_matrix[j][temp_adj_idx] += pow(eta, float(i)) * temp_adj_weight;
                     adj_matrix[temp_adj_idx][j] += pow(eta, float(i)) * temp_adj_weight;
                 }
@@ -58,14 +58,14 @@ int main()
     Louvain louvain = Louvain();
     louvain.fit(g);
 
-    cout << louvain.g.nodes.size() << "\n";
-    cout << node_num << "\n";
+    printf("%lu\n", louvain.g.nodes.size());
+    printf("%d\n", node_num);
     for (int i = 0; i < louvain.g.nodes.size(); i++)
     {
         for (int j = 0; j < louvain.g.nodes[i].size(); j++)
         {
-            cout << louvain.g.nodes[i][j] << " ";
+            printf("%d ", louvain.g.nodes[i][j]);
         }
-        cout << "\n";
+        printf("\n");
     }
 }
