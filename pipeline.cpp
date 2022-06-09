@@ -5,6 +5,7 @@
 #include <numeric>
 #include <string>
 #include <cassert>
+#include <unistd.h>
 #include "secureboost/attack.h"
 #include "secureboost/metric.h"
 using namespace std;
@@ -13,14 +14,40 @@ const int min_leaf = 1;
 const int depth = 3;
 const int max_bin = 32;
 const double learning_rate = 0.3;
-const int boosting_rounds = 20;
 const double lam = 0.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 0.8;
-const bool use_missing_value = false;
-const int completelly_secure_round = 0;
+
+string folderpath;
+string fileprefix;
+int boosting_rounds = 20;
+int completelly_secure_round = 0;
+bool use_missing_value = false;
+
+void parse_args(int argc, char *argv[])
+{
+    int opt;
+    while ((opt == getopt(argc, argv, "f:p:r:c:m")) != -1)
+    {
+        switch (opt)
+        {
+        case 'f':
+            folderpath = optarg;
+            break;
+        case 'p':
+            fileprefix = optarg;
+            break;
+        case 'r':
+            boosting_rounds = int(&optarg);
+        case 'c':
+            completelly_secure_round = int(&optarg);
+        case 'm':
+            use_missing_value = true;
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -120,8 +147,6 @@ int main(int argc, char *argv[])
     printf("Val AUC: %lf\n", roc_auc_score(predict_proba_val, y_true_val));
 
     std::ofstream adj_mat_file;
-    string folderpath = argv[1];
-    string fileprefix = argv[2];
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
     vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, false);
