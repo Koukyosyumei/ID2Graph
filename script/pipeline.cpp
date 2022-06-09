@@ -5,25 +5,65 @@
 #include <numeric>
 #include <string>
 #include <cassert>
-#include "secureboost/attack.h"
-#include "secureboost/metric.h"
+#include <unistd.h>
+#include "../src/secureboost/attack.h"
+#include "../src/secureboost/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
 const int depth = 3;
 const int max_bin = 32;
 const double learning_rate = 0.3;
-const int boosting_rounds = 20;
 const double lam = 0.0;
 const double const_gamma = 0.0;
 const double eps = 1.0;
 const double min_child_weight = -1 * numeric_limits<double>::infinity();
 const double subsample_cols = 0.8;
-const bool use_missing_value = false;
-const int completelly_secure_round = 0;
+
+string folderpath;
+string fileprefix;
+int boosting_rounds = 20;
+int completelly_secure_round = 0;
+bool use_missing_value = false;
+bool is_weighted_graph = false;
+
+void parse_args(int argc, char *argv[])
+{
+    int opt;
+    while ((opt = getopt(argc, argv, "f:p:r:c:mw")) != -1)
+    {
+        switch (opt)
+        {
+        case 'f':
+            folderpath = string(optarg);
+            break;
+        case 'p':
+            fileprefix = string(optarg);
+            break;
+        case 'r':
+            boosting_rounds = stoi(string(optarg));
+            break;
+        case 'c':
+            completelly_secure_round = stoi(string(optarg));
+            break;
+        case 'm':
+            use_missing_value = true;
+            break;
+        case 'w':
+            is_weighted_graph = true;
+            break;
+        default:
+            printf("unknown parameter %s is specified", optarg);
+            printf("Usage: %s [-f] [-p] [-r] [-c] [-m] [-w] ...\n", argv[0]);
+            break;
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
+    parse_args(argc, argv);
+
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
@@ -120,11 +160,9 @@ int main(int argc, char *argv[])
     printf("Val AUC: %lf\n", roc_auc_score(predict_proba_val, y_true_val));
 
     std::ofstream adj_mat_file;
-    string folderpath = argv[1];
-    string fileprefix = argv[2];
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, false);
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph);
     adj_mat_file << vec_adi_mat.size() << "\n";
     adj_mat_file << vec_adi_mat[0].size() << "\n";
     for (int i = 0; i < vec_adi_mat.size(); i++)
