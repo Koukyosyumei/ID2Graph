@@ -25,11 +25,12 @@ string fileprefix;
 int boosting_rounds = 20;
 int completelly_secure_round = 0;
 bool use_missing_value = false;
+bool is_weighted_graph = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:m")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:mw")) != -1)
     {
         switch (opt)
         {
@@ -48,9 +49,12 @@ void parse_args(int argc, char *argv[])
         case 'm':
             use_missing_value = true;
             break;
+        case 'w':
+            is_weighted_graph = true;
+            break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-c] [-m] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-c] [-m] [-w] ...\n", argv[0]);
             break;
         }
     }
@@ -158,7 +162,7 @@ int main(int argc, char *argv[])
     std::ofstream adj_mat_file;
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, false);
+    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph);
     adj_mat_file << vec_adi_mat.size() << "\n";
     adj_mat_file << vec_adi_mat[0].size() << "\n";
     for (int i = 0; i < vec_adi_mat.size(); i++)
