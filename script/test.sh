@@ -1,8 +1,8 @@
-g++ -o test.out test/test_secureboost.cpp
-./test.out < test/data/test_data.in
-g++ -o test.out test/test_metric.cpp
-./test.out
-g++ -o test.out test/test_louvain.cpp
-./test.out
-g++ -o test.out test/test_utils.cpp
-./test.out
+g++ -o script/build/test.out test/test_secureboost.cpp
+./script/build/test.out < test/data/test_data.in
+g++ -o script/build/test.out test/test_metric.cpp
+./script/build/test.out
+g++ -o script/build/test.out test/test_louvain.cpp
+./script/build/test.out
+g++ -o script/build/test.out test/test_utils.cpp
+./script/build/test.out
