@@ -7,7 +7,7 @@ done
 
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=result)
 
-script/run_training.sh -d ${VALUE_D} -p ${TEMPD} > "${TEMPD}/result.ans"
+script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r 5 -c 1 > "${TEMPD}/result.ans"
 script/run_extract_result.sh -o ${TEMPD}
 python3 script/clustering.py -p ${TEMPD}
 # python3 script/network_analysis.py -p ${TEMPD}
