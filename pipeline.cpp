@@ -29,28 +29,38 @@ bool use_missing_value = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt == getopt(argc, argv, "f:p:r:c:m")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:m")) != -1)
     {
         switch (opt)
         {
         case 'f':
-            folderpath = optarg;
+            folderpath = string(optarg);
             break;
         case 'p':
-            fileprefix = optarg;
+            fileprefix = string(optarg);
             break;
         case 'r':
-            boosting_rounds = int(&optarg);
+            boosting_rounds = int(*optarg);
+            break;
         case 'c':
-            completelly_secure_round = int(&optarg);
+            completelly_secure_round = int(*optarg);
+            break;
         case 'm':
             use_missing_value = true;
+            break;
+        default:
+            printf("unknown parameter %s is specified", optarg);
+            printf("Usage: %s [-f] [-p] [-r] [-c] [-m] ...\n", argv[0]);
+            break;
         }
+        cout << 1 << endl;
     }
 }
 
 int main(int argc, char *argv[])
 {
+    parse_args(argc, argv);
+
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
