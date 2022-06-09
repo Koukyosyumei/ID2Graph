@@ -1,7 +1,7 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
-#include "../secureboost/utils.h"
+#include "../src/secureboost/utils.h"
 
 int main()
 {

@@ -6,8 +6,8 @@
 #include <string>
 #include <cassert>
 #include <unistd.h>
-#include "secureboost/attack.h"
-#include "secureboost/metric.h"
+#include "src/secureboost/attack.h"
+#include "src/secureboost/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
