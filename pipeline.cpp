@@ -40,10 +40,10 @@ void parse_args(int argc, char *argv[])
             fileprefix = string(optarg);
             break;
         case 'r':
-            boosting_rounds = int(*optarg);
+            boosting_rounds = stoi(string(optarg));
             break;
         case 'c':
-            completelly_secure_round = int(*optarg);
+            completelly_secure_round = stoi(string(optarg));
             break;
         case 'm':
             use_missing_value = true;
@@ -53,7 +53,6 @@ void parse_args(int argc, char *argv[])
             printf("Usage: %s [-f] [-p] [-r] [-c] [-m] ...\n", argv[0]);
             break;
         }
-        cout << 1 << endl;
     }
 }
 
