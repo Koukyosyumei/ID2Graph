@@ -16,9 +16,9 @@ TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=result)
 echo -e "d,${VALUE_D}\nr,${VALUE_R}\nc,${VALUE_C}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${FLG_N}" > "${TEMPD}/param.csv"
 
 if [ "${FLG_W}" = "TRUE" ]; then
-  script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ -w > "${TEMPD}/result.ans"
+  script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ -w
 else
-  echo hoge | script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ > "${TEMPD}/result.ans"
+  script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$
 fi
 
 script/run_extract_result.sh -o ${TEMPD}
