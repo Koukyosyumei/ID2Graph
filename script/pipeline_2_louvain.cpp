@@ -8,7 +8,7 @@
 #include "../src/louvain/louvain.h"
 using namespace std;
 
-const float eta = 0.4;
+const float eta = 0.3;
 
 int main()
 {
