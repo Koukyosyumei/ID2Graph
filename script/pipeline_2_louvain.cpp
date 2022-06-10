@@ -5,20 +5,45 @@
 #include <numeric>
 #include <cmath>
 #include <cassert>
+#include <unistd.h>
 #include "../src/louvain/louvain.h"
 using namespace std;
 
-const float eta = 0.3;
+int skip_round = 0;
+float eta = 0.3;
 
-int main()
+void parse_args(int argc, char *argv[])
 {
+    int opt;
+    while ((opt = getopt(argc, argv, "c:e:")) != -1)
+    {
+        switch (opt)
+        {
+        case 'c':
+            skip_round = stoi(string(optarg));
+            break;
+        case 'e':
+            eta = stof(string(optarg));
+            break;
+        default:
+            printf("unknown parameter %s is specified", optarg);
+            printf("Usage: %s [-c] [-e] ...\n", argv[0]);
+            break;
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    parse_args(argc, argv);
+
     int round_num, node_num, temp_adj_num, temp_adj_idx;
     float temp_adj_weight;
     scanf("%d %d", &round_num, &node_num);
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i >= 0)
+        if (i >= skip_round)
         {
             for (int j = 0; j < node_num; j++)
             {
