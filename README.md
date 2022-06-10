@@ -1,5 +1,9 @@
 # SecureBoost
 
+```
+./script/run.sh -d breastcancer -r 20 -c 1 -i 1 -e 0.1
+```
+
 ## Usage
 
 - Give Me Some Credit

@@ -105,7 +105,6 @@ struct SecureBoostBase
             if (save_loss)
             {
                 logging_loss.push_back(get_loss(base_pred, y));
-                cout << "round " << i + 1 << ": " << logging_loss[i] << "\n";
             }
         }
     }

@@ -18,7 +18,7 @@ echo -e "d,${VALUE_D}\nr,${VALUE_R}\nc,${VALUE_C}\ni,${VALUE_I}\ne,${VALUE_E}\nw
 if [ "${FLG_W}" = "TRUE" ]; then
   script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ -w > "${TEMPD}/result.ans"
 else
-  script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ > "${TEMPD}/result.ans"
+  echo hoge | script/run_training.sh -d ${VALUE_D} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -i ${VALUE_I} -e ${VALUE_E}$ > "${TEMPD}/result.ans"
 fi
 
 script/run_extract_result.sh -o ${TEMPD}

@@ -72,8 +72,6 @@ int main(int argc, char *argv[])
     vector<double> y_train(num_row_train);
     vector<Party> parties(num_party);
 
-    printf("Loading datasets ...\n");
-    printf("train size is %d, column size is %d, party size is %d\n", num_row_train, num_col, num_party);
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
@@ -103,7 +101,6 @@ int main(int argc, char *argv[])
         scanf("%lf", &y_train[j]);
 
     scanf("%d", &num_row_val);
-    printf("%d\n", num_row_val);
     vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
     vector<double> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
@@ -120,7 +117,14 @@ int main(int argc, char *argv[])
     for (int j = 0; j < num_row_val; j++)
         scanf("%lf", &y_val[j]);
 
-    printf("num of nan is %d\n", num_nan_cell);
+    std::ofstream result_file;
+    string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
+    result_file.open(result_filepath, std::ios::out);
+    result_file << "train size," << num_row_train << "\n";
+    result_file << "val size," << num_row_val << "\n";
+    result_file << "column size," << num_col << "\n";
+    result_file << "party size," << num_party << "\n";
+    result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
     SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
@@ -131,33 +135,25 @@ int main(int argc, char *argv[])
                                                       lam, const_gamma, eps,
                                                       0, completelly_secure_round,
                                                       0.5, true);
-
-    printf("Training ...\n");
     clf.fit(parties, y_train);
+    for (int i = 0; i < clf.logging_loss.size(); i++)
+    {
+        result_file << "round " << i + 1 << ": " << clf.logging_loss[i] << "\n";
+    }
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
-        printf("Tree-%d: %lf\n", i + 1, clf.estimators[i].get_leaf_purity());
-        printf("%s\n", clf.estimators[i].print(true, true).c_str());
+        result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
+        result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
-    for (int p = 0; p < num_party; p++)
-    {
-        printf("lookup talbe of party_id = %d\n", p);
-        for (int i = 0; i < parties[p].lookup_table.size(); i++)
-            printf("%d: %d, %lf, %d\n", i,
-                   get<0>(parties[p].lookup_table.at(i)),
-                   get<1>(parties[p].lookup_table.at(i)),
-                   get<2>(parties[p].lookup_table.at(i)));
-    }
-
-    printf("Evaluating ...\n");
     vector<double> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    printf("Train AUC: %lf\n", roc_auc_score(predict_proba_train, y_true_train));
+    result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
     vector<double> predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    printf("Val AUC: %lf\n", roc_auc_score(predict_proba_val, y_true_val));
+    result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
+    result_file.close();
 
     std::ofstream adj_mat_file;
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
