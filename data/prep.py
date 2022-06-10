@@ -157,6 +157,9 @@ if __name__ == "__main__":
         X = data["data"]
         y = data["target"]
 
+    else:
+        raise ValueError(f"{parsed_args.dataset_type} is not supported.")
+
     X_train, X_val, y_train, y_val = train_test_split(
         X,
         y,
