@@ -23,8 +23,8 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "-r",
-        "--ratio",
+        "-i",
+        "--imbalance",
         type=float,
         default=1.0,
     )
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
         pos_df = df[df["SeriousDlqin2yrs"] == 0]
         neg_df = df[df["SeriousDlqin2yrs"] == 1]
-        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.ratio))
+        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.imbalance))
         df = pd.concat([pos_df, neg_df])
         X = df[
             [
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
         pos_df = df[df["default.payment.next.month"] == 0]
         neg_df = df[df["default.payment.next.month"] == 1]
-        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.ratio))
+        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.imbalance))
         df = pd.concat([pos_df, neg_df])
         X = df[
             [
