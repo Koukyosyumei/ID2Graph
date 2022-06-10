@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
     list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
-
+    print("baseline,our")
     for path_to_input_file in list_input_files:
         round_idx = path_to_input_file.split("_")[-1].split(".")[0]
         with open(path_to_input_file, mode="r") as f:
@@ -56,7 +56,6 @@ if __name__ == "__main__":
             metrics.f1_score(y_train, kmeans.labels_),
             metrics.f1_score(y_train, 1 - kmeans.labels_),
         )
-        print("baseline: ", baseline_f1)
 
         path_to_adj_mat_file = os.path.join(
             parsed_args.path_to_dir, f"{round_idx}_communities.out"
@@ -79,4 +78,5 @@ if __name__ == "__main__":
             metrics.f1_score(y_train, kmeans_with_com.labels_),
             metrics.f1_score(y_train, 1 - kmeans_with_com.labels_),
         )
-        print("with community: ", with_com_f1)
+
+        print(f"{baseline_f1},{with_com_f1}")
