@@ -4,8 +4,9 @@ VALUE_C=1
 VALUE_J=1
 VALUE_I=1
 VALUE_E=0.3
+VALUE_T="result"
 
-while getopts d:r:c:j:i:e:wn OPT
+while getopts d:r:c:j:i:e:t:wn OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -14,12 +15,13 @@ do
     "j" ) FLG_J="TRUE" ; VALUE_J="$OPTARG" ;;
     "i" ) FLG_I="TRUE" ; VALUE_I="$OPTARG" ;;
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
+    "t" ) FLG_T="TRUE" ; VALUE_T="$OPTARG" ;;
     "w" ) FLG_W="TRUE" ; VALUE_W="$OPTARG" ;;
     "n" ) FLG_N="TRUE" ; VALUE_N="$OPTARG" ;;
   esac
 done
 
-TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=result)
+TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
 echo -e "d,${VALUE_D}\nr,${VALUE_R}\nc,${VALUE_C}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${FLG_N}" > "${TEMPD}/param.csv"
 
