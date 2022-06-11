@@ -343,6 +343,7 @@ struct Node
     int depth;
     int active_party_id;
     bool use_only_active_party;
+    int n_job;
 
     double best_score = -1 * numeric_limits<double>::infinity();
     int best_party_id, best_col_id, best_threshold_id;
@@ -357,7 +358,7 @@ struct Node
     Node(vector<Party> *parties_, vector<double> y_, vector<double> gradient_,
          vector<double> hessian_, vector<int> idxs_,
          double min_child_weight_, double lam_, double gamma_, double eps_,
-         int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false)
+         int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -371,6 +372,7 @@ struct Node
         depth = depth_;
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
+        n_job = n_job_;
 
         try
         {
@@ -473,34 +475,37 @@ struct Node
                gamma;
     }
 
-    void find_split_per_party(int party_id, double sum_grad, double sum_hess)
+    void find_split_per_party(int party_id_start, int temp_num_parties, double sum_grad, double sum_hess)
     {
-        vector<vector<pair<double, double>>> search_results =
-            parties->at(party_id).greedy_search_split(gradient, hessian, idxs);
-
-        for (int j = 0; j < search_results.size(); j++)
+        for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
         {
-            double temp_score;
-            double temp_left_grad = 0;
-            double temp_left_hess = 0;
-            for (int k = 0; k < search_results[j].size(); k++)
+            vector<vector<pair<double, double>>> search_results =
+                parties->at(party_id).greedy_search_split(gradient, hessian, idxs);
+
+            for (int j = 0; j < search_results.size(); j++)
             {
-                temp_left_grad += search_results[j][k].first;
-                temp_left_hess += search_results[j][k].second;
-
-                if (temp_left_hess < min_child_weight ||
-                    sum_hess - temp_left_hess < min_child_weight)
-                    continue;
-
-                temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
-                                          temp_left_hess, sum_hess - temp_left_hess);
-
-                if (temp_score > best_score)
+                double temp_score;
+                double temp_left_grad = 0;
+                double temp_left_hess = 0;
+                for (int k = 0; k < search_results[j].size(); k++)
                 {
-                    best_score = temp_score;
-                    best_party_id = party_id;
-                    best_col_id = j;
-                    best_threshold_id = k;
+                    temp_left_grad += search_results[j][k].first;
+                    temp_left_hess += search_results[j][k].second;
+
+                    if (temp_left_hess < min_child_weight ||
+                        sum_hess - temp_left_hess < min_child_weight)
+                        continue;
+
+                    temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
+                                              temp_left_hess, sum_hess - temp_left_hess);
+
+                    if (temp_score > best_score)
+                    {
+                        best_score = temp_score;
+                        best_party_id = party_id;
+                        best_col_id = j;
+                        best_threshold_id = k;
+                    }
                 }
             }
         }
@@ -520,21 +525,32 @@ struct Node
 
         if (use_only_active_party)
         {
-            find_split_per_party(active_party_id, sum_grad, sum_hess);
+            find_split_per_party(active_party_id, 1, sum_grad, sum_hess);
         }
         else
         {
-            vector<thread> threads_parties;
-            for (int i = 0; i < num_parties; i++)
+            if (n_job == 1)
             {
-                thread temp_th([this, i, sum_grad, sum_hess]
-                               { this->find_split_per_party(i, sum_grad, sum_hess); });
-                threads_parties.push_back(move(temp_th));
+                find_split_per_party(0, num_parties, sum_grad, sum_hess);
             }
-            for (int i = 0; i < num_parties; i++)
+            else
             {
-                threads_parties[i].join();
-                // find_split_per_party(i, sum_grad, sum_hess);
+                vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
+
+                int cnt_parties = 0;
+                vector<thread> threads_parties;
+                for (int i = 0; i < n_job; i++)
+                {
+                    int local_num_parties = num_parties_per_thread[i];
+                    thread temp_th([this, cnt_parties, local_num_parties, sum_grad, sum_hess]
+                                   { this->find_split_per_party(cnt_parties, local_num_parties, sum_grad, sum_hess); });
+                    threads_parties.push_back(move(temp_th));
+                    cnt_parties += num_parties_per_thread[i];
+                }
+                for (int i = 0; i < num_parties; i++)
+                {
+                    threads_parties[i].join();
+                }
             }
         }
         score = best_score;

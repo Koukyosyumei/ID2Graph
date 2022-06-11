@@ -21,6 +21,7 @@ struct SecureBoostBase
     int active_party_id;
     int completelly_secure_round;
     double init_value;
+    int n_job;
     bool save_loss;
 
     vector<double> init_pred;
@@ -33,7 +34,7 @@ struct SecureBoostBase
                     double learning_rate_ = 0.4, int boosting_rounds_ = 5,
                     double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
                     int active_party_id_ = -1, int completelly_secure_round_ = 0,
-                    double init_value_ = 1.0, bool save_loss_ = true)
+                    double init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
@@ -47,6 +48,7 @@ struct SecureBoostBase
         active_party_id = active_party_id_;
         completelly_secure_round = completelly_secure_round_;
         init_value = init_value_;
+        n_job = n_job_;
         save_loss = save_loss_;
     }
 
@@ -95,7 +97,7 @@ struct SecureBoostBase
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, grad, hess, min_child_weight,
-                              lam, gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i));
+                              lam, gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i), n_job);
             vector<double> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)
                 base_pred[j] += learning_rate * pred_temp[j];
