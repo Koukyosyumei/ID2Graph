@@ -12,5 +12,13 @@ int main()
     {
         assert(quartiles[i] == test_quartiles[i]);
     }
+
+    vector<int> num_parties_per_process = get_num_parties_per_process(3, 8);
+    vector<int> test_num_parties_per_process = {3, 3, 2};
+    for (int i = 0; i < test_num_parties_per_process.size(); i++)
+    {
+        assert(num_parties_per_process[i] == test_num_parties_per_process[i]);
+    }
+
     cout << "test_utils: all passed!" << endl;
 }

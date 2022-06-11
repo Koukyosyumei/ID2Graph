@@ -55,7 +55,8 @@ int main()
                                                       depth, min_leaf,
                                                       learning_rate,
                                                       boosting_rounds,
-                                                      lam, const_gamma, eps);
+                                                      lam, const_gamma, eps,
+                                                      -1, 0, 1.0, 2);
 
     vector<double> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<double> init_pred = clf.get_init_pred(y);

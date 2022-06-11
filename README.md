@@ -1,7 +1,7 @@
 # SecureBoost
 
 ```
-./script/run.sh -d breastcancer -r 20 -c 1 -i 1 -e 0.1
+./script/run.sh -d breastcancer -r 20 -c 1 -i 1 -e 0.3
 ```
 
 ## Usage
