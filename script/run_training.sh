@@ -11,7 +11,7 @@ do
   esac
 done
 
-g++ -o script/build/pipeline_1_training.out script/pipeline_1_training.cpp
+g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_training.cpp
 g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
 
 for i in $(seq 1 5)
