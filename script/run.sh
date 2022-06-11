@@ -28,4 +28,8 @@ if [ "${FLG_N}" = "TRUE" ]; then
   python3 script/pipeline_4_vis_network.py -p ${TEMPD}
 fi
 
-python3 script/pipeline_5_report.py -p ${TEMPD} > "${TEMPD}/report.out"
+python3 script/pipeline_5_report.py -p ${TEMPD} > "${TEMPD}/report.md"
+
+rm ${TEMPD}/*.in
+rm ${TEMPD}/*.txt
+rm ${TEMPD}/*.out
