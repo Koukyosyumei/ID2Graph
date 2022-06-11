@@ -5,6 +5,7 @@
 #include <numeric>
 #include <string>
 #include <cassert>
+#include <chrono>
 #include <unistd.h>
 #include "../src/secureboost/attack.h"
 #include "../src/secureboost/metric.h"
@@ -24,13 +25,14 @@ string folderpath;
 string fileprefix;
 int boosting_rounds = 20;
 int completelly_secure_round = 0;
+int n_job = 1;
 bool use_missing_value = false;
 bool is_weighted_graph = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:mw")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:j:mw")) != -1)
     {
         switch (opt)
         {
@@ -46,6 +48,9 @@ void parse_args(int argc, char *argv[])
         case 'c':
             completelly_secure_round = stoi(string(optarg));
             break;
+        case 'j':
+            n_job = stoi(string(optarg));
+            break;
         case 'm':
             use_missing_value = true;
             break;
@@ -54,7 +59,7 @@ void parse_args(int argc, char *argv[])
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-c] [-m] [-w] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-c] [-j] [-m] [-w] ...\n", argv[0]);
             break;
         }
     }
@@ -134,8 +139,15 @@ int main(int argc, char *argv[])
                                                       boosting_rounds,
                                                       lam, const_gamma, eps,
                                                       0, completelly_secure_round,
-                                                      0.5, true);
+                                                      0.5, n_job, true);
+
+    chrono::system_clock::time_point start, end;
+    start = chrono::system_clock::now();
     clf.fit(parties, y_train);
+    end = chrono::system_clock::now();
+    double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("%f [ms]\n", elapsed);
+
     for (int i = 0; i < clf.logging_loss.size(); i++)
     {
         result_file << "round " << i + 1 << ": " << clf.logging_loss[i] << "\n";
