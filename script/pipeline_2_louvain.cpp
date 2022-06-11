@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
                 for (int k = 0; k < temp_adj_num; k++)
                 {
                     scanf("%d %f", &temp_adj_idx, &temp_adj_weight);
-                    adj_matrix[j][temp_adj_idx] += pow(eta, float(i)) * temp_adj_weight;
-                    adj_matrix[temp_adj_idx][j] += pow(eta, float(i)) * temp_adj_weight;
+                    adj_matrix[j][temp_adj_idx] += pow(eta, float(i - skip_round)) * temp_adj_weight;
+                    adj_matrix[temp_adj_idx][j] += pow(eta, float(i - skip_round)) * temp_adj_weight;
                 }
             }
         }
