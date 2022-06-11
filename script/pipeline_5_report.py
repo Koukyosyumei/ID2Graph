@@ -39,18 +39,21 @@ if __name__ == "__main__":
             leaf_purity = [float(s.strip()) for s in f.readlines()]
             leaf_purity_mean[i - 1] = np.mean(leaf_purity)
             leaf_purity_std[i - 1] = np.std(leaf_purity)
-        print(
-            f"LP ({i}): {np.round(np.mean(leaf_purity), decimals=4)}±{np.round(np.std(leaf_purity), decimals=4)}"
-        )
         with open(
             os.path.join(parsed_args.path_to_dir, f"temp_loss_tree_{i}.out"), mode="r"
         ) as f:
             loss = [float(s.strip()) for s in f.readlines()]
             loss_mean[i - 1] = np.mean(loss)
             loss_std[i - 1] = np.std(loss)
-        print(
-            f"Loss ({i}): {np.round(np.mean(loss), decimals=4)}±{np.round(np.std(loss), decimals=4)}"
-        )
+
+    df = pd.DataFrame(
+        columns=["loss_mean", "loss_std" "leaf_purity_mean", "leaf_purity_std"]
+    )
+    df["loss_mean"] = loss_mean
+    df["loss_std"] = loss_std
+    df["leaf_purity_mean"] = leaf_purity_mean
+    df["leaf_purity_std"] = leaf_purity_std
+    df.to_csv(os.path.join(parsed_args.path_to_dir, "loss_lp.csv"))
 
     plt.style.use("ggplot")
     fig = plt.figure()
