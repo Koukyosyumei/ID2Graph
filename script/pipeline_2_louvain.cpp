@@ -43,14 +43,14 @@ int main(int argc, char *argv[])
     vector<vector<float>> adj_matrix(node_num, vector<float>(node_num, 0));
     for (int i = 0; i < round_num; i++)
     {
-        if (i >= skip_round)
+        for (int j = 0; j < node_num; j++)
         {
-            for (int j = 0; j < node_num; j++)
+            scanf("%d", &temp_adj_num);
+            for (int k = 0; k < temp_adj_num; k++)
             {
-                scanf("%d", &temp_adj_num);
-                for (int k = 0; k < temp_adj_num; k++)
+                scanf("%d %f", &temp_adj_idx, &temp_adj_weight);
+                if (i >= skip_round)
                 {
-                    scanf("%d %f", &temp_adj_idx, &temp_adj_weight);
                     adj_matrix[j][temp_adj_idx] += pow(eta, float(i - skip_round)) * temp_adj_weight;
                     adj_matrix[temp_adj_idx][j] += pow(eta, float(i - skip_round)) * temp_adj_weight;
                 }
