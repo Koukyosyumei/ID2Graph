@@ -1,9 +1,9 @@
-VALUE_D = "breastcancer"
-VALUE_R = 20
-VALUE_C = 1
-VALUE_J = 1
-VALUE_I = 1
-VALUE_E = 0.3
+VALUE_D="breastcancer"
+VALUE_R=20
+VALUE_C=1
+VALUE_J=1
+VALUE_I=1
+VALUE_E=0.3
 
 while getopts d:r:c:j:i:e:wn OPT
 do
