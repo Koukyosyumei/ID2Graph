@@ -23,6 +23,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "-n",
+        "--num_samples",
+        type=int,
+        default=20000,
+    )
+
+    parser.add_argument(
         "-i",
         "--imbalance",
         type=float,
@@ -97,9 +104,14 @@ if __name__ == "__main__":
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
-        pos_df = df[df["SeriousDlqin2yrs"] == 0]
-        neg_df = df[df["SeriousDlqin2yrs"] == 1]
-        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.imbalance))
+        pos_df = df[df["SeriousDlqin2yrs"] == 1]
+        neg_df = df[df["SeriousDlqin2yrs"] == 0]
+
+        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+        neg_num = parsed_args.num_samples - pos_num
+        pos_df = pos_df.sample(pos_num)
+        neg_df = neg_df.sample(neg_num)
+
         df = pd.concat([pos_df, neg_df])
         X = df[
             [
@@ -119,9 +131,14 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "ucicreditcard":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
-        pos_df = df[df["default.payment.next.month"] == 0]
-        neg_df = df[df["default.payment.next.month"] == 1]
-        pos_df = pos_df.sample(int(neg_df.shape[0] * parsed_args.imbalance))
+        pos_df = df[df["default.payment.next.month"] == 1]
+        neg_df = df[df["default.payment.next.month"] == 0]
+
+        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+        neg_num = parsed_args.num_samples - pos_num
+        pos_df = pos_df.sample(pos_num)
+        neg_df = neg_df.sample(neg_num)
+
         df = pd.concat([pos_df, neg_df])
         X = df[
             [
@@ -163,7 +180,7 @@ if __name__ == "__main__":
     X_train, X_val, y_train, y_val = train_test_split(
         X,
         y,
-        test_size=1 / 3,
+        test_size=1 / 5,
         random_state=parsed_args.seed,
         stratify=y,
     )
