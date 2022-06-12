@@ -34,7 +34,7 @@ else
 fi
 
 script/run_extract_result.sh -o ${TEMPD}
-python3 script/pipeline_3_clustering.py -p ${TEMPD} > "${TEMPD}/leak_vscore.csv"
+python3 script/pipeline_3_clustering.py -p ${TEMPD} > "${TEMPD}/leak_vmeasure.csv"
 
 if [ "${FLG_G}" = "TRUE" ]; then
   python3 script/pipeline_4_vis_network.py -p ${TEMPD} -e ${VALUE_E}

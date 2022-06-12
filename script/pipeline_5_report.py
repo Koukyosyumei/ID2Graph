@@ -99,10 +99,12 @@ if __name__ == "__main__":
         f"AUC (validation): {np.round(np.mean(val_auc), decimals=4)}±{np.round(np.std(val_auc), decimals=4)}"
     )
 
-    leak_f1_csv = pd.read_csv(os.path.join(parsed_args.path_to_dir, "leak_f1.csv"))
-    print(
-        f"Leak-F1 (baseline): {np.round(leak_f1_csv['baseline'].mean(), decimals=4)}±{np.round(leak_f1_csv['baseline'].std(), decimals=4)}"
+    leak_f1_csv = pd.read_csv(
+        os.path.join(parsed_args.path_to_dir, "leak_vmeasure.csv")
     )
     print(
-        f"Leak-F1 (our): {np.round(leak_f1_csv['our'].mean(), decimals=4)}±{np.round(leak_f1_csv['our'].std(), decimals=4)}"
+        f"V-measure (baseline): {np.round(leak_f1_csv['baseline'].mean(), decimals=4)}±{np.round(leak_f1_csv['baseline'].std(), decimals=4)}"
+    )
+    print(
+        f"V-measure (our): {np.round(leak_f1_csv['our'].mean(), decimals=4)}±{np.round(leak_f1_csv['our'].std(), decimals=4)}"
     )
