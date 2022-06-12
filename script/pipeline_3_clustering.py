@@ -24,7 +24,7 @@ if __name__ == "__main__":
     list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
     print("baseline,our")
     for path_to_input_file in list_input_files:
-        round_idx = path_to_input_file.split("_")[-1].split(".")[0]
+        round_idx = path_to_input_file.split("/")[-1].split("_")[0]
         with open(path_to_input_file, mode="r") as f:
             lines = f.readlines()
             first_line = lines[0].split(" ")
