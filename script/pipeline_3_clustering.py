@@ -52,10 +52,7 @@ if __name__ == "__main__":
             y_train = [int(y) for y in y_train]
 
         kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
-        baseline_f1 = max(
-            metrics.f1_score(y_train, kmeans.labels_),
-            metrics.f1_score(y_train, 1 - kmeans.labels_),
-        )
+        v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
 
         path_to_adj_mat_file = os.path.join(
             parsed_args.path_to_dir, f"{round_idx}_communities.out"
@@ -74,9 +71,6 @@ if __name__ == "__main__":
         kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
             np.hstack([X_train_minmax, X_com])
         )
-        with_com_f1 = max(
-            metrics.f1_score(y_train, kmeans_with_com.labels_),
-            metrics.f1_score(y_train, 1 - kmeans_with_com.labels_),
-        )
+        v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-        print(f"{baseline_f1},{with_com_f1}")
+        print(f"{v_score_baseline},{v_score_with_com}")
