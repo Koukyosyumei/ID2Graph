@@ -8,15 +8,18 @@
 
 - Give Me Some Credit
 
-```
-script/run.sh -d givemesomecredit
-```
+|label   |count   |
+|---|---|
+|0  |139974|
+|1  |10026|
 
 - UCI Credit Card
 
-```
-script/run.sh -d ucicreditcard
-```
+|label   |count   |
+|---|---|
+|0  |23364|
+|1  |6636|
+
 
 ## Idea
 
