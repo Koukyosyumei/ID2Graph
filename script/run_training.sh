@@ -1,9 +1,10 @@
-while getopts d:p:n:i:r:c:j:e:w OPT
+while getopts d:p:n:f:i:r:c:j:e:w OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
     "p" ) FLG_P="TRUE" ; VALUE_P="$OPTARG" ;;
     "n" ) FLG_N="TRUE" ; VALUE_N="$OPTARG" ;;
+    "f" ) FLG_F="TRUE" ; VALUE_F="$OPTARG" ;;
     "i" ) FLG_I="TRUE" ; VALUE_I="$OPTARG" ;;
     "r" ) FLG_R="TRUE" ; VALUE_R="$OPTARG" ;;
     "c" ) FLG_C="TRUE" ; VALUE_C="$OPTARG" ;;
@@ -19,7 +20,7 @@ g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
 for i in $(seq 1 5)
 do 
     echo "random seed is $i"
-    python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -i ${VALUE_I} -s ${i}
+    python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${i}
     cp "./data/${VALUE_D}/${VALUE_D}.in" "${VALUE_P}/${i}_data.in"
     if [ "${FLG_W}" = "TRUE" ]; then
       script/build/pipeline_1_training.out -f ${VALUE_P} -p ${i} -r ${VALUE_R} -c ${VALUE_C} -j ${VALUE_J} -w < "${VALUE_P}/${i}_data.in"

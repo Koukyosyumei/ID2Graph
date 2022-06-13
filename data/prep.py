@@ -30,6 +30,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "-f",
+        "--feature_num_ratio_of_active_party",
+        type=float,
+        default=0.5,
+    )
+
+    parser.add_argument(
         "-i",
         "--imbalance",
         type=float,
@@ -55,15 +62,21 @@ def convert_df_to_input(
     output_path,
     col_alloc=None,
     parties_num=2,
+    feature_num_ratio_of_active_party=0.5,
     replace_nan="-1",
 ):
     row_num_train, col_num = X_train.shape
     row_num_val = X_val.shape[0]
 
     if col_alloc is None:
-        col_alloc = np.array_split(
-            random.sample(list(range(col_num)), col_num), parties_num
+        shufled_col_indicies = random.sample(list(range(col_num)), col_num)
+        col_num_of_active_party = max(
+            1, int(feature_num_ratio_of_active_party * col_num)
         )
+        col_alloc = [
+            shufled_col_indicies[:col_num_of_active_party],
+            shufled_col_indicies[col_num_of_active_party:],
+        ]
 
     with open(output_path, mode="w") as f:
         f.write(f"{row_num_train} {col_num} {parties_num}\n")
@@ -192,5 +205,6 @@ if __name__ == "__main__":
         y_val,
         os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}.in"),
         col_alloc=None,
+        feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
         parties_num=2,
     )
