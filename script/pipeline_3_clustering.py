@@ -59,9 +59,9 @@ if __name__ == "__main__":
         h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
         v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
 
-        cm_matrix = pd.crosstab(y_train, kmeans.labels_)
-        p_score_baseline = cm_matrix.max().sum() / num_row
-        ip_score_baseline = cm_matrix.T.max().sum() / num_row
+        cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
+        p_score_baseline = cm_matrix.max(axis=0).sum() / num_row
+        ip_score_baseline = cm_matrix.max(axis=1).sum() / num_row
         f_score_baseline = (
             2
             * p_score_baseline
@@ -90,9 +90,9 @@ if __name__ == "__main__":
         h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
         v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-        cm_matrix = pd.crosstab(y_train, kmeans_with_com.labels_)
-        p_score_with_com = cm_matrix.max().sum() / num_row
-        ip_score_with_com = cm_matrix.T.max().sum() / num_row
+        cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans_with_com.labels_)
+        p_score_with_com = cm_matrix.max(axis=0).sum() / num_row
+        ip_score_with_com = cm_matrix.max(axis=1).sum() / num_row
         f_score_with_com = (
             2
             * p_score_with_com
