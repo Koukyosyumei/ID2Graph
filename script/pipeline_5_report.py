@@ -99,12 +99,11 @@ if __name__ == "__main__":
         f"AUC (validation): {np.round(np.mean(val_auc), decimals=4)}±{np.round(np.std(val_auc), decimals=4)}"
     )
 
-    leak_f1_csv = pd.read_csv(
-        os.path.join(parsed_args.path_to_dir, "leak_vmeasure.csv")
-    )
-    print(
-        f"V-measure (baseline): {np.round(leak_f1_csv['baseline'].mean(), decimals=4)}±{np.round(leak_f1_csv['baseline'].std(), decimals=4)}"
-    )
-    print(
-        f"V-measure (our): {np.round(leak_f1_csv['our'].mean(), decimals=4)}±{np.round(leak_f1_csv['our'].std(), decimals=4)}"
-    )
+    leak_csv = pd.read_csv(os.path.join(parsed_args.path_to_dir, "leak.csv"))
+    for score_type in ["c", "h", "v", "p", "ip", "f"]:
+        baseline_mean = np.round(leak_csv[f"baseline_{score_type}"].mean(), decimals=4)
+        baseline_std = np.round(leak_csv[f"baseline_{score_type}"].std(), decimals=4)
+        our_mean = np.round(leak_csv[f"our_{score_type}"].mean(), decimals=4)
+        our_std = np.round(leak_csv[f"our_{score_type}"].std(), decimals=4)
+        print(f"{score_type} (baseline): {baseline_mean}±{baseline_std}")
+        print(f"{score_type} (our): {our_mean}±{our_std}")

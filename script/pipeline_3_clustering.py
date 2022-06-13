@@ -5,6 +5,7 @@ import glob
 from sklearn.cluster import KMeans
 from sklearn import preprocessing
 from sklearn import metrics
+import pandas as pd
 
 
 def add_args(parser):
@@ -22,7 +23,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
     list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
-    print("baseline,our")
+    print(
+        "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
+    )
     for path_to_input_file in list_input_files:
         round_idx = path_to_input_file.split("/")[-1].split("_")[0]
         with open(path_to_input_file, mode="r") as f:
@@ -52,7 +55,19 @@ if __name__ == "__main__":
             y_train = [int(y) for y in y_train]
 
         kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
+        h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
         v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
+
+        cm_matrix = pd.crosstab(y_train, kmeans.labels_)
+        p_score_baseline = cm_matrix.max().sum() / num_row
+        ip_score_baseline = cm_matrix.T.max().sum() / num_row
+        f_score_baseline = (
+            2
+            * p_score_baseline
+            * ip_score_baseline
+            / (p_score_baseline + ip_score_baseline)
+        )
 
         path_to_adj_mat_file = os.path.join(
             parsed_args.path_to_dir, f"{round_idx}_communities.out"
@@ -71,6 +86,20 @@ if __name__ == "__main__":
         kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
             np.hstack([X_train_minmax, X_com])
         )
+        c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
+        h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
         v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-        print(f"{v_score_baseline},{v_score_with_com}")
+        cm_matrix = pd.crosstab(y_train, kmeans_with_com.labels_)
+        p_score_with_com = cm_matrix.max().sum() / num_row
+        ip_score_with_com = cm_matrix.T.max().sum() / num_row
+        f_score_with_com = (
+            2
+            * p_score_with_com
+            * ip_score_with_com
+            / (p_score_with_com + ip_score_with_com)
+        )
+
+        print(
+            f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
+        )
