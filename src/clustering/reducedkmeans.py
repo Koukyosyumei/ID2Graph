@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import random
 
 
 class ReducedKMeans:
@@ -15,7 +16,7 @@ class ReducedKMeans:
     """
 
     def __init__(
-        self, n_clusters, n_dim=2, n_init=10, max_itr=300, eps=1e-8, verbose=2
+        self, n_clusters, n_dim=2, n_init=10, max_itr=300, eps=1e-8, verbose=2, seed=0
     ):
         self.n_dim = n_dim
         self.n_clusters = n_clusters
@@ -23,6 +24,9 @@ class ReducedKMeans:
         self.max_itr = max_itr
         self.eps = eps
         self.verbose = verbose
+
+        random.seed(seed)
+        np.random.seed(seed)
 
     def fit(self, X):
         n_row, n_col = X.shape
