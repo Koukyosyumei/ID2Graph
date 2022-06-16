@@ -22,7 +22,7 @@ class ReducedKMeans:
         n_init=10,
         max_itr=300,
         eps=1e-8,
-        verbose=2,
+        verbose=0,
         random_state=0,
     ):
         self.n_dim = n_dim
@@ -107,3 +107,5 @@ class ReducedKMeans:
             X, np.dot(V[: self.n_dim, :].T, np.diag(1 / S[: self.n_dim]))
         )
         self.labels_ = np.where(self.E_hat == 1)[1]
+
+        return self
