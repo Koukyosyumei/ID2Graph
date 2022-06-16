@@ -16,7 +16,14 @@ class ReducedKMeans:
     """
 
     def __init__(
-        self, n_clusters, n_dim=2, n_init=10, max_itr=300, eps=1e-8, verbose=2, seed=0
+        self,
+        n_clusters=2,
+        n_dim=2,
+        n_init=10,
+        max_itr=300,
+        eps=1e-8,
+        verbose=2,
+        random_state=0,
     ):
         self.n_dim = n_dim
         self.n_clusters = n_clusters
@@ -25,8 +32,8 @@ class ReducedKMeans:
         self.eps = eps
         self.verbose = verbose
 
-        random.seed(seed)
-        np.random.seed(seed)
+        random.seed(random_state)
+        np.random.seed(random_state)
 
     def fit(self, X):
         n_row, n_col = X.shape
