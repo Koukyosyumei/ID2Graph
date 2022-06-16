@@ -21,7 +21,7 @@ class ReducedKMeans:
         n_dim=2,
         n_init=10,
         max_itr=300,
-        eps=1e-8,
+        tol=1e-4,
         verbose=0,
         random_state=0,
     ):
@@ -29,7 +29,7 @@ class ReducedKMeans:
         self.n_clusters = n_clusters
         self.n_init = n_init
         self.max_itr = max_itr
-        self.eps = eps
+        self.tol = tol
         self.verbose = verbose
 
         random.seed(random_state)
@@ -83,7 +83,7 @@ class ReducedKMeans:
                 loss_new = np.trace(np.dot((X - np.dot(E, C)).T, (X - np.dot(E, C))))
                 losses.append(loss_new)
                 diff = loss - loss_new
-                if diff < self.eps:
+                if diff < self.tol:
                     break
                 loss = loss_new
 
