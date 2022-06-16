@@ -109,3 +109,16 @@ class ReducedKMeans:
         self.labels_ = np.where(self.E_hat == 1)[1]
 
         return self
+
+    def predict(self, X_test):
+        n_row = X_test.shape[0]
+        E = np.zeros((n_row, self.n_clusters))
+        for i in range(n_row):
+            dist_list = [
+                np.sum((X_test[i, :] - self.C_hat[k, :]) ** 2)
+                for k in range(self.n_clusters)
+            ]
+            min_idx = np.argmin(dist_list)
+            E[i, min_idx] = 1
+        predicted_labels = np.where(E == 1)[1]
+        return predicted_labels
