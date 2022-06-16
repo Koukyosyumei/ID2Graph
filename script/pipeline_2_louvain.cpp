@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cassert>
 #include <unistd.h>
-#include "../src/louvain/louvain.h"
+#include "../src/llatvfl/louvain/louvain.h"
 using namespace std;
 
 int skip_round = 0;

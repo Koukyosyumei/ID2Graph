@@ -2,7 +2,7 @@
 #include <limits>
 #include <vector>
 #include <cassert>
-#include "../src/louvain/louvain.h"
+#include "../src/llatvfl/louvain/louvain.h"
 using namespace std;
 
 int main()
