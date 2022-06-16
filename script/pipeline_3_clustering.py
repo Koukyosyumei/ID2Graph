@@ -5,7 +5,6 @@ import glob
 from sklearn.cluster import KMeans
 from sklearn import preprocessing
 from sklearn import metrics
-import pandas as pd
 
 
 def add_args(parser):
@@ -54,7 +53,7 @@ if __name__ == "__main__":
             y_train = lines[num_col + num_party + 1].split(" ")
             y_train = [int(y) for y in y_train]
 
-        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        kmeans = KMeans(n_clusters=2, random_state=int(round_idx)).fit(X_train_minmax)
         c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
         h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
         v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
@@ -83,7 +82,7 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k), i] += 1
 
-        kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
+        kmeans_with_com = KMeans(n_clusters=2, random_state=int(round_idx)).fit(
             np.hstack([X_train_minmax, X_com])
         )
         c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
