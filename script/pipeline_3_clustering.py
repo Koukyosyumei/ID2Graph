@@ -5,13 +5,24 @@ import glob
 from sklearn.cluster import KMeans
 from sklearn import preprocessing
 from sklearn import metrics
-import pandas as pd
+
+from llatvfl.clustering import ReducedKMeans
+
+# from matplotlib import pyplot as plt
+
+label2maker = {0: "o", 1: "x"}
+clustering_type2cls = {"vanila": KMeans, "reduced": ReducedKMeans}
 
 
 def add_args(parser):
     parser.add_argument(
         "-p",
         "--path_to_dir",
+        type=str,
+    )
+    parser.add_argument(
+        "-k",
+        "--clustering_type",
         type=str,
     )
 
@@ -22,10 +33,14 @@ def add_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
+
     list_input_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*.in"))
+    clustering_cls = clustering_type2cls[parsed_args.clustering_type]
+
     print(
         "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
     )
+
     for path_to_input_file in list_input_files:
         round_idx = path_to_input_file.split("/")[-1].split("_")[0]
         with open(path_to_input_file, mode="r") as f:
@@ -52,9 +67,12 @@ if __name__ == "__main__":
             X_train_minmax = min_max_scaler.fit_transform(X_train.T)
 
             y_train = lines[num_col + num_party + 1].split(" ")
-            y_train = [int(y) for y in y_train]
+            y_train = np.array([int(y) for y in y_train])
+            unique_labels = np.unique(y_train)
 
-        kmeans = KMeans(n_clusters=2, random_state=0).fit(X_train_minmax)
+        kmeans = clustering_cls(n_clusters=2, random_state=int(round_idx)).fit(
+            X_train_minmax
+        )
         c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
         h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
         v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
@@ -83,7 +101,7 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k), i] += 1
 
-        kmeans_with_com = KMeans(n_clusters=2, random_state=0).fit(
+        kmeans_with_com = clustering_cls(n_clusters=2, random_state=int(round_idx)).fit(
             np.hstack([X_train_minmax, X_com])
         )
         c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
@@ -103,3 +121,34 @@ if __name__ == "__main__":
         print(
             f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
         )
+
+        """
+        fig = plt.figure()
+        fig.add_subplot(1, 2, 1)
+        for lab in unique_labels:
+            idx = np.where(y_train == lab)
+            plt.scatter(
+                kmeans.X_projected[idx, 0],
+                kmeans.X_projected[idx, 1],
+                c=kmeans.labels_[idx],
+                marker=label2maker[lab],
+                alpha=0.4,
+            )
+        plt.title("baseline")
+
+        fig.add_subplot(1, 2, 2)
+        for lab in unique_labels:
+            idx = np.where(y_train == lab)
+            plt.scatter(
+                kmeans_with_com.X_projected[idx, 0],
+                kmeans_with_com.X_projected[idx, 1],
+                c=kmeans_with_com.labels_[idx],
+                marker=label2maker[lab],
+                s=10,
+                alpha=0.4,
+            )
+        plt.title("our")
+        plt.savefig(
+            os.path.join(parsed_args.path_to_dir, f"{round_idx}_clustering.png")
+        )
+        """

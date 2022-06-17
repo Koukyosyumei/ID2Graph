@@ -16,6 +16,7 @@
     -i : (float) the imlalance of dataset
     -e : (float) coefficient of edge weight (tau in our paper)
     -t : (str) the path to the folder where this script saves all results (default=`result`)
+    -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
     -w : (optional) includes intermidiate nodes for construction of adj_mat (default=false)
     -g : (optional) draw the extracted graph (default=false)
 ```
