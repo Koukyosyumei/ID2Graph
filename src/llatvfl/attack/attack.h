@@ -2,7 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include "xgboost.h"
+#include "../xgboost/xgboost.h"
 using namespace std;
 
 template <typename NodeType>

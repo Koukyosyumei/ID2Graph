@@ -7,7 +7,7 @@
 #include <cassert>
 #include <chrono>
 #include <unistd.h>
-#include "../src/llatvfl/xgboost/attack.h"
+#include "../src/llatvfl/attack/attack.h"
 #include "../src/llatvfl/utils/metric.h"
 using namespace std;
 
