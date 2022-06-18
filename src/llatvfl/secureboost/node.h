@@ -14,28 +14,17 @@
 #include <unordered_map>
 #include <stdexcept>
 #include "party.h"
+#include "../core/node.h"
 #include "../utils/utils.h"
 using namespace std;
 
-struct XGBoostNode
+struct XGBoostNode : Node
 {
     vector<XGBoostParty> *parties;
-    vector<double> y, gradient, hessian;
-    vector<int> idxs;
+    vector<double> gradient, hessian;
     double min_child_weight, lam, gamma, eps;
-    int depth;
-    int active_party_id;
     bool use_only_active_party;
-    int n_job;
-
-    double best_score = -1 * numeric_limits<double>::infinity();
-    int best_party_id, best_col_id, best_threshold_id;
-
-    int party_id, record_id;
-    int row_count, num_parties;
-    double val, score;
     XGBoostNode *left, *right;
-    int is_leaf_flag = -1; // -1:not calculated yer, 0: is not leaf, 1: is leaf
 
     XGBoostNode() {}
     XGBoostNode(vector<XGBoostParty> *parties_, vector<double> y_, vector<double> gradient_,
