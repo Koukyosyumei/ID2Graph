@@ -2,7 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include "secureboost.h"
+#include "xgboost.h"
 using namespace std;
 
 template <typename NodeType>
@@ -98,7 +98,7 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
     return adj_mat;
 }
 
-vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
+vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
                                                                  int target_party_id = -1,
                                                                  bool is_weighted = true)
 {

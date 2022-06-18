@@ -7,8 +7,8 @@
 #include <cassert>
 #include <chrono>
 #include <unistd.h>
-#include "../src/llatvfl/secureboost/attack.h"
-#include "../src/llatvfl/secureboost/metric.h"
+#include "../src/llatvfl/xgboost/attack.h"
+#include "../src/llatvfl/utils/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -132,14 +132,14 @@ int main(int argc, char *argv[])
     result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
-                                                      min_child_weight,
-                                                      depth, min_leaf,
-                                                      learning_rate,
-                                                      boosting_rounds,
-                                                      lam, const_gamma, eps,
-                                                      0, completelly_secure_round,
-                                                      0.5, n_job, true);
+    XGBoostClassifier clf = XGBoostClassifier(subsample_cols,
+                                              min_child_weight,
+                                              depth, min_leaf,
+                                              learning_rate,
+                                              boosting_rounds,
+                                              lam, const_gamma, eps,
+                                              0, completelly_secure_round,
+                                              0.5, n_job, true);
 
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();

@@ -7,7 +7,7 @@
 #include "tree.h"
 using namespace std;
 
-struct SecureBoostBase
+struct XGBoostBase
 {
     double subsample_cols;
     double min_child_weight;
@@ -29,13 +29,13 @@ struct SecureBoostBase
     vector<XGBoostTree> estimators;
     vector<double> logging_loss;
 
-    SecureBoostBase(double subsample_cols_ = 0.8,
-                    double min_child_weight_ = -1 * numeric_limits<double>::infinity(),
-                    int depth_ = 5, int min_leaf_ = 5,
-                    double learning_rate_ = 0.4, int boosting_rounds_ = 5,
-                    double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
-                    int active_party_id_ = -1, int completelly_secure_round_ = 0,
-                    double init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
+    XGBoostBase(double subsample_cols_ = 0.8,
+                double min_child_weight_ = -1 * numeric_limits<double>::infinity(),
+                int depth_ = 5, int min_leaf_ = 5,
+                double learning_rate_ = 0.4, int boosting_rounds_ = 5,
+                double lam_ = 1.5, double gamma_ = 1, double eps_ = 0.1,
+                int active_party_id_ = -1, int completelly_secure_round_ = 0,
+                double init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
@@ -129,9 +129,9 @@ struct SecureBoostBase
     }
 };
 
-struct SecureBoostClassifier : public SecureBoostBase
+struct XGBoostClassifier : public XGBoostBase
 {
-    using SecureBoostBase::SecureBoostBase;
+    using XGBoostBase::XGBoostBase;
 
     double get_loss(vector<double> &y_pred, vector<double> &y)
     {

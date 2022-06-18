@@ -3,7 +3,7 @@
 #include <vector>
 #include <cassert>
 //#include "../secureboost/secureboost.h"
-#include "../src/llatvfl/secureboost/attack.h"
+#include "../src/llatvfl/xgboost/attack.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -50,13 +50,13 @@ int main()
         cin >> y[j];
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
-                                                      min_child_weight,
-                                                      depth, min_leaf,
-                                                      learning_rate,
-                                                      boosting_rounds,
-                                                      lam, const_gamma, eps,
-                                                      -1, 0, 1.0, 2);
+    XGBoostClassifier clf = XGBoostClassifier(subsample_cols,
+                                              min_child_weight,
+                                              depth, min_leaf,
+                                              learning_rate,
+                                              boosting_rounds,
+                                              lam, const_gamma, eps,
+                                              -1, 0, 1.0, 2);
 
     vector<double> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<double> init_pred = clf.get_init_pred(y);
@@ -203,5 +203,5 @@ int main()
         }
     }
 
-    cout << "test_secureboost: all passed!" << endl;
+    cout << "test_xgboost: all passed!" << endl;
 }
