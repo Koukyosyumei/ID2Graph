@@ -23,7 +23,7 @@ int main()
     cin >> num_row >> num_col >> num_party;
     vector<double> y(num_row);
     vector<vector<double>> X(num_row, vector<double>(num_col));
-    vector<Party> parties(num_party);
+    vector<XGBoostParty> parties(num_party);
 
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
@@ -42,7 +42,7 @@ int main()
             }
             temp_count_feature += 1;
         }
-        Party party(x, feature_idxs, i, min_leaf, subsample_cols);
+        XGBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols);
         parties[i] = party;
     }
 
@@ -109,12 +109,12 @@ int main()
     assert(!clf.estimators[0].dtree.right->is_pure());
     assert(!clf.estimators[0].dtree.right->is_leaf());
     assert(clf.estimators[0].dtree.right->val == -0.8347166357912786);
-    Node right_node = *clf.estimators[0].dtree.right;
+    XGBoostNode right_node = *clf.estimators[0].dtree.right;
     assert(right_node.party_id == 1);
     assert(get<0>(right_node.parties->at(right_node.party_id)
                       .lookup_table.at(right_node.record_id)) == 0);
 
-    Node right_right_node = *right_node.right;
+    XGBoostNode right_right_node = *right_node.right;
     assert(right_right_node.party_id == 0);
     assert(get<0>(right_right_node.parties->at(right_right_node.party_id)
                       .lookup_table.at(right_right_node.record_id)) == 0);

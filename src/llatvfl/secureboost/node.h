@@ -17,7 +17,7 @@
 #include "../utils/utils.h"
 using namespace std;
 
-struct Node
+struct XGBoostNode
 {
     vector<XGBoostParty> *parties;
     vector<double> y, gradient, hessian;
@@ -34,14 +34,14 @@ struct Node
     int party_id, record_id;
     int row_count, num_parties;
     double val, score;
-    Node *left, *right;
+    XGBoostNode *left, *right;
     int is_leaf_flag = -1; // -1:not calculated yer, 0: is not leaf, 1: is leaf
 
-    Node() {}
-    Node(vector<XGBoostParty> *parties_, vector<double> y_, vector<double> gradient_,
-         vector<double> hessian_, vector<int> idxs_,
-         double min_child_weight_, double lam_, double gamma_, double eps_,
-         int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
+    XGBoostNode() {}
+    XGBoostNode(vector<XGBoostParty> *parties_, vector<double> y_, vector<double> gradient_,
+                vector<double> hessian_, vector<int> idxs_,
+                double min_child_weight_, double lam_, double gamma_, double eps_,
+                int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -117,12 +117,12 @@ struct Node
         return score;
     }
 
-    Node get_left()
+    XGBoostNode get_left()
     {
         return *left;
     }
 
-    Node get_right()
+    XGBoostNode get_right()
     {
         return *right;
     }
@@ -245,14 +245,14 @@ struct Node
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        left = new Node(parties, y, gradient, hessian, left_idxs, min_child_weight,
-                        lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+        left = new XGBoostNode(parties, y, gradient, hessian, left_idxs, min_child_weight,
+                               lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
-        right = new Node(parties, y, gradient, hessian, right_idxs, min_child_weight,
-                         lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+        right = new XGBoostNode(parties, y, gradient, hessian, right_idxs, min_child_weight,
+                                lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

@@ -5,7 +5,8 @@
 #include "secureboost.h"
 using namespace std;
 
-bool travase_nodes_to_extract_weighted_adjacency_matrix(Node *node,
+template <typename NodeType>
+bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
                                                         int max_depth,
                                                         vector<vector<int>> &adj_mat,
                                                         int target_party_id = -1)
@@ -34,7 +35,8 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(Node *node,
     return skip_flag;
 }
 
-bool travase_nodes_to_extract_adjacency_matrix(Node *node,
+template <typename NodeType>
+bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                vector<vector<int>> &adj_mat,
                                                int target_party_id = -1)
 {
@@ -57,8 +59,8 @@ bool travase_nodes_to_extract_adjacency_matrix(Node *node,
     else
     {
         skip_flag = false;
-        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->left, adj_mat, target_party_id);
-        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->right, adj_mat, target_party_id);
+        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->left, adj_mat, target_party_id);
+        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->right, adj_mat, target_party_id);
 
         if (left_skip_flag && right_skip_flag)
         {
@@ -83,11 +85,11 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
     bool skip_flag;
     if (is_weighted)
     {
-        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
     }
     else
     {
-        skip_flag = travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat, target_party_id);
+        skip_flag = travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, adj_mat, target_party_id);
     }
     if (skip_flag)
     {
