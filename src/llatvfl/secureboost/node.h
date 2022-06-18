@@ -308,36 +308,4 @@ struct XGBoostNode
                 return right->predict_row(xi);
         }
     }
-
-    double get_leaf_purity()
-    {
-        double leaf_purity = 0;
-        if (is_leaf())
-        {
-            int cnt_idxs = idxs.size();
-            if (cnt_idxs == 0)
-            {
-                leaf_purity = 0.0;
-            }
-            else
-            {
-                int cnt_zero = 0;
-                for (int i = 0; i < idxs.size(); i++)
-                {
-                    if (y[idxs[i]] == 0)
-                    {
-                        cnt_zero += 1;
-                    }
-                }
-                leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
-                                  1 - double(cnt_zero) / double(cnt_idxs));
-                leaf_purity = leaf_purity * (double(cnt_idxs) / double(y.size()));
-            }
-        }
-        else
-        {
-            leaf_purity = left->get_leaf_purity() + right->get_leaf_purity();
-        }
-        return leaf_purity;
-    }
 };

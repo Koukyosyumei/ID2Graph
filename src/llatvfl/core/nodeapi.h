@@ -15,7 +15,39 @@ struct NodeAPI
 
     NodeAPI(){};
 
-    string print(NodeType node, bool show_purity = false, bool binary_color = true, int target_party_id = -1)
+    double get_leaf_purity(NodeType *node)
+    {
+        double leaf_purity = 0;
+        if (node->is_leaf())
+        {
+            int cnt_idxs = node->idxs.size();
+            if (cnt_idxs == 0)
+            {
+                leaf_purity = 0.0;
+            }
+            else
+            {
+                int cnt_zero = 0;
+                for (int i = 0; i < node->idxs.size(); i++)
+                {
+                    if (node->y[node->idxs[i]] == 0)
+                    {
+                        cnt_zero += 1;
+                    }
+                }
+                leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
+                                  1 - double(cnt_zero) / double(cnt_idxs));
+                leaf_purity = leaf_purity * (double(cnt_idxs) / double(node->y.size()));
+            }
+        }
+        else
+        {
+            leaf_purity = get_leaf_purity(node->left) + get_leaf_purity(node->right);
+        }
+        return leaf_purity;
+    }
+
+    string print(NodeType *node, bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
         pair<string, bool> result = recursive_print(node, "", false, show_purity, binary_color, target_party_id);
         if (result.second)
@@ -28,12 +60,12 @@ struct NodeAPI
         }
     }
 
-    string print_leaf(NodeType node, bool show_purity, bool binary_color)
+    string print_leaf(NodeType *node, bool show_purity, bool binary_color)
     {
-        string node_info = to_string(node.get_val());
+        string node_info = to_string(node->get_val());
         if (show_purity)
         {
-            int cnt_idxs = node.idxs.size();
+            int cnt_idxs = node->idxs.size();
             if (cnt_idxs == 0)
             {
                 node_info += ", null";
@@ -41,9 +73,9 @@ struct NodeAPI
             else
             {
                 int cnt_zero = 0;
-                for (int i = 0; i < node.idxs.size(); i++)
+                for (int i = 0; i < node->idxs.size(); i++)
                 {
-                    if (node.y[node.idxs[i]] == 0)
+                    if (node->y[node->idxs[i]] == 0)
                     {
                         cnt_zero += 1;
                     }
@@ -84,12 +116,12 @@ struct NodeAPI
         {
             node_info += ", [";
             int temp_id;
-            for (int i = 0; i < node.idxs.size(); i++)
+            for (int i = 0; i < node->idxs.size(); i++)
             {
-                temp_id = node.idxs[i];
+                temp_id = node->idxs[i];
                 if (binary_color)
                 {
-                    if (node.y[temp_id] == 0)
+                    if (node->y[temp_id] == 0)
                     {
                         node_info += "\033[32m";
                         node_info += to_string(temp_id);
@@ -112,14 +144,14 @@ struct NodeAPI
         return node_info;
     }
 
-    pair<string, bool> recursive_print(NodeType node, string prefix, bool isleft, bool show_purity,
+    pair<string, bool> recursive_print(NodeType *node, string prefix, bool isleft, bool show_purity,
                                        bool binary_color, int target_party_id = -1)
     {
         string node_info;
         bool skip_flag;
-        if (node.is_leaf())
+        if (node->is_leaf())
         {
-            skip_flag = node.depth <= 0 && target_party_id != -1 && node.party_id != target_party_id;
+            skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
             if (skip_flag)
             {
                 node_info = "";
@@ -133,9 +165,9 @@ struct NodeAPI
         }
         else
         {
-            node_info += to_string(node.get_party_id());
+            node_info += to_string(node->get_party_id());
             node_info += ", ";
-            node_info += to_string(node.get_record_id());
+            node_info += to_string(node->get_record_id());
             node_info = prefix + "|-- " + node_info;
 
             string next_prefix = "";
@@ -148,9 +180,9 @@ struct NodeAPI
                 next_prefix += "     ";
             }
 
-            pair<string, bool> left_node_info_and_skip_flag = recursive_print(node.get_left(), prefix + next_prefix, true,
+            pair<string, bool> left_node_info_and_skip_flag = recursive_print(node->left, prefix + next_prefix, true,
                                                                               show_purity, binary_color, target_party_id);
-            pair<string, bool> right_node_info_and_skip_flag = recursive_print(node.get_right(), prefix + next_prefix, false,
+            pair<string, bool> right_node_info_and_skip_flag = recursive_print(node->right, prefix + next_prefix, false,
                                                                                show_purity, binary_color, target_party_id);
             if (left_node_info_and_skip_flag.second && right_node_info_and_skip_flag.second)
             {
