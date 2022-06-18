@@ -3,12 +3,15 @@
 #include <iterator>
 #include <limits>
 #include <iostream>
+#include "../core/nodeapi.h"
 using namespace std;
 
 template <typename NodeType>
 struct Tree
 {
     NodeType dtree;
+    NodeAPI<NodeType> nodeapi;
+
     Tree() {}
 
     NodeType &get_root_node()
@@ -55,7 +58,7 @@ struct Tree
 
     string print(bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
-        return dtree.print(show_purity, binary_color, target_party_id);
+        return nodeapi.print(dtree, show_purity, binary_color, target_party_id);
     }
 
     double get_leaf_purity()
