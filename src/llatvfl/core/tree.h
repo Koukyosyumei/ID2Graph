@@ -55,11 +55,11 @@ struct Tree
 
     string print(bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
-        return dtree->print(show_purity, binary_color, target_party_id);
+        return dtree.print(show_purity, binary_color, target_party_id);
     }
 
     double get_leaf_purity()
     {
-        return dtree->get_leaf_purity();
+        return dtree.get_leaf_purity();
     }
 };

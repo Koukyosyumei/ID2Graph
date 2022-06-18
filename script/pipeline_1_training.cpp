@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     scanf("%d %d %d", &num_row_train, &num_col, &num_party);
     vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
     vector<double> y_train(num_row_train);
-    vector<Party> parties(num_party);
+    vector<XGBoostParty> parties(num_party);
 
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        Party party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
+        XGBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
