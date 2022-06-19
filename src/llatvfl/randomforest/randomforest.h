@@ -63,7 +63,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         {
             vector<double> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
-                y_pred[j] += y_pred_temp[j] / estimators_num;
+                y_pred[j] += y_pred_temp[j] / double(estimators_num);
         }
 
         return y_pred;

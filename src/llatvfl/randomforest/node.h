@@ -121,7 +121,7 @@ struct RandomForestNode : Node
         double pos_ratio = 0;
         for (int r = 0; r < idxs.size(); r++)
         {
-            pos_ratio = y[idxs[r]];
+            pos_ratio += y[idxs[r]];
         }
         return pos_ratio / double(idxs.size());
     }
