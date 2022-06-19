@@ -2,6 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
 using namespace std;
 
@@ -98,7 +99,40 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
     return adj_mat;
 }
 
+vector<vector<int>> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
+                                                       bool is_weighted = true)
+{
+    int num_row = tree->dtree.idxs.size();
+    vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
+    bool skip_flag;
+    if (is_weighted)
+    {
+        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+    }
+    else
+    {
+        skip_flag = travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, adj_mat, target_party_id);
+    }
+    if (skip_flag)
+    {
+        adj_mat = vector<vector<int>>(num_row, vector<int>(num_row, 0));
+    }
+    return adj_mat;
+}
+
 vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                 int target_party_id = -1,
+                                                                 bool is_weighted = true)
+{
+    vector<vector<vector<int>>> result(model->estimators.size());
+    for (int i = 0; i < model->estimators.size(); i++)
+    {
+        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
+    }
+    return result;
+}
+
+vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
                                                                  int target_party_id = -1,
                                                                  bool is_weighted = true)
 {
