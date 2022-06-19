@@ -33,6 +33,14 @@ struct RandomForestParty : Party
         int row_count = idxs.size();
         int recoed_id = 0;
 
+        double y_pos_cnt = 0;
+        double y_neg_cnt = 0;
+        for (int r = 0; r < row_count; r++)
+        {
+            y_pos_cnt += y[idxs[r]];
+        }
+        y_neg_cnt = row_count - y_pos_cnt;
+
         for (int i = 0; i < subsample_col_count; i++)
         {
             // extract the necessary data
@@ -68,35 +76,54 @@ struct RandomForestParty : Party
             // enumerate all threshold value (missing value goto right)
             int current_min_idx = 0;
             int cumulative_left_size = 0;
+            int cumulative_left_y_pos_cnt = 0;
+            int cumulative_left_y_neg_cnt = 0;
             for (int p = 0; p < threshold_candidates.size(); p++)
             {
-                double temp_left_y_pos_cnt;
-                double temp_right_y_pos_cnt;
-                int temp_left_size = 0;
-                int temp_right_size = 0;
-
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= threshold_candidates[p])
                     {
-                        temp_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
+                        cumulative_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
+                        cumulative_left_y_neg_cnt += 1.0 - y[idxs[x_col_idxs[r]]];
                         cumulative_left_size += 1;
                     }
                     else
                     {
-                        temp_right_y_pos_cnt += y[idxs[x_col_idxs[r]]];
                         current_min_idx = r;
                         break;
                     }
                 }
 
-                temp_right_size = row_count - cumulative_left_size;
-                double temp_left_giniimp = 1 - (temp_left_y_pos_cnt / temp_left_size) *
-                                                   (temp_left_y_pos_cnt / temp_left_size);
-                double temp_right_giniimp = 1 - (temp_right_y_pos_cnt / temp_right_size) *
-                                                    (temp_right_y_pos_cnt / temp_right_size);
-                double temp_giniimp = (temp_left_giniimp * (temp_left_size / not_missing_values_count)) +
-                                      (temp_left_giniimp * (temp_left_size / not_missing_values_count));
+                double temp_left_size = double(cumulative_left_size);
+                double temp_right_size = double(row_count) - double(cumulative_left_size);
+                double temp_left_y_pos_cnt = double(cumulative_left_y_pos_cnt);
+                double temp_left_y_neg_cnt = double(cumulative_left_y_neg_cnt);
+                double temp_right_y_pos_cnt = double(y_pos_cnt) - temp_left_y_pos_cnt;
+                double temp_right_y_neg_cnt = double(y_neg_cnt) - temp_left_y_neg_cnt;
+
+                double temp_left_giniimp = 0;
+                if (temp_left_size > 0)
+                {
+                    temp_left_giniimp = 1 -
+                                        (temp_left_y_pos_cnt / double(temp_left_size)) *
+                                            (temp_left_y_pos_cnt / double(temp_left_size)) -
+                                        (temp_left_y_neg_cnt / double(temp_left_size)) *
+                                            (temp_left_y_neg_cnt / double(temp_left_size));
+                }
+
+                double temp_right_giniimp = 0;
+                if (temp_right_size > 0)
+                {
+                    temp_right_giniimp = 1 -
+                                         (temp_right_y_pos_cnt / double(temp_right_size)) *
+                                             (temp_right_y_pos_cnt / double(temp_right_size)) -
+                                         (temp_right_y_neg_cnt / double(temp_right_size)) *
+                                             (temp_right_y_neg_cnt / double(temp_right_size));
+                }
+
+                double temp_giniimp = (temp_left_giniimp * (double(temp_left_size) / double(not_missing_values_count))) +
+                                      (temp_right_giniimp * (double(temp_right_size) / double(not_missing_values_count)));
                 // TODO: support multi-class
 
                 if (cumulative_left_size >= min_leaf &&

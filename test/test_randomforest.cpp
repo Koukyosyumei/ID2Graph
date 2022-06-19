@@ -50,6 +50,24 @@ int main()
     // --- Check Training --- //
     clf.fit(parties, y);
 
+    vector<double> predict_raw = clf.predict_raw(X);
+    for (int i = 0; i < predict_raw.size(); i++)
+    {
+        cout << predict_raw[i] << " ";
+    }
+    cout << endl;
+
+    assert(clf.estimators[0].dtree.giniimp == 0.46875);
+    assert(clf.estimators[0].dtree.score == 0.16875);
+    assert(clf.estimators[0].dtree.best_party_id == 0);
+    assert(clf.estimators[0].dtree.best_col_id == 0);
+    assert(clf.estimators[0].dtree.best_threshold_id == 2);
+
+    cout << clf.estimators[0].dtree.party_id << endl;
+
+    cout << get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) << endl;
+    cout << get<1>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) << endl;
+
     /*
     assert(parties[0].get_lookup_table().size() == 4);
     assert(parties[1].get_lookup_table().size() == 2);

@@ -140,7 +140,6 @@ struct RandomForestNode : Node
                 {
                     temp_giniimp = search_results[j][k];
                     temp_score = giniimp - temp_giniimp;
-
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
