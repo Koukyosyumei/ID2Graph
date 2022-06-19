@@ -1,3 +1,5 @@
+g++ -pthread -o script/build/test.out test/test_randomforest.cpp
+./script/build/test.out < test/data/test_data.in
 g++ -pthread -o script/build/test.out test/test_secureboost.cpp
 ./script/build/test.out < test/data/test_data.in
 g++ -o script/build/test.out test/test_metric.cpp

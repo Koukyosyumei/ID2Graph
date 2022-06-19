@@ -199,8 +199,4 @@ struct Party
                              make_tuple(feature_opt_id, threshold_opt, missing_dir));
         return lookup_table.size() - 1;
     }
-
-    virtual vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
-                                                                     vector<double> &hessian,
-                                                                     vector<int> &idxs) = 0;
 };
