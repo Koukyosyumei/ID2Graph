@@ -49,7 +49,7 @@ struct Party
         seed = seed_;
 
         col_count = x.at(0).size();
-        subsample_col_count = subsample_cols * col_count;
+        subsample_col_count = int(subsample_cols * double(col_count));
     }
 
     void validate_arguments(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,

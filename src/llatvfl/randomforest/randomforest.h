@@ -13,22 +13,27 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     double subsample_cols;
     int depth;
     int min_leaf;
+    float max_samples_ratio;
     int num_trees;
     bool use_ispure;
     int active_party_id;
     int n_job;
+    int seed;
 
     vector<RandomForestTree> estimators;
 
-    RandomForestClassifier(double subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 5,
-                           int num_trees_ = 5, int active_party_id_ = -1, int n_job_ = 1)
+    RandomForestClassifier(double subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
+                           float max_samples_ratio_ = 1.0, int num_trees_ = 5,
+                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
         subsample_cols = subsample_cols_;
         depth = depth_;
         min_leaf = min_leaf_;
+        max_samples_ratio = max_samples_ratio_;
         num_trees = num_trees_;
         active_party_id = active_party_id_;
         n_job = n_job_;
+        seed = seed_;
     }
 
     void load_estimators(vector<RandomForestTree> _estimators)
@@ -48,8 +53,9 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree boosting_tree = RandomForestTree();
-            boosting_tree.fit(&parties, y, min_leaf, depth, active_party_id, n_job);
+            boosting_tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, active_party_id, n_job, seed);
             estimators.push_back(boosting_tree);
+            seed += 1;
         }
     }
 

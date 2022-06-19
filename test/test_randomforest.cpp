@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <limits>
 #include <vector>
 #include <cassert>
@@ -9,6 +10,7 @@ const int min_leaf = 1;
 const int depth = 2;
 const int num_trees = 1;
 const double subsample_cols = 1.0;
+const double max_samples_ratio = 1.0;
 
 int main()
 {
@@ -44,8 +46,8 @@ int main()
         cin >> y[j];
 
     // --- Check Initialization --- //
-    RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf, num_trees,
-                                                        -1, 1);
+    RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
+                                                        max_samples_ratio, num_trees, -1, 1);
 
     // --- Check Training --- //
     clf.fit(parties, y);
@@ -67,12 +69,15 @@ int main()
     vector<int> test_idxs_left = {0, 2, 7};
     vector<int> test_idxs_right = {1, 3, 4, 5, 6};
     vector<int> idxs_left = clf.estimators[0].dtree.left->idxs;
+    sort(idxs_left.begin(), idxs_left.end());
     assert(idxs_left.size() == test_idxs_left.size());
     for (int i = 0; i < idxs_left.size(); i++)
     {
         assert(idxs_left[i] == test_idxs_left[i]);
     }
+
     vector<int> idxs_right = clf.estimators[0].dtree.right->idxs;
+    sort(idxs_right.begin(), idxs_right.end());
     assert(idxs_right.size() == test_idxs_right.size());
     for (int i = 0; i < idxs_right.size(); i++)
     {
@@ -92,6 +97,8 @@ int main()
     vector<int> test_idxs_right_right = {1, 4, 5};
     vector<int> idxs_right_left = clf.estimators[0].dtree.right->left->idxs;
     vector<int> idxs_right_right = clf.estimators[0].dtree.right->right->idxs;
+    sort(idxs_right_left.begin(), idxs_right_left.end());
+    sort(idxs_right_right.begin(), idxs_right_right.end());
     for (int i = 0; i < test_idxs_right_left.size(); i++)
     {
         assert(test_idxs_right_left[i] == idxs_right_left[i]);
