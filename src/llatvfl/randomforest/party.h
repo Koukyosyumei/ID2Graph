@@ -1,3 +1,4 @@
+#pragma once
 #include "../core/party.h"
 using namespace std;
 
