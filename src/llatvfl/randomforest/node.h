@@ -108,7 +108,10 @@ struct RandomForestNode : Node
         {
             temp_y_pos_cnt += y[idxs[r]];
         }
-        double giniimp = 1 - (temp_y_pos_cnt / idxs.size()) * (temp_y_pos_cnt / idxs.size());
+        double temp_y_neg_cnt = idxs.size() - temp_y_pos_cnt;
+        double giniimp = 1 -
+                         (temp_y_pos_cnt / idxs.size()) * (temp_y_pos_cnt / idxs.size()) -
+                         (temp_y_neg_cnt / idxs.size()) * (temp_y_neg_cnt / idxs.size());
         return giniimp;
     }
 
