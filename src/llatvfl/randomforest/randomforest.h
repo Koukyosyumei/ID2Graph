@@ -4,10 +4,11 @@
 #include <limits>
 #include <iostream>
 #include <cmath>
+#include "../core/model.h"
 #include "tree.h"
 using namespace std;
 
-struct RandomForestClassifier
+struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 {
     double subsample_cols;
     int depth;

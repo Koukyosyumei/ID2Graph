@@ -4,10 +4,11 @@
 #include <limits>
 #include <iostream>
 #include <cmath>
+#include "../core/model.h"
 #include "tree.h"
 using namespace std;
 
-struct XGBoostBase
+struct XGBoostBase : TreeModelBase<XGBoostParty>
 {
     double subsample_cols;
     double min_child_weight;
