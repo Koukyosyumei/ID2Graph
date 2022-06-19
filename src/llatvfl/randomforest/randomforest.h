@@ -1,0 +1,80 @@
+#pragma once
+#include <vector>
+#include <iterator>
+#include <limits>
+#include <iostream>
+#include <cmath>
+#include "tree.h"
+using namespace std;
+
+struct RandomForestClassifier
+{
+    double subsample_cols;
+    int depth;
+    int min_leaf;
+    int num_trees;
+    bool use_ispure;
+    int active_party_id;
+    int n_job;
+
+    vector<RandomForestTree> estimators;
+
+    RandomForestClassifier(double subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 5,
+                           int num_trees_ = 5, int active_party_id_ = -1, int n_job_ = 1)
+    {
+        subsample_cols = subsample_cols_;
+        depth = depth_;
+        min_leaf = min_leaf_;
+        num_trees = num_trees_;
+        active_party_id = active_party_id_;
+        n_job = n_job_;
+    }
+
+    void load_estimators(vector<RandomForestTree> _estimators)
+    {
+        estimators = _estimators;
+    }
+
+    vector<RandomForestTree> get_estimators()
+    {
+        return estimators;
+    }
+
+    void fit(vector<RandomForestParty> &parties, vector<double> &y)
+    {
+        int row_count = y.size();
+
+        for (int i = 0; i < num_trees; i++)
+        {
+            RandomForestTree boosting_tree = RandomForestTree();
+            boosting_tree.fit(&parties, y, min_leaf, depth, active_party_id, n_job);
+            estimators.push_back(boosting_tree);
+        }
+    }
+
+    // retuen the average score of all trees (sklearn-style)
+    vector<double> predict_raw(vector<vector<double>> &X)
+    {
+        int row_count = X.size();
+        vector<double> y_pred(row_count, 0);
+        int estimators_num = estimators.size();
+        for (int i = 0; i < estimators_num; i++)
+        {
+            vector<double> y_pred_temp = estimators[i].predict(X);
+            for (int j = 0; j < row_count; j++)
+                y_pred[j] += y_pred_temp[j] / estimators_num;
+        }
+
+        return y_pred;
+    }
+
+    vector<double> predict_proba(vector<vector<double>> &x)
+    {
+        vector<double> raw_score = predict_raw(x);
+        int row_count = x.size();
+        vector<double> predicted_probas(row_count);
+        for (int i = 0; i < row_count; i++)
+            predicted_probas[i] = sigmoid(raw_score[i]);
+        return predicted_probas;
+    }
+};

@@ -11,7 +11,7 @@ struct RandomForestTree : Tree<RandomForestNode>
 {
     RandomForestTree() {}
     void fit(vector<RandomForestParty> *parties, vector<double> y,
-             int min_leaf, int depth, int active_party_id = -1, bool use_only_active_party = false, int n_job = 1)
+             int min_leaf, int depth, int active_party_id = -1, int n_job = 1)
     {
         vector<int> idxs(y.size());
         iota(idxs.begin(), idxs.end(), 0);
@@ -19,6 +19,6 @@ struct RandomForestTree : Tree<RandomForestNode>
         {
             parties->at(i).subsample_columns();
         }
-        dtree = RandomForestNode(parties, y, idxs, depth, active_party_id, use_only_active_party, n_job);
+        dtree = RandomForestNode(parties, y, idxs, depth, active_party_id, n_job);
     }
 };
