@@ -63,10 +63,9 @@ int main()
     assert(clf.estimators[0].dtree.best_col_id == 0);
     assert(clf.estimators[0].dtree.best_threshold_id == 2);
 
-    cout << clf.estimators[0].dtree.party_id << endl;
-
-    cout << get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) << endl;
-    cout << get<1>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) << endl;
+    assert(clf.estimators[0].dtree.party_id == 0);
+    assert(get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) == 0);
+    assert(get<1>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)) == 16);
 
     /*
     assert(parties[0].get_lookup_table().size() == 4);
