@@ -21,41 +21,27 @@ using namespace std;
 struct RandomForestNode : Node
 {
     vector<RandomForestParty> *parties;
-    bool use_only_active_party;
     RandomForestNode *left, *right;
 
     double giniimp;
 
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<double> y_,
-                     vector<int> idxs_, int depth_, int active_party_id_ = -1,
-                     bool use_only_active_party_ = false, int n_job_ = 1)
+                     vector<int> idxs_, int depth_, int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
         idxs = idxs_;
         depth = depth_;
         active_party_id = active_party_id_;
-        use_only_active_party = use_only_active_party_;
         n_job = n_job_;
-
-        try
-        {
-            if (use_only_active_party && active_party_id > parties->size())
-            {
-                throw invalid_argument("invalid active_party_id");
-            }
-        }
-        catch (std::exception &e)
-        {
-            std::cout << e.what() << std::endl;
-        }
 
         row_count = idxs.size();
         num_parties = parties->size();
 
         giniimp = compute_giniimp();
         val = compute_weight();
+
         tuple<int, int, int> best_split = find_split();
 
         if (is_leaf())
@@ -128,10 +114,13 @@ struct RandomForestNode : Node
 
     double compute_weight()
     {
-        /*
-        TODO:
-            compute the majority classs
-         */
+        // TODO: support multi class
+        double pos_ratio = 0;
+        for (int r = 0; r < idxs.size(); r++)
+        {
+            pos_ratio = y[idxs[r]];
+        }
+        return pos_ratio / double(idxs.size());
     }
 
     void find_split_per_party(int party_id_start, int temp_num_parties)
@@ -165,34 +154,27 @@ struct RandomForestNode : Node
     {
         double temp_score, temp_left_grad, temp_left_hess;
 
-        if (use_only_active_party)
+        if (n_job == 1)
         {
-            find_split_per_party(active_party_id, 1);
+            find_split_per_party(0, num_parties);
         }
         else
         {
-            if (n_job == 1)
-            {
-                find_split_per_party(0, num_parties);
-            }
-            else
-            {
-                vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
+            vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
 
-                int cnt_parties = 0;
-                vector<thread> threads_parties;
-                for (int i = 0; i < n_job; i++)
-                {
-                    int local_num_parties = num_parties_per_thread[i];
-                    thread temp_th([this, cnt_parties, local_num_parties]
-                                   { this->find_split_per_party(cnt_parties, local_num_parties); });
-                    threads_parties.push_back(move(temp_th));
-                    cnt_parties += num_parties_per_thread[i];
-                }
-                for (int i = 0; i < num_parties; i++)
-                {
-                    threads_parties[i].join();
-                }
+            int cnt_parties = 0;
+            vector<thread> threads_parties;
+            for (int i = 0; i < n_job; i++)
+            {
+                int local_num_parties = num_parties_per_thread[i];
+                thread temp_th([this, cnt_parties, local_num_parties]
+                               { this->find_split_per_party(cnt_parties, local_num_parties); });
+                threads_parties.push_back(move(temp_th));
+                cnt_parties += num_parties_per_thread[i];
+            }
+            for (int i = 0; i < num_parties; i++)
+            {
+                threads_parties[i].join();
             }
         }
         score = best_score;
@@ -210,13 +192,13 @@ struct RandomForestNode : Node
                 right_idxs.push_back(idxs[i]);
 
         left = new RandomForestNode(parties, y, left_idxs,
-                                    depth - 1, active_party_id, use_only_active_party);
+                                    depth - 1, active_party_id);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, right_idxs,
-                                     depth - 1, active_party_id, use_only_active_party);
+                                     depth - 1, active_party_id);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
