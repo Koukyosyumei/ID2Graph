@@ -56,6 +56,18 @@ struct SparseMatrixDOK
         }
     }
 
+    DataType &operator()(unsigned int i, unsigned int j)
+    {
+        if (is_symmetric && (i < j))
+        {
+            return um_ij2w[make_pair(j, i)];
+        }
+        else
+        {
+            return um_ij2w[make_pair(i, j)];
+        }
+    }
+
     void add(unsigned int i, unsigned int j, DataType w)
     {
         if (is_symmetric && (i < j))

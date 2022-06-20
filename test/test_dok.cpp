@@ -17,11 +17,12 @@ int main()
                                           {0, 0.4, 0}};
     vector<vector<float>> adj_mat = sm.to_densematrix(0);
 
-    for (int i = 0; i < adj_mat.size(); i++)
+    for (int i = 0; i < test_adj_mat.size(); i++)
     {
         assert(adj_mat.size() == test_adj_mat.size());
-        for (int j = 0; j < adj_mat[i].size(); j++)
+        for (int j = 0; j < test_adj_mat[i].size(); j++)
         {
+            assert(sm(i, j) == test_adj_mat[i][j]);
             assert(adj_mat[i][j] == test_adj_mat[i][j]);
         }
     }
@@ -47,11 +48,12 @@ int main()
                                                 {1.0, 0.4, 0}};
     vector<vector<float>> adj_mat_symme = sm_symme.to_densematrix(0);
 
-    for (int i = 0; i < adj_mat_symme.size(); i++)
+    for (int i = 0; i < test_adj_mat_symme.size(); i++)
     {
         assert(adj_mat_symme.size() == test_adj_mat_symme.size());
-        for (int j = 0; j < adj_mat_symme[i].size(); j++)
+        for (int j = 0; j < test_adj_mat_symme[i].size(); j++)
         {
+            assert(sm_symme(i, j) == test_adj_mat_symme[i][j]);
             assert(adj_mat_symme[i][j] == test_adj_mat_symme[i][j]);
         }
     }
