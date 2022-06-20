@@ -1,14 +1,37 @@
 #pragma once
+#include <random>
 #include <unordered_map>
 using namespace std;
+
+struct HashPair
+{
+
+    static size_t m_hash_pair_random;
+
+    template <class T1, class T2>
+    size_t operator()(const pair<T1, T2> &p) const
+    {
+
+        auto hash1 = hash<T1>{}(p.first);
+        auto hash2 = hash<T2>{}(p.second);
+
+        size_t seed = 0;
+        seed ^= hash1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hash2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= m_hash_pair_random + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+};
+
+size_t HashPair::m_hash_pair_random = (size_t)random_device()();
 
 template <typename DataType>
 struct SparseMatrixDOK
 {
     size_t dim_row = 0;
     size_t dim_column = 0;
-    DataType zeto_val = 0;
-    unordered_map<pair<unsigned int, unsigned int>, DataType> um_ij2w;
+    DataType zero_val = 0;
+    unordered_map<pair<unsigned int, unsigned int>, DataType, HashPair> um_ij2w;
 
     SparseMatrixDOK(){};
     SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0)
@@ -38,7 +61,7 @@ struct SparseMatrixDOK
     vector<vector<DataType>> to_adjacency_matrix(DataType init_val = 0)
     {
         vector<vector<DataType>> adj_mat(dim_row, vector<DataType>(dim_column, init_val));
-        unordered_map<pair<unsigned int, unsigned int>, DataType>::iterator it = um_ij2w.begin();
+        auto it = um_ij2w.begin();
 
         while (it != um_ij2w.end())
         {
