@@ -79,8 +79,8 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
     return skip_flag;
 }
 
-vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
-                                                       bool is_weighted = true)
+SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
+                                                        bool is_weighted = true)
 {
     int num_row = tree->dtree.y.size();
     SparseMatrixDOK<int> adj_mat(num_row, num_row, 0);
@@ -97,11 +97,11 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
     {
         adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0);
     }
-    return adj_mat.to_densematrix();
+    return adj_mat;
 }
 
-vector<vector<int>> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
-                                                       bool is_weighted = true)
+SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
+                                                        bool is_weighted = true)
 {
     int num_row = tree->dtree.y.size();
     SparseMatrixDOK<int> adj_mat(num_row, num_row, 0);
@@ -118,14 +118,14 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(RandomForestTree *tree, i
     {
         adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0);
     }
-    return adj_mat.to_densematrix();
+    return adj_mat;
 }
 
-vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
-                                                                 int target_party_id = -1,
-                                                                 bool is_weighted = true)
+vector<SparseMatrixDOK<int>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                  int target_party_id = -1,
+                                                                  bool is_weighted = true)
 {
-    vector<vector<vector<int>>> result(model->estimators.size());
+    vector<SparseMatrixDOK<int>> result(model->estimators.size());
     for (int i = 0; i < model->estimators.size(); i++)
     {
         result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
@@ -133,11 +133,11 @@ vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(XGBoostBase *mo
     return result;
 }
 
-vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
-                                                                 int target_party_id = -1,
-                                                                 bool is_weighted = true)
+vector<SparseMatrixDOK<int>> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
+                                                                  int target_party_id = -1,
+                                                                  bool is_weighted = true)
 {
-    vector<vector<vector<int>>> result(model->estimators.size());
+    vector<SparseMatrixDOK<int>> result(model->estimators.size());
     for (int i = 0; i < model->estimators.size(); i++)
     {
         result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
