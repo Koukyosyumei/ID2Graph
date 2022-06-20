@@ -205,7 +205,7 @@ if __name__ == "__main__":
         y_train,
         X_val,
         y_val,
-        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}.in"),
+        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"),
         col_alloc=None,
         feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
         parties_num=2,
