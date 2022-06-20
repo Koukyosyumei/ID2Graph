@@ -8,8 +8,10 @@
 
 ```
     -d : (str) the name of dataset
+    -m : (str) type of the model
     -r : (int) total number of rounds for training
     -c : (int) the number of completely secure rounds
+    -h : (int) depth
     -j : (int) the number of jobs
     -n : (int) the number of data records sampled for training
     -f : (float) the ratio of features owned by the active party

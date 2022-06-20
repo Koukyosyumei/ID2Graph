@@ -12,7 +12,6 @@
 using namespace std;
 
 const int min_leaf = 1;
-const int depth = 3;
 const int max_bin = 32;
 const double learning_rate = 0.3;
 const double lam = 0.0;
@@ -25,6 +24,7 @@ string folderpath;
 string fileprefix;
 int boosting_rounds = 20;
 int completelly_secure_round = 0;
+int depth = 3;
 int n_job = 1;
 bool use_missing_value = false;
 bool is_weighted_graph = false;
@@ -32,7 +32,7 @@ bool is_weighted_graph = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:j:mw")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:h:j:mw")) != -1)
     {
         switch (opt)
         {
@@ -47,6 +47,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'c':
             completelly_secure_round = stoi(string(optarg));
+            break;
+        case 'h':
+            depth = stoi(string(optarg));
             break;
         case 'j':
             n_job = stoi(string(optarg));
