@@ -69,7 +69,7 @@ fi
 
 python3 script/pipeline_5_report.py -p ${TEMPD} > "${TEMPD}/report.md"
 
-rm ${TEMPD}/*.in
+#rm ${TEMPD}/*.in
 rm ${TEMPD}/*.txt
 rm ${TEMPD}/*.out
 rm ${TEMPD}/*_leak.csv
