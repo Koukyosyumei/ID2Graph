@@ -19,6 +19,7 @@ int main()
 
     for (int i = 0; i < adj_mat.size(); i++)
     {
+        assert(adj_mat.size() == test_adj_mat.size());
         for (int j = 0; j < adj_mat[i].size(); j++)
         {
             assert(adj_mat[i][j] == test_adj_mat[i][j]);
@@ -39,6 +40,7 @@ int main()
 
     for (int i = 0; i < adj_mat_symme.size(); i++)
     {
+        assert(adj_mat_symme.size() == test_adj_mat_symme.size());
         for (int j = 0; j < adj_mat_symme[i].size(); j++)
         {
             assert(adj_mat_symme[i][j] == test_adj_mat_symme[i][j]);
