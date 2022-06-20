@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <random>
 #include <utility>
 #include <unordered_map>
@@ -33,18 +34,26 @@ struct SparseMatrixDOK
     size_t dim_column = 0;
     DataType zero_val = 0;
     bool is_symmetric = false;
-    // vector<size_t> row2nonzero_count;
-    // vector<vector<int>> row2nonzero_idx;
+    bool save_row2nonzero_idx = true;
+
+    vector<vector<int>> row2nonzero_idx;
 
     unordered_map<pair<unsigned int, unsigned int>, DataType, HashPair> um_ij2w;
 
     SparseMatrixDOK(){};
-    SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0, bool is_symmetric_ = false)
+    SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0,
+                    bool is_symmetric_ = false, bool save_row2nonzero_idx_ = false)
     {
         dim_row = dim_row_;
         dim_column = dim_column_;
         zero_val = zero_val_;
         is_symmetric = is_symmetric_;
+        save_row2nonzero_idx = save_row2nonzero_idx_;
+
+        if (save_row2nonzero_idx)
+        {
+            row2nonzero_idx.resize(dim_row);
+        }
     }
 
     void add(unsigned int i, unsigned int j, DataType w)
@@ -62,11 +71,24 @@ struct SparseMatrixDOK
             if (um_ij2w[temp_pair] == zero_val)
             {
                 um_ij2w.erase(temp_pair);
+
+                if (save_row2nonzero_idx)
+                {
+                    row2nonzero_idx[i].erase(remove_if(row2nonzero_idx[i].begin(),
+                                                       row2nonzero_idx[i].end(),
+                                                       [j](int v)
+                                                       { return v == j; }),
+                                             row2nonzero_idx[i].cend());
+                }
             }
         }
         else
         {
             um_ij2w.emplace(temp_pair, w);
+            if (save_row2nonzero_idx)
+            {
+                row2nonzero_idx[i].push_back(j);
+            }
         }
     }
 
