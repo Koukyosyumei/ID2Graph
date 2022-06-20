@@ -5,7 +5,7 @@
 
 int main()
 {
-    SparseMatrixDOK<float> sm = SparseMatrixDOK<float>(3, 3, 0);
+    SparseMatrixDOK<float> sm = SparseMatrixDOK<float>(3, 3, 0, false, true);
     sm.add(1, 1, 0.5);
     sm.add(2, 1, 0.1);
     sm.add(1, 1, -0.5);
@@ -28,15 +28,15 @@ int main()
     }
 
     vector<vector<int>> test_row2nonzero_idx = {{2}, {}, {1}};
-    for (int i = 0; i < sm.row2nonzero_idx.size(); i++)
+    for (int i = 0; i < test_row2nonzero_idx.size(); i++)
     {
-        for (int j = 0; j < sm.row2nonzero_idx[i].size(); j++)
+        for (int j = 0; j < test_row2nonzero_idx[i].size(); j++)
         {
             assert(test_row2nonzero_idx[i][j] == sm.row2nonzero_idx[i][j]);
         }
     }
 
-    SparseMatrixDOK<float> sm_symme = SparseMatrixDOK<float>(3, 3, 0, true);
+    SparseMatrixDOK<float> sm_symme = SparseMatrixDOK<float>(3, 3, 0, true, true);
     sm_symme.add(1, 1, 0.5);
     sm_symme.add(2, 1, 0.1);
     sm_symme.add(1, 1, -0.5);
@@ -58,10 +58,10 @@ int main()
         }
     }
 
-    vector<vector<int>> test_row2nonzero_idx_symme = {{}, {}, {0, 1}};
-    for (int i = 0; i < sm_symme.row2nonzero_idx.size(); i++)
+    vector<vector<int>> test_row2nonzero_idx_symme = {{}, {}, {1, 0}};
+    for (int i = 0; i < test_row2nonzero_idx_symme.size(); i++)
     {
-        for (int j = 0; j < sm_symme.row2nonzero_idx[i].size(); j++)
+        for (int j = 0; j < test_row2nonzero_idx_symme[i].size(); j++)
         {
             assert(test_row2nonzero_idx_symme[i][j] == sm_symme.row2nonzero_idx[i][j]);
         }

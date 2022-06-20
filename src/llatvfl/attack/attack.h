@@ -80,7 +80,7 @@ SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int t
                                                         bool is_weighted = true)
 {
     int num_row = tree->dtree.y.size();
-    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true);
+    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true, true);
     bool skip_flag;
     if (is_weighted)
     {
@@ -92,7 +92,7 @@ SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int t
     }
     if (skip_flag)
     {
-        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true);
+        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true, true);
     }
     return adj_mat;
 }
@@ -101,7 +101,7 @@ SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(RandomForestTree *tree, 
                                                         bool is_weighted = true)
 {
     int num_row = tree->dtree.y.size();
-    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true);
+    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true, true);
     bool skip_flag;
     if (is_weighted)
     {
@@ -113,7 +113,7 @@ SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(RandomForestTree *tree, 
     }
     if (skip_flag)
     {
-        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true);
+        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true, true);
     }
     return adj_mat;
 }
