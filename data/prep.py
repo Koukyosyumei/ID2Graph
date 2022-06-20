@@ -120,10 +120,11 @@ if __name__ == "__main__":
         pos_df = df[df["SeriousDlqin2yrs"] == 1]
         neg_df = df[df["SeriousDlqin2yrs"] == 0]
 
-        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
-        neg_num = parsed_args.num_samples - pos_num
-        pos_df = pos_df.sample(pos_num)
-        neg_df = neg_df.sample(neg_num)
+        if parsed_args.num_samples > 0:
+            pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+            neg_num = parsed_args.num_samples - pos_num
+            pos_df = pos_df.sample(pos_num)
+            neg_df = neg_df.sample(neg_num)
 
         df = pd.concat([pos_df, neg_df])
         X = df[
@@ -147,10 +148,11 @@ if __name__ == "__main__":
         pos_df = df[df["default.payment.next.month"] == 1]
         neg_df = df[df["default.payment.next.month"] == 0]
 
-        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
-        neg_num = parsed_args.num_samples - pos_num
-        pos_df = pos_df.sample(pos_num)
-        neg_df = neg_df.sample(neg_num)
+        if parsed_args.num_samples > 0:
+            pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+            neg_num = parsed_args.num_samples - pos_num
+            pos_df = pos_df.sample(pos_num)
+            neg_df = neg_df.sample(neg_num)
 
         df = pd.concat([pos_df, neg_df])
         X = df[
