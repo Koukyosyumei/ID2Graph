@@ -49,8 +49,9 @@ struct SparseMatrixDOK
 
     void add(unsigned int i, unsigned int j, DataType w)
     {
-        if (is_symmetric && (j > i))
+        if (is_symmetric && (i < j))
         {
+            // save only the lower triangle matrix
             swap(i, j);
         }
 
