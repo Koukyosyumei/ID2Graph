@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:i:r:c:h:j:e:s:w OPT
+while getopts d:m:p:n:f:i:r:c:h:j:e:k:s:w OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -12,6 +12,7 @@ do
     "h" ) FLG_H="TRUE" ; VALUE_H="$OPTARG" ;;
     "j" ) FLG_J="TRUE" ; VALUE_J="$OPTARG" ;;
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
+    "k" ) FLG_K="TRUE" ; VALUE_K="$OPTARG" ;;
     "s" ) FLG_S="TRUE" ; VALUE_S="$OPTARG" ;;
     "w" ) FLG_W="TRUE" ; VALUE_W="$OPTARG" ;;
   esac
@@ -38,3 +39,4 @@ else
 fi
 
 script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${VALUE_S}_adj_mat.txt" > "${VALUE_P}/${VALUE_S}_communities.out"
+python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} > "${VALUE_P}/${VALUE_S}_leak.csv"

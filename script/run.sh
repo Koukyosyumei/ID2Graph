@@ -51,7 +51,7 @@ fi
 
 for s in $(seq 1 5)
 do 
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E}"
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E} -k ${VALUE_K}"
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
   fi
@@ -62,7 +62,6 @@ do
 done
 
 script/run_extract_result.sh -o ${TEMPD}
-python3 script/pipeline_3_clustering.py -p ${TEMPD} -k ${VALUE_K} > "${TEMPD}/leak.csv"
 
 if [ "${FLG_G}" = "TRUE" ]; then
   python3 script/pipeline_4_vis_network.py -p ${TEMPD} -e ${VALUE_E}
@@ -73,3 +72,4 @@ python3 script/pipeline_5_report.py -p ${TEMPD} > "${TEMPD}/report.md"
 rm ${TEMPD}/*.in
 rm ${TEMPD}/*.txt
 rm ${TEMPD}/*.out
+rm ${TEMPD}/*_leak.csv
