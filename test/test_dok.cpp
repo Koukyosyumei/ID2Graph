@@ -15,7 +15,7 @@ int main()
     vector<vector<float>> test_adj_mat = {{0, 0, 1.0},
                                           {0, 0, 0},
                                           {0, 0.4, 0}};
-    vector<vector<float>> adj_mat = sm.to_adjacency_matrix(0);
+    vector<vector<float>> adj_mat = sm.to_densematrix(0);
 
     for (int i = 0; i < adj_mat.size(); i++)
     {

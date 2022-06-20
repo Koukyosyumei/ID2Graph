@@ -58,7 +58,7 @@ struct SparseMatrixDOK
         }
     }
 
-    vector<vector<DataType>> to_adjacency_matrix(DataType init_val = 0)
+    vector<vector<DataType>> to_densematrix(DataType init_val = 0)
     {
         vector<vector<DataType>> adj_mat(dim_row, vector<DataType>(dim_column, init_val));
         auto it = um_ij2w.begin();
