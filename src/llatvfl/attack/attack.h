@@ -1,10 +1,13 @@
+#pragma once
 #include <iostream>
 #include <limits>
 #include <vector>
-#include "secureboost.h"
+#include "../randomforest/randomforest.h"
+#include "../xgboost/xgboost.h"
 using namespace std;
 
-bool travase_nodes_to_extract_weighted_adjacency_matrix(Node *node,
+template <typename NodeType>
+bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
                                                         int max_depth,
                                                         vector<vector<int>> &adj_mat,
                                                         int target_party_id = -1)
@@ -33,7 +36,8 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(Node *node,
     return skip_flag;
 }
 
-bool travase_nodes_to_extract_adjacency_matrix(Node *node,
+template <typename NodeType>
+bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                vector<vector<int>> &adj_mat,
                                                int target_party_id = -1)
 {
@@ -56,8 +60,8 @@ bool travase_nodes_to_extract_adjacency_matrix(Node *node,
     else
     {
         skip_flag = false;
-        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->left, adj_mat, target_party_id);
-        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix(node->right, adj_mat, target_party_id);
+        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->left, adj_mat, target_party_id);
+        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->right, adj_mat, target_party_id);
 
         if (left_skip_flag && right_skip_flag)
         {
@@ -77,16 +81,16 @@ bool travase_nodes_to_extract_adjacency_matrix(Node *node,
 vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
                                                        bool is_weighted = true)
 {
-    int num_row = tree->dtree.idxs.size();
+    int num_row = tree->dtree.y.size();
     vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
     bool skip_flag;
     if (is_weighted)
     {
-        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
     }
     else
     {
-        skip_flag = travase_nodes_to_extract_adjacency_matrix(&tree->dtree, adj_mat, target_party_id);
+        skip_flag = travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, adj_mat, target_party_id);
     }
     if (skip_flag)
     {
@@ -95,7 +99,40 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
     return adj_mat;
 }
 
-vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
+vector<vector<int>> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
+                                                       bool is_weighted = true)
+{
+    int num_row = tree->dtree.y.size();
+    vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
+    bool skip_flag;
+    if (is_weighted)
+    {
+        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+    }
+    else
+    {
+        skip_flag = travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, adj_mat, target_party_id);
+    }
+    if (skip_flag)
+    {
+        adj_mat = vector<vector<int>>(num_row, vector<int>(num_row, 0));
+    }
+    return adj_mat;
+}
+
+vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                 int target_party_id = -1,
+                                                                 bool is_weighted = true)
+{
+    vector<vector<vector<int>>> result(model->estimators.size());
+    for (int i = 0; i < model->estimators.size(); i++)
+    {
+        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
+    }
+    return result;
+}
+
+vector<vector<vector<int>>> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
                                                                  int target_party_id = -1,
                                                                  bool is_weighted = true)
 {

@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include "../src/llatvfl/secureboost/metric.h"
+#include "../src/llatvfl/utils/metric.h"
 using namespace std;
 
 int main()

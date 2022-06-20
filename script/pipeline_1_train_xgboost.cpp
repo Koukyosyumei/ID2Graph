@@ -7,8 +7,8 @@
 #include <cassert>
 #include <chrono>
 #include <unistd.h>
-#include "../src/llatvfl/secureboost/attack.h"
-#include "../src/llatvfl/secureboost/metric.h"
+#include "../src/llatvfl/attack/attack.h"
+#include "../src/llatvfl/utils/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     scanf("%d %d %d", &num_row_train, &num_col, &num_party);
     vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
     vector<double> y_train(num_row_train);
-    vector<Party> parties(num_party);
+    vector<XGBoostParty> parties(num_party);
 
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        Party party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
+        XGBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -132,14 +132,14 @@ int main(int argc, char *argv[])
     result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
-                                                      min_child_weight,
-                                                      depth, min_leaf,
-                                                      learning_rate,
-                                                      boosting_rounds,
-                                                      lam, const_gamma, eps,
-                                                      0, completelly_secure_round,
-                                                      0.5, n_job, true);
+    XGBoostClassifier clf = XGBoostClassifier(subsample_cols,
+                                              min_child_weight,
+                                              depth, min_leaf,
+                                              learning_rate,
+                                              boosting_rounds,
+                                              lam, const_gamma, eps,
+                                              0, completelly_secure_round,
+                                              0.5, n_job, true);
 
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();

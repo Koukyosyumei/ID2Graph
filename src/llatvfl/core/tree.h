@@ -1,33 +1,22 @@
+#pragma once
 #include <vector>
 #include <iterator>
 #include <limits>
 #include <iostream>
-#include "node.h"
+#include "../core/nodeapi.h"
+using namespace std;
 
-struct XGBoostTree
+template <typename NodeType>
+struct Tree
 {
-    Node dtree;
-    XGBoostTree() {}
+    NodeType dtree;
+    NodeAPI<NodeType> nodeapi;
 
-    void fit(vector<Party> *parties, vector<double> y,
-             vector<double> gradient, vector<double> hessian,
-             double min_child_weight, double lam, double gamma, double eps,
-             int min_leaf, int depth, int active_party_id = -1, bool use_only_active_party = false, int n_job = 1)
-    {
-        vector<int> idxs(y.size());
-        iota(idxs.begin(), idxs.end(), 0);
-        for (int i = 0; i < parties->size(); i++)
-        {
-            parties->at(i).subsample_columns();
-        }
-        dtree = Node(parties, y, gradient, hessian, idxs,
-                     min_child_weight, lam, gamma, eps, depth,
-                     active_party_id, use_only_active_party, n_job);
-    }
+    Tree() {}
 
-    Node get_root_node()
+    NodeType &get_root_node()
     {
-        return dtree;
+        return *dtree;
     }
 
     vector<double> predict(vector<vector<double>> &X)
@@ -35,7 +24,7 @@ struct XGBoostTree
         return dtree.predict(X);
     }
 
-    vector<pair<vector<int>, vector<double>>> extract_train_prediction_from_node(Node node)
+    vector<pair<vector<int>, vector<double>>> extract_train_prediction_from_node(NodeType &node)
     {
         if (node.is_leaf())
         {
@@ -69,11 +58,11 @@ struct XGBoostTree
 
     string print(bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
-        return dtree.print(show_purity, binary_color, target_party_id);
+        return nodeapi.print(&dtree, show_purity, binary_color, target_party_id);
     }
 
     double get_leaf_purity()
     {
-        return dtree.get_leaf_purity();
+        return nodeapi.get_leaf_purity(&dtree);
     }
 };
