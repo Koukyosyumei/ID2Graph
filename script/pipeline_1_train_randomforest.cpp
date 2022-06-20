@@ -12,20 +12,20 @@
 using namespace std;
 
 const int min_leaf = 1;
-const int depth = 3;
 const double subsample_cols = 0.8;
 const double max_samples_ratio = 0.8;
 
 string folderpath;
 string fileprefix;
 int num_trees = 20;
+int depth = 3;
 int n_job = 1;
 bool is_weighted_graph = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:j:w")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:w")) != -1)
     {
         switch (opt)
         {
@@ -38,6 +38,9 @@ void parse_args(int argc, char *argv[])
         case 'r':
             num_trees = stoi(string(optarg));
             break;
+        case 'h':
+            depth = stoi(string(optarg));
+            break;
         case 'j':
             n_job = stoi(string(optarg));
             break;
@@ -46,7 +49,7 @@ void parse_args(int argc, char *argv[])
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-j] [-w] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-w] ...\n", argv[0]);
             break;
         }
     }
