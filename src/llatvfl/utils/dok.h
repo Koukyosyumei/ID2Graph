@@ -1,5 +1,6 @@
 #pragma once
 #include <random>
+#include <utility>
 #include <unordered_map>
 using namespace std;
 
@@ -31,18 +32,28 @@ struct SparseMatrixDOK
     size_t dim_row = 0;
     size_t dim_column = 0;
     DataType zero_val = 0;
+    bool is_symmetric = false;
+    // vector<size_t> row2nonzero_count;
+    // vector<vector<int>> row2nonzero_idx;
+
     unordered_map<pair<unsigned int, unsigned int>, DataType, HashPair> um_ij2w;
 
     SparseMatrixDOK(){};
-    SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0)
+    SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0, bool is_symmetric_ = false)
     {
         dim_row = dim_row_;
         dim_column = dim_column_;
         zero_val = zero_val_;
+        is_symmetric = is_symmetric_;
     }
 
     void add(unsigned int i, unsigned int j, DataType w)
     {
+        if (is_symmetric && (j > i))
+        {
+            swap(i, j);
+        }
+
         pair<unsigned int, unsigned int> temp_pair = make_pair(i, j);
         if (um_ij2w.find(temp_pair) != um_ij2w.end())
         {
@@ -66,6 +77,10 @@ struct SparseMatrixDOK
         while (it != um_ij2w.end())
         {
             adj_mat[it->first.first][it->first.second] = it->second;
+            if (is_symmetric)
+            {
+                adj_mat[it->first.second][it->first.first] = it->second;
+            }
             it++;
         }
 
