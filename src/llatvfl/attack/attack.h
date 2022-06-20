@@ -81,7 +81,7 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
 vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
                                                        bool is_weighted = true)
 {
-    int num_row = tree->dtree.idxs.size();
+    int num_row = tree->dtree.y.size();
     vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
     bool skip_flag;
     if (is_weighted)
@@ -102,7 +102,7 @@ vector<vector<int>> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int ta
 vector<vector<int>> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
                                                        bool is_weighted = true)
 {
-    int num_row = tree->dtree.idxs.size();
+    int num_row = tree->dtree.y.size();
     vector<vector<int>> adj_mat(num_row, vector<int>(num_row, 0));
     bool skip_flag;
     if (is_weighted)
