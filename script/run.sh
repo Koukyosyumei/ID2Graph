@@ -38,11 +38,28 @@ TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T
 
 echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" > "${TEMPD}/param.csv"
 
-if [ "${FLG_W}" = "TRUE" ]; then
-  script/run_training.sh -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E}$ -w
+if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
+  g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_xgboost.cpp
+  g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
+elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
+  g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_randomforest.cpp
+  g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
 else
-  script/run_training.sh -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E}$
+  echo "m=${VALUE_M} is not supported"
 fi
+
+
+for s in $(seq 1 5)
+do 
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E}"
+  if [ "${FLG_W}" = "TRUE" ]; then
+    TRAINCMD+=" -w"
+  fi
+  if [ ${s} -ne 5 ]; then
+    TRAINCMD+=" &"
+  fi
+  eval ${TRAINCMD}
+done
 
 script/run_extract_result.sh -o ${TEMPD}
 python3 script/pipeline_3_clustering.py -p ${TEMPD} -k ${VALUE_K} > "${TEMPD}/leak.csv"
