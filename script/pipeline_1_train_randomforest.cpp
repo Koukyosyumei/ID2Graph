@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("%f [ms]\n", elapsed);
+    printf("Training is complete %f [ms]\n", elapsed);
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
