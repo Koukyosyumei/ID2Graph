@@ -11,6 +11,7 @@
 #include <random>
 #include <ctime>
 #include <string>
+#include <queue>
 #include <unordered_map>
 #include <stdexcept>
 #include "party.h"
@@ -287,14 +288,32 @@ struct XGBoostNode : Node
 
     float predict_row(vector<float> &xi)
     {
-        if (is_leaf())
-            return val;
-        else
+        queue<XGBoostNode *> que;
+        que.push(this);
+
+        XGBoostNode *temp_node;
+        while (!que.empty())
         {
-            if (parties->at(party_id).is_left(record_id, xi))
-                return left->predict_row(xi);
+            temp_node = que.front();
+            que.pop();
+
+            if (temp_node->is_leaf())
+            {
+                return temp_node->val;
+            }
             else
-                return right->predict_row(xi);
+            {
+                if (parties->at(temp_node->party_id).is_left(temp_node->record_id, xi))
+                {
+                    que.push(temp_node->left);
+                }
+                else
+                {
+                    que.push(temp_node->right);
+                }
+            }
         }
+
+        return nan("");
     }
 };

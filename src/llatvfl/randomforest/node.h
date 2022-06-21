@@ -103,7 +103,7 @@ struct RandomForestNode : Node
 
     float compute_giniimp()
     {
-        float temp_y_pos_cnt;
+        float temp_y_pos_cnt = 0;
         for (int r = 0; r < row_count; r++)
         {
             temp_y_pos_cnt += y[idxs[r]];
@@ -249,14 +249,32 @@ struct RandomForestNode : Node
 
     float predict_row(vector<float> &xi)
     {
-        if (is_leaf())
-            return val;
-        else
+        queue<RandomForestNode *> que;
+        que.push(this);
+
+        RandomForestNode *temp_node;
+        while (!que.empty())
         {
-            if (parties->at(party_id).is_left(record_id, xi))
-                return left->predict_row(xi);
+            temp_node = que.front();
+            que.pop();
+
+            if (temp_node->is_leaf())
+            {
+                return temp_node->val;
+            }
             else
-                return right->predict_row(xi);
+            {
+                if (parties->at(temp_node->party_id).is_left(temp_node->record_id, xi))
+                {
+                    que.push(temp_node->left);
+                }
+                else
+                {
+                    que.push(temp_node->right);
+                }
+            }
         }
+
+        return nan("");
     }
 };
