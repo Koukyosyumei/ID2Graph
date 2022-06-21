@@ -13,8 +13,8 @@
 using namespace std;
 
 const int min_leaf = 1;
-const double subsample_cols = 0.8;
-const double max_samples_ratio = 0.8;
+const float subsample_cols = 0.8;
+const float max_samples_ratio = 0.8;
 
 string folderpath;
 string fileprefix;
@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
     scanf("%d %d %d", &num_row_train, &num_col, &num_party);
-    vector<vector<double>> X_train(num_row_train, vector<double>(num_col));
-    vector<double> y_train(num_row_train);
+    vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
+    vector<float> y_train(num_row_train);
     vector<RandomForestParty> parties(num_party);
 
     int temp_count_feature = 0;
@@ -81,13 +81,13 @@ int main(int argc, char *argv[])
         int num_col = 0;
         scanf("%d", &num_col);
         vector<int> feature_idxs(num_col);
-        vector<vector<double>> x(num_row_train, vector<double>(num_col));
+        vector<vector<float>> x(num_row_train, vector<float>(num_col));
         for (int j = 0; j < num_col; j++)
         {
             feature_idxs[j] = temp_count_feature;
             for (int k = 0; k < num_row_train; k++)
             {
-                scanf("%lf", &x[k][j]);
+                scanf("%f", &x[k][j]);
                 X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
@@ -96,20 +96,20 @@ int main(int argc, char *argv[])
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
-        scanf("%lf", &y_train[j]);
+        scanf("%f", &y_train[j]);
 
     scanf("%d", &num_row_val);
-    vector<vector<double>> X_val(num_row_val, vector<double>(num_col));
-    vector<double> y_val(num_row_val);
+    vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
+    vector<float> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
     {
         for (int j = 0; j < num_row_val; j++)
         {
-            scanf("%lf", &X_val[j][i]);
+            scanf("%f", &X_val[j][i]);
         }
     }
     for (int j = 0; j < num_row_val; j++)
-        scanf("%lf", &y_val[j]);
+        scanf("%f", &y_val[j]);
 
     std::ofstream result_file;
     string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
-    double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.estimators.size(); i++)
@@ -143,10 +143,10 @@ int main(int argc, char *argv[])
         result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
-    vector<double> predict_proba_train = clf.predict_proba(X_train);
+    vector<float> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
     result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
-    vector<double> predict_proba_val = clf.predict_proba(X_val);
+    vector<float> predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();

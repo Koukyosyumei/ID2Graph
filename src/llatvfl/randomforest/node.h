@@ -23,10 +23,10 @@ struct RandomForestNode : Node
     vector<RandomForestParty> *parties;
     RandomForestNode *left, *right;
 
-    double giniimp;
+    float giniimp;
 
     RandomForestNode() {}
-    RandomForestNode(vector<RandomForestParty> *parties_, vector<double> &y_,
+    RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_,
                      vector<int> &idxs_, int depth_, int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
@@ -76,12 +76,12 @@ struct RandomForestNode : Node
         return record_id;
     }
 
-    double get_val()
+    float get_val()
     {
         return val;
     }
 
-    double get_score()
+    float get_score()
     {
         return score;
     }
@@ -101,43 +101,43 @@ struct RandomForestNode : Node
         return parties->size();
     }
 
-    double compute_giniimp()
+    float compute_giniimp()
     {
-        double temp_y_pos_cnt;
+        float temp_y_pos_cnt;
         for (int r = 0; r < row_count; r++)
         {
             temp_y_pos_cnt += y[idxs[r]];
         }
-        double temp_y_neg_cnt = row_count - temp_y_pos_cnt;
-        double giniimp = 1 -
-                         (temp_y_pos_cnt / row_count) * (temp_y_pos_cnt / row_count) -
-                         (temp_y_neg_cnt / row_count) * (temp_y_neg_cnt / row_count);
+        float temp_y_neg_cnt = row_count - temp_y_pos_cnt;
+        float giniimp = 1 -
+                        (temp_y_pos_cnt / row_count) * (temp_y_pos_cnt / row_count) -
+                        (temp_y_neg_cnt / row_count) * (temp_y_neg_cnt / row_count);
         return giniimp;
     }
 
-    double compute_weight()
+    float compute_weight()
     {
         // TODO: support multi class
-        double pos_ratio = 0;
+        float pos_ratio = 0;
         for (int r = 0; r < row_count; r++)
         {
             pos_ratio += y[idxs[r]];
         }
-        return pos_ratio / double(row_count);
+        return pos_ratio / float(row_count);
     }
 
     void find_split_per_party(int party_id_start, int temp_num_parties)
     {
         for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
         {
-            vector<vector<double>> search_results = parties->at(party_id).greedy_search_split(idxs, y);
+            vector<vector<float>> search_results = parties->at(party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
             {
-                double temp_score;
-                double temp_giniimp;
+                float temp_score;
+                float temp_giniimp;
                 temp_num_search_results_j = search_results[j].size();
                 for (int k = 0; k < temp_num_search_results_j; k++)
                 {
@@ -157,7 +157,7 @@ struct RandomForestNode : Node
 
     tuple<int, int, int> find_split()
     {
-        double temp_score, temp_left_grad, temp_left_hess;
+        float temp_score, temp_left_grad, temp_left_hess;
 
         if (n_job == 1)
         {
@@ -192,7 +192,7 @@ struct RandomForestNode : Node
         vector<int> left_idxs = parties->at(best_party_id).split_rows(idxs, best_col_id, best_threshold_id);
         vector<int> right_idxs;
         for (int i = 0; i < row_count; i++)
-            if (!any_of(left_idxs.begin(), left_idxs.end(), [&](double x)
+            if (!any_of(left_idxs.begin(), left_idxs.end(), [&](float x)
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
@@ -224,7 +224,7 @@ struct RandomForestNode : Node
 
     bool is_pure()
     {
-        set<double> s{};
+        set<float> s{};
         for (int i = 0; i < row_count; i++)
         {
             if (s.insert(y[idxs[i]]).second)
@@ -236,10 +236,10 @@ struct RandomForestNode : Node
         return true;
     }
 
-    vector<double> predict(vector<vector<double>> &x_new)
+    vector<float> predict(vector<vector<float>> &x_new)
     {
         int x_new_size = x_new.size();
-        vector<double> y_pred(x_new_size);
+        vector<float> y_pred(x_new_size);
         for (int i = 0; i < x_new_size; i++)
         {
             y_pred[i] = predict_row(x_new[i]);
@@ -247,7 +247,7 @@ struct RandomForestNode : Node
         return y_pred;
     }
 
-    double predict_row(vector<double> &xi)
+    float predict_row(vector<float> &xi)
     {
         if (is_leaf())
             return val;

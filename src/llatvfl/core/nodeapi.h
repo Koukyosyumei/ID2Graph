@@ -15,9 +15,9 @@ struct NodeAPI
 
     NodeAPI(){};
 
-    double get_leaf_purity(NodeType *node)
+    float get_leaf_purity(NodeType *node)
     {
-        double leaf_purity = 0;
+        float leaf_purity = 0;
         if (node->is_leaf())
         {
             int cnt_idxs = node->idxs.size();
@@ -35,9 +35,9 @@ struct NodeAPI
                         cnt_zero += 1;
                     }
                 }
-                leaf_purity = max(double(cnt_zero) / double(cnt_idxs),
-                                  1 - double(cnt_zero) / double(cnt_idxs));
-                leaf_purity = leaf_purity * (double(cnt_idxs) / double(node->y.size()));
+                leaf_purity = max(float(cnt_zero) / float(cnt_idxs),
+                                  1 - float(cnt_zero) / float(cnt_idxs));
+                leaf_purity = leaf_purity * (float(cnt_idxs) / float(node->y.size()));
             }
         }
         else
@@ -80,8 +80,8 @@ struct NodeAPI
                         cnt_zero += 1;
                     }
                 }
-                double purity = max(double(cnt_zero) / double(cnt_idxs),
-                                    1 - double(cnt_zero) / double(cnt_idxs));
+                float purity = max(float(cnt_zero) / float(cnt_idxs),
+                                   1 - float(cnt_zero) / float(cnt_idxs));
                 node_info += ", ";
 
                 if (binary_color)

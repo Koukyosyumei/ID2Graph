@@ -10,7 +10,7 @@ using namespace std;
 
 struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 {
-    double subsample_cols;
+    float subsample_cols;
     int depth;
     int min_leaf;
     float max_samples_ratio;
@@ -22,7 +22,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 
     vector<RandomForestTree> estimators;
 
-    RandomForestClassifier(double subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
+    RandomForestClassifier(float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
                            float max_samples_ratio_ = 1.0, int num_trees_ = 5,
                            int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
@@ -46,7 +46,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         return estimators;
     }
 
-    void fit(vector<RandomForestParty> &parties, vector<double> &y)
+    void fit(vector<RandomForestParty> &parties, vector<float> &y)
     {
         int row_count = y.size();
 
@@ -60,26 +60,26 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     }
 
     // retuen the average score of all trees (sklearn-style)
-    vector<double> predict_raw(vector<vector<double>> &X)
+    vector<float> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
-        vector<double> y_pred(row_count, 0);
+        vector<float> y_pred(row_count, 0);
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {
-            vector<double> y_pred_temp = estimators[i].predict(X);
+            vector<float> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
-                y_pred[j] += y_pred_temp[j] / double(estimators_num);
+                y_pred[j] += y_pred_temp[j] / float(estimators_num);
         }
 
         return y_pred;
     }
 
-    vector<double> predict_proba(vector<vector<double>> &x)
+    vector<float> predict_proba(vector<vector<float>> &x)
     {
-        vector<double> raw_score = predict_raw(x);
+        vector<float> raw_score = predict_raw(x);
         int row_count = x.size();
-        vector<double> predicted_probas(row_count);
+        vector<float> predicted_probas(row_count);
         for (int i = 0; i < row_count; i++)
             predicted_probas[i] = sigmoid(raw_score[i]);
         return predicted_probas;

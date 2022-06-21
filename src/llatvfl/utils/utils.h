@@ -5,9 +5,9 @@
 #include <set>
 using namespace std;
 
-double sigmoid(double x)
+float sigmoid(float x)
 {
-    double sigmoid_range = 34.538776394910684;
+    float sigmoid_range = 34.538776394910684;
     if (x <= -1 * sigmoid_range)
         return 1e-15;
     else if (x >= sigmoid_range)
@@ -19,8 +19,8 @@ double sigmoid(double x)
 template <typename T>
 vector<T> remove_duplicates(vector<T> &inData)
 {
-    vector<double> outData;
-    set<double> s{};
+    vector<float> outData;
+    set<float> s{};
     for (int i = 0; i < inData.size(); i++)
     {
         if (s.insert(inData[i]).second)
@@ -32,7 +32,7 @@ vector<T> remove_duplicates(vector<T> &inData)
 }
 
 template <typename T>
-static inline double Lerp(T v0, T v1, T t)
+static inline float Lerp(T v0, T v1, T t)
 {
     return (1 - t) * v0 + t * v1;
 }

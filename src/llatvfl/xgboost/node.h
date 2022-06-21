@@ -21,15 +21,15 @@ using namespace std;
 struct XGBoostNode : Node
 {
     vector<XGBoostParty> *parties;
-    vector<double> gradient, hessian;
-    double min_child_weight, lam, gamma, eps;
+    vector<float> gradient, hessian;
+    float min_child_weight, lam, gamma, eps;
     bool use_only_active_party;
     XGBoostNode *left, *right;
 
     XGBoostNode() {}
-    XGBoostNode(vector<XGBoostParty> *parties_, vector<double> y_, vector<double> gradient_,
-                vector<double> hessian_, vector<int> idxs_,
-                double min_child_weight_, double lam_, double gamma_, double eps_,
+    XGBoostNode(vector<XGBoostParty> *parties_, vector<float> y_, vector<float> gradient_,
+                vector<float> hessian_, vector<int> idxs_,
+                float min_child_weight_, float lam_, float gamma_, float eps_,
                 int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
@@ -96,12 +96,12 @@ struct XGBoostNode : Node
         return record_id;
     }
 
-    double get_val()
+    float get_val()
     {
         return val;
     }
 
-    double get_score()
+    float get_score()
     {
         return score;
     }
@@ -121,10 +121,10 @@ struct XGBoostNode : Node
         return parties->size();
     }
 
-    double compute_weight()
+    float compute_weight()
     {
-        double sum_grad = 0;
-        double sum_hess = 0;
+        float sum_grad = 0;
+        float sum_hess = 0;
         for (int i = 0; i < row_count; i++)
         {
             sum_grad += gradient[idxs[i]];
@@ -133,7 +133,7 @@ struct XGBoostNode : Node
         return -1 * (sum_grad / (sum_hess + lam));
     }
 
-    double compute_gain(double left_grad, double right_grad, double left_hess, double right_hess)
+    float compute_gain(float left_grad, float right_grad, float left_hess, float right_hess)
     {
         return 0.5 * ((left_grad * left_grad) / (left_hess + lam) +
                       (right_grad * right_grad) / (right_hess + lam) -
@@ -142,18 +142,18 @@ struct XGBoostNode : Node
                gamma;
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, double sum_grad, double sum_hess)
+    void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
     {
         for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
         {
-            vector<vector<pair<double, double>>> search_results =
+            vector<vector<pair<float, float>>> search_results =
                 parties->at(party_id).greedy_search_split(gradient, hessian, idxs);
 
             for (int j = 0; j < search_results.size(); j++)
             {
-                double temp_score;
-                double temp_left_grad = 0;
-                double temp_left_hess = 0;
+                float temp_score;
+                float temp_left_grad = 0;
+                float temp_left_hess = 0;
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
                     temp_left_grad += search_results[j][k].first;
@@ -180,15 +180,15 @@ struct XGBoostNode : Node
 
     tuple<int, int, int> find_split()
     {
-        double sum_grad = 0;
-        double sum_hess = 0;
+        float sum_grad = 0;
+        float sum_hess = 0;
         for (int i = 0; i < row_count; i++)
         {
             sum_grad += gradient[idxs[i]];
             sum_hess += hessian[idxs[i]];
         }
 
-        double temp_score, temp_left_grad, temp_left_hess;
+        float temp_score, temp_left_grad, temp_left_hess;
 
         if (use_only_active_party)
         {
@@ -230,7 +230,7 @@ struct XGBoostNode : Node
         vector<int> left_idxs = parties->at(best_party_id).split_rows(idxs, best_col_id, best_threshold_id);
         vector<int> right_idxs;
         for (int i = 0; i < row_count; i++)
-            if (!any_of(left_idxs.begin(), left_idxs.end(), [&](double x)
+            if (!any_of(left_idxs.begin(), left_idxs.end(), [&](float x)
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
@@ -262,7 +262,7 @@ struct XGBoostNode : Node
 
     bool is_pure()
     {
-        set<double> s{};
+        set<float> s{};
         for (int i = 0; i < row_count; i++)
         {
             if (s.insert(y[idxs[i]]).second)
@@ -274,10 +274,10 @@ struct XGBoostNode : Node
         return true;
     }
 
-    vector<double> predict(vector<vector<double>> &x_new)
+    vector<float> predict(vector<vector<float>> &x_new)
     {
         int x_new_size = x_new.size();
-        vector<double> y_pred(x_new_size);
+        vector<float> y_pred(x_new_size);
         for (int i = 0; i < x_new_size; i++)
         {
             y_pred[i] = predict_row(x_new[i]);
@@ -285,7 +285,7 @@ struct XGBoostNode : Node
         return y_pred;
     }
 
-    double predict_row(vector<double> &xi)
+    float predict_row(vector<float> &xi)
     {
         if (is_leaf())
             return val;

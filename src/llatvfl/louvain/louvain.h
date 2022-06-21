@@ -9,14 +9,14 @@ using namespace std;
 struct Louvain
 {
     int max_itr;
-    double precision;
+    float precision;
     int ndp;
     int verbose;
 
     Community community;
     Graph g;
 
-    Louvain(int max_itr_ = 30, double precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
+    Louvain(int max_itr_ = 30, float precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
     {
         max_itr = max_itr_;
         precision = precision_;
@@ -30,7 +30,7 @@ struct Louvain
 
         g = gc;
         community = Community(gc, ndp, precision);
-        double mod = community.modularity(), new_mod;
+        float mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
         {
