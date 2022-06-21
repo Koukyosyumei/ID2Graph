@@ -1,10 +1,11 @@
-import numpy as np
 import argparse
-import os
-import networkx as nx
-from matplotlib import pyplot as plt
-from matplotlib import cm
 import glob
+import os
+
+import networkx as nx
+import numpy as np
+from matplotlib import cm
+from matplotlib import pyplot as plt
 
 
 def add_args(parser):

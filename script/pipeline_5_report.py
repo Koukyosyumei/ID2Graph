@@ -1,9 +1,10 @@
-import numpy as np
 import argparse
-import os
 import glob
-from matplotlib import pyplot as plt
+import os
+
+import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 
 def add_args(parser):

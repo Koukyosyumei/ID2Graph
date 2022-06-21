@@ -1,6 +1,7 @@
-import numpy as np
 import copy
 import random
+
+import numpy as np
 
 
 class ReducedKMeans:

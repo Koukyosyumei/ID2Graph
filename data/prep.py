@@ -1,10 +1,11 @@
 import argparse
-import pandas as pd
 import os
-import numpy as np
 import random
-from sklearn.model_selection import train_test_split
+
+import numpy as np
+import pandas as pd
 from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
 
 
 def add_args(parser):

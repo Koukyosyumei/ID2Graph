@@ -1,11 +1,9 @@
-import numpy as np
 import argparse
-import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn import preprocessing
-from sklearn import metrics
 
+import numpy as np
 from llatvfl.clustering import ReducedKMeans, get_f_p_r
+from sklearn import metrics, preprocessing
+from sklearn.cluster import KMeans
 
 # from matplotlib import pyplot as plt
 
