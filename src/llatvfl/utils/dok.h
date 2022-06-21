@@ -104,6 +104,25 @@ struct SparseMatrixDOK
         }
     }
 
+    void from_densematrix(vector<vector<DataType>> densematrix)
+    {
+        for (int i = 0; i < dim_row; i++)
+        {
+            int end_pos = dim_column;
+            if (is_symmetric)
+            {
+                end_pos = i;
+            }
+            for (int j = 0; j < end_pos; j++)
+            {
+                if (densematrix[i][j] != zero_val)
+                {
+                    add(i, j, densematrix[i][j]);
+                }
+            }
+        }
+    }
+
     vector<vector<DataType>> to_densematrix(DataType init_val = 0)
     {
         vector<vector<DataType>> adj_mat(dim_row, vector<DataType>(dim_column, init_val));

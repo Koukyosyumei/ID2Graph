@@ -65,6 +65,8 @@ do
   fi
   if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
     TRAINCMD+=" &"
+  else
+    TRAINCMD+=" & wait"
   fi
   eval ${TRAINCMD}
 done
@@ -82,4 +84,5 @@ mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
 
+wait
 rm -rf ${TEMPD}

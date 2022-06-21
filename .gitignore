@@ -34,6 +34,7 @@
 
 # Custom
 result/ci-*
+result/temp/ci-*
 .vscode/
 
 # Byte-compiled / optimized / DLL files

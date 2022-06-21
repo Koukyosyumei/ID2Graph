@@ -8,6 +8,7 @@
 #include <chrono>
 #include <unistd.h>
 #include "../src/llatvfl/attack/attack.h"
+#include "../src/llatvfl/louvain/louvain.h"
 #include "../src/llatvfl/utils/metric.h"
 using namespace std;
 
@@ -21,11 +22,13 @@ int num_trees = 20;
 int depth = 3;
 int n_job = 1;
 bool is_weighted_graph = false;
+int skip_round = 0;
+float eta = 0.3;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:w")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:w")) != -1)
     {
         switch (opt)
         {
@@ -44,12 +47,18 @@ void parse_args(int argc, char *argv[])
         case 'j':
             n_job = stoi(string(optarg));
             break;
+        case 'c':
+            skip_round = stoi(string(optarg));
+            break;
+        case 'e':
+            eta = stof(string(optarg));
+            break;
         case 'w':
             is_weighted_graph = true;
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-w] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-c] [-e] [-w] ...\n", argv[0]);
             break;
         }
     }
@@ -115,12 +124,13 @@ int main(int argc, char *argv[])
                                                         max_samples_ratio, num_trees,
                                                         0, n_job, 0);
 
+    printf("Start training seed=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Training is complete %f [ms]\n", elapsed);
+    printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.estimators.size(); i++)
     {
@@ -141,26 +151,46 @@ int main(int argc, char *argv[])
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();
 
-    std::ofstream adj_mat_file;
-    string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
-    adj_mat_file.open(filepath, std::ios::out);
     vector<SparseMatrixDOK<int>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph);
-    adj_mat_file << vec_adi_mat.size() << "\n";
-    adj_mat_file << vec_adi_mat[0].dim_row << "\n";
+    SparseMatrixDOK<float> adj_matrix = SparseMatrixDOK<float>(vec_adi_mat[0].dim_row, vec_adi_mat[0].dim_row, 0, true, true);
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
-        for (int j = 0; j < vec_adi_mat[i].dim_row; j++)
+        if (i >= skip_round)
         {
-            adj_mat_file << vec_adi_mat[i].row2nonzero_idx[j].size() << " ";
-            for (int k = 0; k < vec_adi_mat[i].row2nonzero_idx[j].size(); k++)
+            for (int j = 0; j < vec_adi_mat[i].dim_row; j++)
             {
-                adj_mat_file << vec_adi_mat[i].row2nonzero_idx[j][k]
-                             << " "
-                             << vec_adi_mat[i](j, vec_adi_mat[i].row2nonzero_idx[j][k])
-                             << " ";
+                // adj_mat_file << vec_adi_mat[i].row2nonzero_idx[j].size() << " ";
+                for (int k = 0; k < vec_adi_mat[i].row2nonzero_idx[j].size(); k++)
+                {
+                    adj_matrix.add(j, vec_adi_mat[i].row2nonzero_idx[j][k],
+                                   eta * float(vec_adi_mat[i](j, vec_adi_mat[i].row2nonzero_idx[j][k])));
+                }
             }
-            adj_mat_file << "\n";
         }
     }
-    adj_mat_file.close();
+
+    Graph g = Graph(adj_matrix);
+
+    printf("Start community detection seed=%s\n", fileprefix.c_str());
+    start = chrono::system_clock::now();
+    Louvain louvain = Louvain();
+    louvain.fit(g);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+
+    std::ofstream com_file;
+    string filepath = folderpath + "/" + fileprefix + "_communities.out";
+    com_file.open(filepath, std::ios::out);
+    com_file << louvain.g.nodes.size() << "\n";
+    com_file << g.num_nodes << "\n";
+    for (int i = 0; i < louvain.g.nodes.size(); i++)
+    {
+        for (int j = 0; j < louvain.g.nodes[i].size(); j++)
+        {
+            com_file << louvain.g.nodes[i][j] << " ";
+        }
+        com_file << "\n";
+    }
+    com_file.close();
 }

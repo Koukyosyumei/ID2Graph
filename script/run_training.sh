@@ -24,22 +24,18 @@ cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   if [ "${FLG_W}" = "TRUE" ]; then
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
   else
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
   fi
 elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
   if [ "${FLG_W}" = "TRUE" ]; then
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -w < "${VALUE_P}/${VALUE_S}_data.in"
   else
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${VALUE_S}_data.in"
   fi
 else
   echo "m=${VALUE_M} is not supported"
 fi
 
-script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${VALUE_S}_adj_mat.txt" > "${VALUE_P}/${VALUE_S}_communities.out"
 python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} > "${VALUE_P}/${VALUE_S}_leak.csv"
-
-rm "${VALUE_P}/${VALUE_S}_data.in"
-rm "${VALUE_P}/${VALUE_S}_communities.out"

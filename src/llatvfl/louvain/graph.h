@@ -2,13 +2,14 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include "../utils/dok.h"
 using namespace std;
 
 struct Graph
 {
-    unsigned long num_nodes;
-    unsigned long num_links;
-    double total_weight;
+    unsigned long num_nodes = 0;
+    unsigned long num_links = 0;
+    double total_weight = 0;
 
     // cumulative degree for each node, deg(0) = degrees[0]
     // deg(k) = degrees[k] - degrees[k-1]
@@ -28,6 +29,39 @@ struct Graph
         for (size_t i = 0; i < node2original_records.size(); i++)
         {
             nodes.push_back(node2original_records[i]);
+        }
+    }
+    Graph(SparseMatrixDOK<float> sm_dok)
+    {
+        num_nodes = sm_dok.dim_row;
+        // initilize first graph without contraction
+        for (unsigned int i = 0; i < num_nodes; i++)
+        {
+            vector<int> n;
+            n.push_back(i);
+            nodes.push_back(n);
+        }
+
+        int temp_num_links = 0;
+        int cum_degrees = 0;
+        degrees.resize(num_nodes, 0);
+        for (int i = 0; i < num_nodes; i++)
+        {
+            temp_num_links = sm_dok.row2nonzero_idx[i].size();
+            cum_degrees += temp_num_links;
+            degrees[i] = cum_degrees;
+
+            for (int j = 0; j < temp_num_links; j++)
+            {
+                links.push_back(sm_dok.row2nonzero_idx[i][j]);
+                weights.push_back(sm_dok(i, sm_dok.row2nonzero_idx[i][j]));
+            }
+        }
+
+        // compute total weight
+        for (unsigned int i = 0; i < num_nodes; i++)
+        {
+            total_weight += (double)get_weighted_degree(i);
         }
     }
     Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
