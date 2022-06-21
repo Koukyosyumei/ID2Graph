@@ -5,27 +5,24 @@
 #include <unordered_map>
 using namespace std;
 
-struct HashPair
+struct HashPairSzudzik
 {
-
-    static size_t m_hash_pair_random;
-
+    // implementation of szudzik paring
     template <class T1, class T2>
     size_t operator()(const pair<T1, T2> &p) const
     {
-
-        auto hash1 = hash<T1>{}(p.first);
-        auto hash2 = hash<T2>{}(p.second);
-
-        size_t seed = 0;
-        seed ^= hash1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= hash2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= m_hash_pair_random + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        size_t seed;
+        if (p.first >= p.second)
+        {
+            seed = p.first * p.first + p.first + p.second;
+        }
+        else
+        {
+            seed = p.second * p.second + p.first;
+        }
         return seed;
     }
 };
-
-size_t HashPair::m_hash_pair_random = (size_t)random_device()();
 
 template <typename DataType>
 struct SparseMatrixDOK
@@ -38,7 +35,7 @@ struct SparseMatrixDOK
 
     vector<vector<int>> row2nonzero_idx;
 
-    unordered_map<pair<unsigned int, unsigned int>, DataType, HashPair> um_ij2w;
+    unordered_map<pair<unsigned int, unsigned int>, DataType, HashPairSzudzik> um_ij2w;
 
     SparseMatrixDOK(){};
     SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0,
