@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
                                               0, completelly_secure_round,
                                               0.5, n_job, true);
 
-    printf("Start training extraction seed=%s\n", fileprefix.c_str());
+    printf("Start training seed=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();
 
-    printf("Start graph extraction from the trained model seed=%s\n", fileprefix.c_str());
+    printf("Start graph extraction seed=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round, eta);
     Graph g = Graph(adj_matrix);
