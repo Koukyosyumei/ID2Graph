@@ -125,12 +125,13 @@ struct Graph
     // return the number or the weight of self loops of the node
     double get_num_selfloops(unsigned int node)
     {
+        bool is_weights_size_is_not_zero = weights.size() != 0;
         pair<vector<unsigned int>::iterator, vector<float>::iterator> p = get_neighbors(node);
         for (unsigned int i = 0; i < get_num_neighbors(node); i++)
         {
             if (*(p.first + i) == node)
             {
-                if (weights.size() != 0)
+                if (is_weights_size_is_not_zero)
                 {
                     return (double)*(p.second + i);
                 }
@@ -152,9 +153,10 @@ struct Graph
         }
         else
         {
+            unsigned int num_neighbors = get_num_neighbors(node);
             pair<vector<unsigned int>::iterator, vector<float>::iterator> p = get_neighbors(node);
             double res = 0;
-            for (unsigned int i = 0; i < get_num_neighbors(node); i++)
+            for (unsigned int i = 0; i < num_neighbors; i++)
             {
                 res += (double)*(p.second + i);
             }
