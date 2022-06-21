@@ -11,7 +11,7 @@
 struct RandomForestTree : Tree<RandomForestNode>
 {
     RandomForestTree() {}
-    void fit(vector<RandomForestParty> *parties, vector<double> y,
+    void fit(vector<RandomForestParty> *parties, vector<double> &y,
              int min_leaf, int depth, float max_samples_ratio = 1.0,
              int active_party_id = -1, int n_job = 1, int seed = 0)
     {

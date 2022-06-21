@@ -26,9 +26,10 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
     }
     if (!skip_flag)
     {
-        for (int i = 0; i < node->idxs.size(); i++)
+        int num_idxs_size = node->idxs.size();
+        for (int i = 0; i < num_idxs_size; i++)
         {
-            for (int j = i + 1; j < node->idxs.size(); j++)
+            for (int j = i + 1; j < num_idxs_size; j++)
             {
                 adj_mat.add(node->idxs[i], node->idxs[j], weight * float(max_depth - node->depth));
             }
@@ -49,9 +50,10 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
         skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
         if (!skip_flag)
         {
-            for (int i = 0; i < node->idxs.size(); i++)
+            int num_idxs_size = node->idxs.size();
+            for (int i = 0; i < num_idxs_size; i++)
             {
-                for (int j = i + 1; j < node->idxs.size(); j++)
+                for (int j = i + 1; j < num_idxs_size; j++)
                 {
                     adj_mat.add(node->idxs[i], node->idxs[j], weight);
                 }
@@ -66,9 +68,10 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
 
         if (left_skip_flag && right_skip_flag)
         {
-            for (int i = 0; i < node->idxs.size(); i++)
+            int num_idxs_size = node->idxs.size();
+            for (int i = 0; i < num_idxs_size; i++)
             {
-                for (int j = i + 1; j < node->idxs.size(); j++)
+                for (int j = i + 1; j < num_idxs_size; j++)
                 {
                     adj_mat.add(node->idxs[i], node->idxs[j], weight);
                 }

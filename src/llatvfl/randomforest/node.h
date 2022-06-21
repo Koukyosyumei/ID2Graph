@@ -26,8 +26,8 @@ struct RandomForestNode : Node
     double giniimp;
 
     RandomForestNode() {}
-    RandomForestNode(vector<RandomForestParty> *parties_, vector<double> y_,
-                     vector<int> idxs_, int depth_, int active_party_id_ = -1, int n_job_ = 1)
+    RandomForestNode(vector<RandomForestParty> *parties_, vector<double> &y_,
+                     vector<int> &idxs_, int depth_, int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -104,14 +104,14 @@ struct RandomForestNode : Node
     double compute_giniimp()
     {
         double temp_y_pos_cnt;
-        for (int r = 0; r < idxs.size(); r++)
+        for (int r = 0; r < row_count; r++)
         {
             temp_y_pos_cnt += y[idxs[r]];
         }
-        double temp_y_neg_cnt = idxs.size() - temp_y_pos_cnt;
+        double temp_y_neg_cnt = row_count - temp_y_pos_cnt;
         double giniimp = 1 -
-                         (temp_y_pos_cnt / idxs.size()) * (temp_y_pos_cnt / idxs.size()) -
-                         (temp_y_neg_cnt / idxs.size()) * (temp_y_neg_cnt / idxs.size());
+                         (temp_y_pos_cnt / row_count) * (temp_y_pos_cnt / row_count) -
+                         (temp_y_neg_cnt / row_count) * (temp_y_neg_cnt / row_count);
         return giniimp;
     }
 
@@ -119,11 +119,11 @@ struct RandomForestNode : Node
     {
         // TODO: support multi class
         double pos_ratio = 0;
-        for (int r = 0; r < idxs.size(); r++)
+        for (int r = 0; r < row_count; r++)
         {
             pos_ratio += y[idxs[r]];
         }
-        return pos_ratio / double(idxs.size());
+        return pos_ratio / double(row_count);
     }
 
     void find_split_per_party(int party_id_start, int temp_num_parties)
@@ -132,11 +132,14 @@ struct RandomForestNode : Node
         {
             vector<vector<double>> search_results = parties->at(party_id).greedy_search_split(idxs, y);
 
-            for (int j = 0; j < search_results.size(); j++)
+            int num_search_results = search_results.size();
+            int temp_num_search_results_j;
+            for (int j = 0; j < num_search_results; j++)
             {
                 double temp_score;
                 double temp_giniimp;
-                for (int k = 0; k < search_results[j].size(); k++)
+                temp_num_search_results_j = search_results[j].size();
+                for (int k = 0; k < temp_num_search_results_j; k++)
                 {
                     temp_giniimp = search_results[j][k];
                     temp_score = giniimp - temp_giniimp;
@@ -188,7 +191,7 @@ struct RandomForestNode : Node
         // TODO: remove idx with nan values from right_idxs;
         vector<int> left_idxs = parties->at(best_party_id).split_rows(idxs, best_col_id, best_threshold_id);
         vector<int> right_idxs;
-        for (int i = 0; i < idxs.size(); i++)
+        for (int i = 0; i < row_count; i++)
             if (!any_of(left_idxs.begin(), left_idxs.end(), [&](double x)
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);

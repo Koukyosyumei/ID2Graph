@@ -229,7 +229,7 @@ struct XGBoostNode : Node
         // TODO: remove idx with nan values from right_idxs;
         vector<int> left_idxs = parties->at(best_party_id).split_rows(idxs, best_col_id, best_threshold_id);
         vector<int> right_idxs;
-        for (int i = 0; i < idxs.size(); i++)
+        for (int i = 0; i < row_count; i++)
             if (!any_of(left_idxs.begin(), left_idxs.end(), [&](double x)
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);

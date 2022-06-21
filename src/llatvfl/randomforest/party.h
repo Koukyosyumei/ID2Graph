@@ -78,7 +78,8 @@ struct RandomForestParty : Party
             int cumulative_left_size = 0;
             int cumulative_left_y_pos_cnt = 0;
             int cumulative_left_y_neg_cnt = 0;
-            for (int p = 0; p < threshold_candidates.size(); p++)
+            int num_threshold_candidates = threshold_candidates.size();
+            for (int p = 0; p < num_threshold_candidates; p++)
             {
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
