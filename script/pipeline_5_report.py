@@ -1,9 +1,10 @@
-import numpy as np
 import argparse
-import os
 import glob
-from matplotlib import pyplot as plt
+import os
+
+import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 
 def add_args(parser):
@@ -99,7 +100,13 @@ if __name__ == "__main__":
         f"AUC (validation): {np.round(np.mean(val_auc), decimals=4)}±{np.round(np.std(val_auc), decimals=4)}"
     )
 
-    leak_csv = pd.read_csv(os.path.join(parsed_args.path_to_dir, "leak.csv"))
+    leak_csv = pd.concat(
+        [
+            pd.read_csv(p)
+            for p in glob.glob(os.path.join(parsed_args.path_to_dir, "*_leak.csv"))
+        ]
+    )
+    leak_csv.to_csv(os.path.join(parsed_args.path_to_dir, "leak.csv"))
     for score_type in ["c", "h", "v", "p", "ip", "f"]:
         baseline_mean = np.round(leak_csv[f"baseline_{score_type}"].mean(), decimals=4)
         baseline_std = np.round(leak_csv[f"baseline_{score_type}"].std(), decimals=4)

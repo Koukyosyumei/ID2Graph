@@ -33,7 +33,7 @@
 *.ans
 
 # Custom
-result/*
+result/ci-*
 .vscode/
 
 # Byte-compiled / optimized / DLL files
@@ -174,3 +174,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# automatically generated files withiin `data`
+data/*/*.in

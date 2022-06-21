@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:i:r:c:h:j:e:w OPT
+while getopts d:m:p:n:f:i:r:c:h:j:e:k:s:w OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -12,42 +12,34 @@ do
     "h" ) FLG_H="TRUE" ; VALUE_H="$OPTARG" ;;
     "j" ) FLG_J="TRUE" ; VALUE_J="$OPTARG" ;;
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
+    "k" ) FLG_K="TRUE" ; VALUE_K="$OPTARG" ;;
+    "s" ) FLG_S="TRUE" ; VALUE_S="$OPTARG" ;;
     "w" ) FLG_W="TRUE" ; VALUE_W="$OPTARG" ;;
   esac
 done
 
+echo "random seed is ${VALUE_S}"
+python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${VALUE_S}
+cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
+
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
-  g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_xgboost.cpp
-  g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
-
-  for i in $(seq 1 5)
-  do 
-      echo "random seed is $i"
-      python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${i}
-      cp "./data/${VALUE_D}/${VALUE_D}.in" "${VALUE_P}/${i}_data.in"
-      if [ "${FLG_W}" = "TRUE" ]; then
-        script/build/pipeline_1_training.out -f ${VALUE_P} -p ${i} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${i}_data.in"
-      else
-        script/build/pipeline_1_training.out -f ${VALUE_P} -p ${i} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${i}_data.in"
-      fi
-      script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${i}_adj_mat.txt" > "${VALUE_P}/${i}_communities.out"
-  done
+  if [ "${FLG_W}" = "TRUE" ]; then
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+  else
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+  fi
 elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
-  g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_randomforest.cpp
-  g++ -o script/build/pipeline_2_louvain.out script/pipeline_2_louvain.cpp
-
-  for i in $(seq 1 5)
-  do 
-      echo "random seed is $i"
-      python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${i}
-      cp "./data/${VALUE_D}/${VALUE_D}.in" "${VALUE_P}/${i}_data.in"
-      if [ "${FLG_W}" = "TRUE" ]; then
-        script/build/pipeline_1_training.out -f ${VALUE_P} -p ${i} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${i}_data.in"
-      else
-        script/build/pipeline_1_training.out -f ${VALUE_P} -p ${i} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${i}_data.in"
-      fi
-      script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${i}_adj_mat.txt" > "${VALUE_P}/${i}_communities.out"
-  done
+  if [ "${FLG_W}" = "TRUE" ]; then
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+  else
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+  fi
 else
   echo "m=${VALUE_M} is not supported"
 fi
+
+script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${VALUE_S}_adj_mat.txt" > "${VALUE_P}/${VALUE_S}_communities.out"
+python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} > "${VALUE_P}/${VALUE_S}_leak.csv"
+
+rm "${VALUE_P}/${VALUE_S}_data.in"
+rm "${VALUE_P}/${VALUE_S}_communities.out"

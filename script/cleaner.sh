@@ -1,2 +1,2 @@
-rm -rf result/*
+rm -rf result/ci-*
 rm -rf script/build/*

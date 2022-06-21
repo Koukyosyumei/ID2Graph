@@ -1,10 +1,11 @@
 import argparse
-import pandas as pd
 import os
-import numpy as np
 import random
-from sklearn.model_selection import train_test_split
+
+import numpy as np
+import pandas as pd
 from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
 
 
 def add_args(parser):
@@ -205,7 +206,7 @@ if __name__ == "__main__":
         y_train,
         X_val,
         y_val,
-        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}.in"),
+        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"),
         col_alloc=None,
         feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
         parties_num=2,
