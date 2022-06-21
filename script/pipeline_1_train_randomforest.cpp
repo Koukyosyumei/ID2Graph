@@ -144,22 +144,20 @@ int main(int argc, char *argv[])
     std::ofstream adj_mat_file;
     string filepath = folderpath + "/" + fileprefix + "_adj_mat.txt";
     adj_mat_file.open(filepath, std::ios::out);
-    vector<vector<vector<int>>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph);
+    vector<SparseMatrixDOK<int>> vec_adi_mat = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph);
     adj_mat_file << vec_adi_mat.size() << "\n";
-    adj_mat_file << vec_adi_mat[0].size() << "\n";
+    adj_mat_file << vec_adi_mat[0].dim_row << "\n";
     for (int i = 0; i < vec_adi_mat.size(); i++)
     {
-        for (int j = 0; j < vec_adi_mat[i].size(); j++)
+        for (int j = 0; j < vec_adi_mat[i].dim_row; j++)
         {
-            adj_mat_file << count_if(vec_adi_mat[i][j].begin() + j + 1, vec_adi_mat[i][j].end(), [](int x)
-                                     { return x != 0; })
-                         << " ";
-            for (int k = j + 1; k < vec_adi_mat[i].size(); k++)
+            adj_mat_file << vec_adi_mat[i].row2nonzero_idx[j].size() << " ";
+            for (int k = 0; k < vec_adi_mat[i].row2nonzero_idx[j].size(); k++)
             {
-                if (vec_adi_mat[i][j][k] != 0)
-                {
-                    adj_mat_file << k << " " << vec_adi_mat[i][j][k] << " ";
-                }
+                adj_mat_file << vec_adi_mat[i].row2nonzero_idx[j][k]
+                             << " "
+                             << vec_adi_mat[i](j, vec_adi_mat[i].row2nonzero_idx[j][k])
+                             << " ";
             }
             adj_mat_file << "\n";
         }

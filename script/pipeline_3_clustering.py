@@ -1,12 +1,11 @@
 import numpy as np
 import argparse
-import os
-import glob
+import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn import preprocessing
 from sklearn import metrics
 
-from llatvfl.clustering import ReducedKMeans
+from llatvfl.clustering import ReducedKMeans, get_f_p_r
 
 # from matplotlib import pyplot as plt
 
@@ -84,15 +83,10 @@ if __name__ == "__main__":
     h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
     v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
 
-    cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
-    p_score_baseline = cm_matrix.max(axis=0).sum() / num_row
-    ip_score_baseline = cm_matrix.max(axis=1).sum() / num_row
-    f_score_baseline = (
-        2
-        * p_score_baseline
-        * ip_score_baseline
-        / (p_score_baseline + ip_score_baseline)
+    f_score_baseline, p_score_baseline, ip_score_baseline = get_f_p_r(
+        y_train, kmeans.labels_
     )
+    cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
 
     with open(parsed_args.path_to_com_file, mode="r") as f:
         lines = f.readlines()
@@ -112,14 +106,8 @@ if __name__ == "__main__":
     h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
     v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-    cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans_with_com.labels_)
-    p_score_with_com = cm_matrix.max(axis=0).sum() / num_row
-    ip_score_with_com = cm_matrix.max(axis=1).sum() / num_row
-    f_score_with_com = (
-        2
-        * p_score_with_com
-        * ip_score_with_com
-        / (p_score_with_com + ip_score_with_com)
+    f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
+        y_train, kmeans_with_com.labels_
     )
 
     print(

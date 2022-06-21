@@ -13,8 +13,9 @@ VALUE_I=1
 VALUE_E=0.3
 VALUE_K="vanila"
 VALUE_T="result"
+VALUE_P=1
 
-while getopts d:m:r:c:h:j:n:f:i:e:t:wg OPT
+while getopts d:m:r:c:h:j:n:f:i:e:t:p:wg OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -29,6 +30,7 @@ do
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
     "k" ) FLG_K="TRUE" ; VALUE_K="$OPTARG" ;;
     "t" ) FLG_T="TRUE" ; VALUE_T="$OPTARG" ;;
+    "p" ) FLG_P="TRUE" ; VALUE_P="$OPTARG" ;;
     "w" ) FLG_W="TRUE" ; VALUE_W="$OPTARG" ;;
     "g" ) FLG_G="TRUE" ; VALUE_G="$OPTARG" ;;
   esac
@@ -55,7 +57,7 @@ do
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
   fi
-  if [ ${s} -ne 5 ]; then
+  if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne 5 ]; then
     TRAINCMD+=" &"
   fi
   eval ${TRAINCMD}
