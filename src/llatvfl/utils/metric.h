@@ -12,7 +12,8 @@ using namespace std;
 double trapz(vector<double> x, vector<double> y)
 {
     double res = 0;
-    for (int i = 1; i < x.size(); i++)
+    int num_elements = x.size();
+    for (int i = 1; i < num_elements; i++)
     {
         res += (x[i] - x[i - 1]) * (y[i] + y[i - 1]) / 2;
     }
@@ -37,13 +38,14 @@ vector<double> get_thresholds_idxs(vector<double> y_pred)
 
 double roc_auc_score(vector<double> y_pred, vector<int> y_true)
 {
-    vector<int> temp_idxs(y_pred.size());
+    int num_elements = y_pred.size();
+    vector<int> temp_idxs(num_elements);
     iota(temp_idxs.begin(), temp_idxs.end(), 0);
     sort(temp_idxs.begin(), temp_idxs.end(), [&y_pred](size_t i, size_t j)
          { return y_pred[i] < y_pred[j]; });
     vector<int> temp_y_true(y_true.size());
     copy(y_true.begin(), y_true.end(), temp_y_true.begin());
-    for (int i = 0; i < y_pred.size(); i++)
+    for (int i = 0; i < num_elements; i++)
     {
         y_true[i] = temp_y_true[temp_idxs[i]];
     }
@@ -52,7 +54,7 @@ double roc_auc_score(vector<double> y_pred, vector<int> y_true)
     vector<double> thresholds_idxs = get_thresholds_idxs(y_pred);
 
     vector<double> tps = {0};
-    for (int i = 1; i < y_true.size(); i++)
+    for (int i = 1; i < num_elements; i++)
     {
         tps.push_back(y_true[i] + tps[i - 1]);
     }
@@ -62,7 +64,7 @@ double roc_auc_score(vector<double> y_pred, vector<int> y_true)
     }
 
     vector<double> fps = {1};
-    for (int i = 1; i < y_true.size(); i++)
+    for (int i = 1; i < num_elements; i++)
     {
         fps.push_back(1 - y_true[i] + fps[i - 1]);
     }
