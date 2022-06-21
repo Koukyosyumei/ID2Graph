@@ -36,6 +36,17 @@ int main()
         }
     }
 
+    sm = SparseMatrixDOK<float>(3, 3, 0, false, true);
+    sm.from_densematrix(test_adj_mat);
+    vector<vector<float>> reconstructed_dm = sm.to_densematrix();
+    for (int i = 0; i < test_adj_mat.size(); i++)
+    {
+        for (int j = 0; j < test_adj_mat[i].size(); j++)
+        {
+            assert(test_adj_mat[i][j] == reconstructed_dm[i][j]);
+        }
+    }
+
     SparseMatrixDOK<float> sm_symme = SparseMatrixDOK<float>(3, 3, 0, true, true);
     sm_symme.add(1, 1, 0.5);
     sm_symme.add(2, 1, 0.1);
@@ -64,6 +75,17 @@ int main()
         for (int j = 0; j < test_row2nonzero_idx_symme[i].size(); j++)
         {
             assert(test_row2nonzero_idx_symme[i][j] == sm_symme.row2nonzero_idx[i][j]);
+        }
+    }
+
+    sm_symme = SparseMatrixDOK<float>(3, 3, 0, true, true);
+    sm_symme.from_densematrix(test_adj_mat_symme);
+    vector<vector<float>> reconstructed_dm_symme = sm_symme.to_densematrix();
+    for (int i = 0; i < test_adj_mat_symme.size(); i++)
+    {
+        for (int j = 0; j < test_adj_mat_symme[i].size(); j++)
+        {
+            assert(test_adj_mat_symme[i][j] == reconstructed_dm_symme[i][j]);
         }
     }
 
