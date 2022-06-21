@@ -5,6 +5,9 @@
 
 int main()
 {
+    HashPairSzudzik hashfunc;
+    assert(hashfunc(make_pair(92, 23)) == 8579);
+
     SparseMatrixDOK<float> sm = SparseMatrixDOK<float>(3, 3, 0, false, true);
     sm.add(1, 1, 0.5);
     sm.add(2, 1, 0.1);
