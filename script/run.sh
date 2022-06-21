@@ -66,6 +66,7 @@ do
   if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
     TRAINCMD+=" &"
   fi
+  echo ${TRAINCMD}
   eval ${TRAINCMD}
 done
 

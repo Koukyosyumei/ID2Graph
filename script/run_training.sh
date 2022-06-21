@@ -38,8 +38,7 @@ else
   echo "m=${VALUE_M} is not supported"
 fi
 
-# script/build/pipeline_2_louvain.out -c ${VALUE_C} -e ${VALUE_E}$ < "${VALUE_P}/${VALUE_S}_adj_mat.txt" > "${VALUE_P}/${VALUE_S}_communities.out"
 python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} > "${VALUE_P}/${VALUE_S}_leak.csv"
 
-rm "${VALUE_P}/${VALUE_S}_data.in"
-rm "${VALUE_P}/${VALUE_S}_communities.out"
+# rm "${VALUE_P}/${VALUE_S}_data.in"
+# rm "${VALUE_P}/${VALUE_S}_communities.out"
