@@ -151,13 +151,13 @@ int main(int argc, char *argv[])
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();
 
-    printf("Extracting a graph from the trained model seed=%s\n", fileprefix.c_str());
+    printf("Start graph extraction seed=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Extraction of a graph is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     printf("Start community detection seed=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();

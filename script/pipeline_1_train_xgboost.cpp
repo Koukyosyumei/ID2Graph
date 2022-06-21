@@ -150,13 +150,13 @@ int main(int argc, char *argv[])
                                               0, completelly_secure_round,
                                               0.5, n_job, true);
 
-    printf("Start training seed=%s\n", fileprefix.c_str());
+    printf("Start graph extraction seed=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.logging_loss.size(); i++)
     {
