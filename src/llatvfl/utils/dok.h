@@ -101,7 +101,7 @@ struct SparseMatrixDOK
         }
     }
 
-    void from_densematrix(vector<vector<DataType>> densematrix)
+    void from_densematrix(vector<vector<DataType>> &densematrix)
     {
         for (int i = 0; i < dim_row; i++)
         {
