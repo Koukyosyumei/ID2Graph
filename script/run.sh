@@ -65,8 +65,9 @@ do
   fi
   if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
     TRAINCMD+=" &"
+  else
+    TRAINCMD+=" & wait"
   fi
-  echo ${TRAINCMD}
   eval ${TRAINCMD}
 done
 
@@ -83,4 +84,5 @@ mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
 
-# rm -rf ${TEMPD}
+wait
+rm -rf ${TEMPD}
