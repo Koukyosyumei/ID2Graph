@@ -18,10 +18,13 @@ struct RandomForestTree : Tree<RandomForestNode>
         vector<int> idxs(y.size());
         iota(idxs.begin(), idxs.end(), 0);
 
-        mt19937 engine(seed);
-        shuffle(idxs.begin(), idxs.end(), engine);
-        int temp_subsampled_size = int(max_samples_ratio * float(y.size()));
-        idxs.resize(temp_subsampled_size);
+        if (max_samples_ratio < 1.0)
+        {
+            mt19937 engine(seed);
+            shuffle(idxs.begin(), idxs.end(), engine);
+            int temp_subsampled_size = int(max_samples_ratio * float(y.size()));
+            idxs.resize(temp_subsampled_size);
+        }
 
         for (int i = 0; i < parties->size(); i++)
         {
