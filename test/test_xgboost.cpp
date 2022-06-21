@@ -139,69 +139,57 @@ int main()
     for (int i = 0; i < test_predcit_proba.size(); i++)
         assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
 
-    vector<vector<int>> test_adj_mat_weighted = {{0, 0, 1, 0, 0, 0, 0, 1},
-                                                 {0, 0, 0, 1, 3, 3, 1, 0},
-                                                 {1, 0, 0, 0, 0, 0, 0, 1},
-                                                 {0, 1, 0, 0, 1, 1, 3, 0},
-                                                 {0, 3, 0, 1, 0, 6, 1, 0},
-                                                 {0, 3, 0, 1, 6, 0, 1, 0},
-                                                 {0, 1, 0, 3, 1, 1, 0, 0},
-                                                 {1, 0, 1, 0, 0, 0, 0, 0}};
+    vector<vector<float>> test_adj_mat_weighted = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                                   {0, 0, 0, 1, 3, 3, 1, 0},
+                                                   {1, 0, 0, 0, 0, 0, 0, 1},
+                                                   {0, 1, 0, 0, 1, 1, 3, 0},
+                                                   {0, 3, 0, 1, 0, 6, 1, 0},
+                                                   {0, 3, 0, 1, 6, 0, 1, 0},
+                                                   {0, 1, 0, 3, 1, 1, 0, 0},
+                                                   {1, 0, 1, 0, 0, 0, 0, 0}};
 
-    vector<SparseMatrixDOK<int>> vec_adj_mat_weighted = extract_adjacency_matrix_from_forest(&clf, -1, true);
-    for (int i = 0; i < vec_adj_mat_weighted.size(); i++)
+    vector<vector<float>> adj_mat_weighted = extract_adjacency_matrix_from_forest(&clf, -1, true, 1.0).to_densematrix();
+    for (int j = 0; j < test_adj_mat_weighted.size(); j++)
     {
-        vector<vector<int>> temp_adj_mat = vec_adj_mat_weighted[i].to_densematrix();
-        for (int j = 0; j < temp_adj_mat.size(); j++)
+        for (int k = 0; k < test_adj_mat_weighted[j].size(); k++)
         {
-            for (int k = 0; k < temp_adj_mat[j].size(); k++)
-            {
-                assert(temp_adj_mat[j][k] == test_adj_mat_weighted[j][k]);
-            }
+            assert(adj_mat_weighted[j][k] == test_adj_mat_weighted[j][k]);
         }
     }
 
-    vector<vector<int>> test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},
-                                        {0, 0, 0, 0, 0, 0, 0, 0},
-                                        {1, 0, 0, 0, 0, 0, 0, 1},
-                                        {0, 0, 0, 0, 0, 0, 1, 0},
-                                        {0, 0, 0, 0, 0, 1, 0, 0},
-                                        {0, 0, 0, 0, 1, 0, 0, 0},
-                                        {0, 0, 0, 1, 0, 0, 0, 0},
-                                        {1, 0, 1, 0, 0, 0, 0, 0}};
+    vector<vector<float>> test_adj_mat = {{0, 0, 1.3, 0, 0, 0, 0, 1.3},
+                                          {0, 0, 0, 0, 0, 0, 0, 0},
+                                          {1.3, 0, 0, 0, 0, 0, 0, 1.3},
+                                          {0, 0, 0, 0, 0, 0, 1.3, 0},
+                                          {0, 0, 0, 0, 0, 1.3, 0, 0},
+                                          {0, 0, 0, 0, 1.3, 0, 0, 0},
+                                          {0, 0, 0, 1.3, 0, 0, 0, 0},
+                                          {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<SparseMatrixDOK<int>> vec_adj_mat = extract_adjacency_matrix_from_forest(&clf, -1, false);
-    for (int i = 0; i < vec_adj_mat.size(); i++)
+    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, -1, false, 0, 0.3).to_densematrix();
+    for (int j = 0; j < test_adj_mat.size(); j++)
     {
-        vector<vector<int>> temp_adj_mat = vec_adj_mat[i].to_densematrix();
-        for (int j = 0; j < temp_adj_mat.size(); j++)
+        for (int k = 0; k < test_adj_mat[j].size(); k++)
         {
-            for (int k = 0; k < temp_adj_mat[j].size(); k++)
-            {
-                assert(temp_adj_mat[j][k] == test_adj_mat[j][k]);
-            }
+            assert(adj_mat[j][k] == test_adj_mat[j][k]);
         }
     }
 
-    vector<vector<int>> test_adj_mat_1 = {{0, 0, 1, 0, 0, 0, 0, 1},
-                                          {0, 0, 0, 0, 1, 1, 0, 0},
-                                          {1, 0, 0, 0, 0, 0, 0, 1},
-                                          {0, 0, 0, 0, 0, 0, 1, 0},
-                                          {0, 1, 0, 0, 0, 1, 0, 0},
-                                          {0, 1, 0, 0, 1, 0, 0, 0},
-                                          {0, 0, 0, 1, 0, 0, 0, 0},
-                                          {1, 0, 1, 0, 0, 0, 0, 0}};
+    vector<vector<float>> test_adj_mat_1 = {{0, 0, 1.3, 0, 0, 0, 0, 1.3},
+                                            {0, 0, 0, 0, 1.3, 1.3, 0, 0},
+                                            {1.3, 0, 0, 0, 0, 0, 0, 1.3},
+                                            {0, 0, 0, 0, 0, 0, 1.3, 0},
+                                            {0, 1.3, 0, 0, 0, 1.3, 0, 0},
+                                            {0, 1.3, 0, 0, 1.3, 0, 0, 0},
+                                            {0, 0, 0, 1.3, 0, 0, 0, 0},
+                                            {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<SparseMatrixDOK<int>> vec_adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, 1, false);
-    for (int i = 0; i < vec_adj_mat_1.size(); i++)
+    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, 1, false, 0.3).to_densematrix();
+    for (int j = 0; j < test_adj_mat_1.size(); j++)
     {
-        vector<vector<int>> temp_adj_mat = vec_adj_mat_1[i].to_densematrix();
-        for (int j = 0; j < temp_adj_mat.size(); j++)
+        for (int k = 0; k < test_adj_mat_1[j].size(); k++)
         {
-            for (int k = 0; k < temp_adj_mat[j].size(); k++)
-            {
-                assert(temp_adj_mat[j][k] == test_adj_mat_1[j][k]);
-            }
+            assert(adj_mat_1[j][k] == test_adj_mat_1[j][k]);
         }
     }
 
