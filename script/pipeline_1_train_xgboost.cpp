@@ -81,7 +81,17 @@ int main(int argc, char *argv[])
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
-    scanf("%d %d %d", &num_row_train, &num_col, &num_party);
+    if (scanf("%d %d %d", &num_row_train, &num_col, &num_party) != 3)
+    {
+        try
+        {
+            throw runtime_error("bad input");
+        }
+        catch (std::runtime_error e)
+        {
+            cerr << e.what() << "/n";
+        }
+    }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
     vector<XGBoostParty> parties(num_party);
@@ -90,7 +100,17 @@ int main(int argc, char *argv[])
     for (int i = 0; i < num_party; i++)
     {
         int num_col = 0;
-        scanf("%d", &num_col);
+        if (scanf("%d", &num_col) != 1)
+        {
+            try
+            {
+                throw runtime_error("bad input");
+            }
+            catch (std::runtime_error e)
+            {
+                cerr << e.what() << "/n";
+            }
+        }
         vector<int> feature_idxs(num_col);
         vector<vector<float>> x(num_row_train, vector<float>(num_col));
         for (int j = 0; j < num_col; j++)
@@ -98,7 +118,17 @@ int main(int argc, char *argv[])
             feature_idxs[j] = temp_count_feature;
             for (int k = 0; k < num_row_train; k++)
             {
-                scanf("%f", &x[k][j]);
+                if (scanf("%f", &x[k][j]) != 1)
+                {
+                    try
+                    {
+                        throw runtime_error("bad input");
+                    }
+                    catch (std::runtime_error e)
+                    {
+                        cerr << e.what() << "/n";
+                    }
+                }
                 if (use_missing_value && x[k][j] == -1)
                 {
                     x[k][j] = nan("");
@@ -112,16 +142,48 @@ int main(int argc, char *argv[])
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
-        scanf("%f", &y_train[j]);
+    {
+        if (scanf("%f", &y_train[j]) != 1)
+        {
+            try
+            {
+                throw runtime_error("bad input");
+            }
+            catch (std::runtime_error e)
+            {
+                cerr << e.what() << "/n";
+            }
+        }
+    }
 
-    scanf("%d", &num_row_val);
+    if (scanf("%d", &num_row_val) != 1)
+    {
+        try
+        {
+            throw runtime_error("bad input");
+        }
+        catch (std::runtime_error e)
+        {
+            cerr << e.what() << "/n";
+        }
+    }
     vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
     vector<float> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
     {
         for (int j = 0; j < num_row_val; j++)
         {
-            scanf("%f", &X_val[j][i]);
+            if (scanf("%f", &X_val[j][i]) != 1)
+            {
+                try
+                {
+                    throw runtime_error("bad input");
+                }
+                catch (std::runtime_error e)
+                {
+                    cerr << e.what() << "/n";
+                }
+            }
             if (use_missing_value && X_val[j][i] == -1)
             {
                 X_val[j][i] = nan("");
@@ -129,7 +191,19 @@ int main(int argc, char *argv[])
         }
     }
     for (int j = 0; j < num_row_val; j++)
-        scanf("%f", &y_val[j]);
+    {
+        if (scanf("%f", &y_val[j]) != 1)
+        {
+            try
+            {
+                throw runtime_error("bad input");
+            }
+            catch (std::runtime_error e)
+            {
+                cerr << e.what() << "/n";
+            }
+        }
+    }
 
     std::ofstream result_file;
     string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
