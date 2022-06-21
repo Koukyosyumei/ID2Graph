@@ -150,12 +150,13 @@ int main(int argc, char *argv[])
                                               0, completelly_secure_round,
                                               0.5, n_job, true);
 
+    printf("Start training seed=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Training is complete %f [ms]\n", elapsed);
+    printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.logging_loss.size(); i++)
     {
@@ -196,12 +197,13 @@ int main(int argc, char *argv[])
 
     Graph g = Graph(adj_matrix);
 
+    printf("Start community detection seed=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     Louvain louvain = Louvain();
     louvain.fit(g);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Community detection is complete %f [ms]\n", elapsed);
+    printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
