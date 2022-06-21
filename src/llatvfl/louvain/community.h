@@ -28,7 +28,7 @@ struct Community
     double min_modularity;
 
     Community(){};
-    Community(Graph gc, int nbp, double minm)
+    Community(Graph &gc, int nbp, double minm)
     {
         g = gc;
         num_nodes = g.num_nodes;
@@ -272,7 +272,8 @@ struct Community
 
             double total_tot = 0;
             double total_in = 0;
-            for (unsigned int i = 0; i < tot.size(); i++)
+            unsigned int tot_size = tot.size();
+            for (unsigned int i = 0; i < tot_size; i++)
             {
                 total_tot += tot[i];
                 total_in += in[i];
