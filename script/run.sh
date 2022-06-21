@@ -83,4 +83,4 @@ mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
 
-rm -rf ${TEMPD}
+# rm -rf ${TEMPD}
