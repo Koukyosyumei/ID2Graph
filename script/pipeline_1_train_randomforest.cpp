@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
                 for (int k = 0; k < vec_adi_mat[i].row2nonzero_idx[j].size(); k++)
                 {
                     adj_matrix.add(j, vec_adi_mat[i].row2nonzero_idx[j][k],
-                                   eta * double(vec_adi_mat[i](j, vec_adi_mat[i].row2nonzero_idx[j][k])));
+                                   eta * float(vec_adi_mat[i](j, vec_adi_mat[i].row2nonzero_idx[j][k])));
                 }
             }
         }
@@ -170,8 +170,12 @@ int main(int argc, char *argv[])
 
     Graph g = Graph(adj_matrix);
 
+    start = chrono::system_clock::now();
     Louvain louvain = Louvain();
     louvain.fit(g);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Community detection is complete %f [ms]\n", elapsed);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
@@ -186,4 +190,5 @@ int main(int argc, char *argv[])
         }
         com_file << "\n";
     }
+    com_file.close();
 }
