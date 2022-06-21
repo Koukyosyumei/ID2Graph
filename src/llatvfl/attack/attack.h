@@ -10,8 +10,9 @@ using namespace std;
 template <typename NodeType>
 bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
                                                         int max_depth,
-                                                        SparseMatrixDOK<int> &adj_mat,
-                                                        int target_party_id = -1)
+                                                        SparseMatrixDOK<float> &adj_mat,
+                                                        float weight,
+                                                        int target_party_id)
 {
     bool skip_flag = false;
     if (node->is_leaf())
@@ -20,8 +21,8 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
     }
     else
     {
-        travase_nodes_to_extract_weighted_adjacency_matrix(node->left, max_depth, adj_mat, target_party_id);
-        travase_nodes_to_extract_weighted_adjacency_matrix(node->right, max_depth, adj_mat, target_party_id);
+        travase_nodes_to_extract_weighted_adjacency_matrix(node->left, max_depth, adj_mat, weight, target_party_id);
+        travase_nodes_to_extract_weighted_adjacency_matrix(node->right, max_depth, adj_mat, weight, target_party_id);
     }
     if (!skip_flag)
     {
@@ -29,7 +30,7 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
         {
             for (int j = i + 1; j < node->idxs.size(); j++)
             {
-                adj_mat.add(node->idxs[i], node->idxs[j], max_depth - node->depth);
+                adj_mat.add(node->idxs[i], node->idxs[j], weight * float(max_depth - node->depth));
             }
         }
     }
@@ -38,8 +39,9 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
 
 template <typename NodeType>
 bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
-                                               SparseMatrixDOK<int> &adj_mat,
-                                               int target_party_id = -1)
+                                               SparseMatrixDOK<float> &adj_mat,
+                                               float weight,
+                                               int target_party_id)
 {
     bool skip_flag;
     if (node->is_leaf())
@@ -51,7 +53,7 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             {
                 for (int j = i + 1; j < node->idxs.size(); j++)
                 {
-                    adj_mat.add(node->idxs[i], node->idxs[j], 1);
+                    adj_mat.add(node->idxs[i], node->idxs[j], weight);
                 }
             }
         }
@@ -59,8 +61,8 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
     else
     {
         skip_flag = false;
-        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->left, adj_mat, target_party_id);
-        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->right, adj_mat, target_party_id);
+        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->left, adj_mat, weight, target_party_id);
+        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->right, adj_mat, weight, target_party_id);
 
         if (left_skip_flag && right_skip_flag)
         {
@@ -68,7 +70,7 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             {
                 for (int j = i + 1; j < node->idxs.size(); j++)
                 {
-                    adj_mat.add(node->idxs[i], node->idxs[j], 1);
+                    adj_mat.add(node->idxs[i], node->idxs[j], weight);
                 }
             }
         }
@@ -76,68 +78,74 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
     return skip_flag;
 }
 
-SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(XGBoostTree *tree, int target_party_id = 1,
-                                                        bool is_weighted = true)
+void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
+                                        SparseMatrixDOK<float> &adj_mat,
+                                        float weight,
+                                        int target_party_id,
+                                        bool is_weighted)
 {
     int num_row = tree->dtree.y.size();
-    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true, true);
-    bool skip_flag;
     if (is_weighted)
     {
-        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+        travase_nodes_to_extract_weighted_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     }
     else
     {
-        skip_flag = travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, adj_mat, target_party_id);
+        travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, adj_mat, weight, target_party_id);
     }
-    if (skip_flag)
-    {
-        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true, true);
-    }
-    return adj_mat;
 }
 
-SparseMatrixDOK<int> extract_adjacency_matrix_from_tree(RandomForestTree *tree, int target_party_id = 1,
-                                                        bool is_weighted = true)
+void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
+                                        SparseMatrixDOK<float> &adj_mat,
+                                        float weight,
+                                        int target_party_id,
+                                        bool is_weighted)
 {
     int num_row = tree->dtree.y.size();
-    SparseMatrixDOK<int> adj_mat(num_row, num_row, 0, true, true);
-    bool skip_flag;
     if (is_weighted)
     {
-        skip_flag = travase_nodes_to_extract_weighted_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, target_party_id);
+        travase_nodes_to_extract_weighted_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     }
     else
     {
-        skip_flag = travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, adj_mat, target_party_id);
+        travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, adj_mat, weight, target_party_id);
     }
-    if (skip_flag)
-    {
-        adj_mat = SparseMatrixDOK<int>(num_row, num_row, 0, true, true);
-    }
-    return adj_mat;
 }
 
-vector<SparseMatrixDOK<int>> extract_adjacency_matrix_from_forest(XGBoostBase *model,
-                                                                  int target_party_id = -1,
-                                                                  bool is_weighted = true)
+SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                            int target_party_id = -1,
+                                                            bool is_weighted = true,
+                                                            int skip_round = 0,
+                                                            float eta = 0.3)
 {
-    vector<SparseMatrixDOK<int>> result(model->estimators.size());
+    int num_row = model->estimators[0].dtree.y.size();
+    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
-        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
+        if (i >= skip_round)
+        {
+            extract_adjacency_matrix_from_tree(&model->estimators[i], adj_matrix,
+                                               pow(eta, float(i - skip_round)),
+                                               target_party_id, is_weighted);
+        }
     }
-    return result;
+    return adj_matrix;
 }
 
-vector<SparseMatrixDOK<int>> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
-                                                                  int target_party_id = -1,
-                                                                  bool is_weighted = true)
+SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
+                                                            int target_party_id = -1,
+                                                            bool is_weighted = true,
+                                                            int skip_round = 0)
 {
-    vector<SparseMatrixDOK<int>> result(model->estimators.size());
+    int num_row = model->estimators[0].dtree.y.size();
+    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
-        result[i] = extract_adjacency_matrix_from_tree(&model->estimators[i], target_party_id, is_weighted);
+        if (i >= skip_round)
+        {
+            extract_adjacency_matrix_from_tree(&model->estimators[i], adj_matrix,
+                                               1.0, target_party_id, is_weighted);
+        }
     }
-    return result;
+    return adj_matrix;
 }

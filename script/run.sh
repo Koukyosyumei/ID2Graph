@@ -63,10 +63,12 @@ do
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
   fi
-  if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
-    TRAINCMD+=" &"
-  else
-    TRAINCMD+=" & wait"
+  if [ ${VALUE_P} -gt 1 ]; then
+    if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
+      TRAINCMD+=" &"
+    else
+      TRAINCMD+=" & wait"
+    fi
   fi
   eval ${TRAINCMD}
 done
