@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# constant values
+NUM_TRIAL=5
+
 # default values
 VALUE_D="breastcancer"
 VALUE_M="xgboost"
@@ -51,13 +54,13 @@ else
 fi
 
 
-for s in $(seq 1 5)
+for s in $(seq 1 ${NUM_TRIAL})
 do 
   TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E} -k ${VALUE_K}"
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
   fi
-  if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne 5 ]; then
+  if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
     TRAINCMD+=" &"
   fi
   eval ${TRAINCMD}
