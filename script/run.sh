@@ -15,10 +15,11 @@ VALUE_F=0.5
 VALUE_I=1
 VALUE_E=0.3
 VALUE_K="vanila"
-VALUE_T="result"
+VALUE_T="result/temp"
+VALUE_U="result"
 VALUE_P=1
 
-while getopts d:m:r:c:h:j:n:f:i:e:t:p:wg OPT
+while getopts d:m:r:c:h:j:n:f:i:e:t:u:p:wg OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -33,15 +34,17 @@ do
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
     "k" ) FLG_K="TRUE" ; VALUE_K="$OPTARG" ;;
     "t" ) FLG_T="TRUE" ; VALUE_T="$OPTARG" ;;
+    "u" ) FLG_U="TRUE" ; VALUE_U="$OPTARG" ;;
     "p" ) FLG_P="TRUE" ; VALUE_P="$OPTARG" ;;
     "w" ) FLG_W="TRUE" ; VALUE_W="$OPTARG" ;;
     "g" ) FLG_G="TRUE" ; VALUE_G="$OPTARG" ;;
   esac
 done
 
+RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" > "${TEMPD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" > "${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   g++ -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_xgboost.cpp
@@ -72,9 +75,11 @@ if [ "${FLG_G}" = "TRUE" ]; then
   python3 script/pipeline_4_vis_network.py -p ${TEMPD} -e ${VALUE_E}
 fi
 
-python3 script/pipeline_5_report.py -p ${TEMPD} > "${TEMPD}/report.md"
+python3 script/pipeline_5_report.py -p ${TEMPD} > "${RESUD}/report.md"
 
-#rm ${TEMPD}/*.in
-rm ${TEMPD}/*.txt
-rm ${TEMPD}/*.out
-rm ${TEMPD}/*_leak.csv
+mv ${TEMPD}/*.ans ${RESUD}/
+mv ${TEMPD}/leak.csv ${RESUD}/
+mv ${TEMPD}/loss_lp.csv ${RESUD}/
+mv ${TEMPD}/result.png ${RESUD}/
+
+rm -rf ${TEMPD}

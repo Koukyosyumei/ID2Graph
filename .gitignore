@@ -33,7 +33,7 @@
 *.ans
 
 # Custom
-result/*
+result/ci-*
 .vscode/
 
 # Byte-compiled / optimized / DLL files
