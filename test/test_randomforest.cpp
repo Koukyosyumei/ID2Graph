@@ -52,6 +52,7 @@ int main()
     // --- Check Training --- //
     clf.fit(parties, y);
 
+    // cout << clf.estimators[0].dtree.giniimp << endl;
     assert(abs(clf.estimators[0].dtree.giniimp - 0.46875) < 1e-6);
     assert(abs(clf.estimators[0].dtree.score - 0.16875) < 1e-6);
     assert(clf.estimators[0].dtree.best_party_id == 0);

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <queue>
 #include "../utils/dok.h"
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
@@ -15,6 +16,39 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
                                                         int target_party_id)
 {
     bool skip_flag = false;
+    queue<NodeType *> que;
+    que.push(node);
+    NodeType *temp_node;
+    int temp_idxs_size;
+    while (!que.empty())
+    {
+        skip_flag = false;
+        temp_node = que.front();
+        que.pop();
+        if (temp_node->is_leaf())
+        {
+            skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
+        }
+        else
+        {
+            que.push(temp_node->left);
+            que.push(temp_node->right);
+        }
+
+        if (!skip_flag)
+        {
+            int temp_idxs_size = temp_node->idxs.size();
+            for (int i = 0; i < temp_idxs_size; i++)
+            {
+                for (int j = i + 1; j < temp_idxs_size; j++)
+                {
+                    adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight * float(max_depth - temp_node->depth));
+                }
+            }
+        }
+    }
+
+    /*
     if (node->is_leaf())
     {
         skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
@@ -24,6 +58,7 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
         travase_nodes_to_extract_weighted_adjacency_matrix(node->left, max_depth, adj_mat, weight, target_party_id);
         travase_nodes_to_extract_weighted_adjacency_matrix(node->right, max_depth, adj_mat, weight, target_party_id);
     }
+
     if (!skip_flag)
     {
         int num_idxs_size = node->idxs.size();
@@ -35,6 +70,7 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
             }
         }
     }
+    */
     return skip_flag;
 }
 
@@ -44,7 +80,56 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                float weight,
                                                int target_party_id)
 {
-    bool skip_flag;
+    bool skip_flag, left_skip_flag, right_skip_flag;
+
+    queue<NodeType *> que;
+    que.push(node);
+    NodeType *temp_node;
+    int temp_idxs_size;
+    while (!que.empty())
+    {
+        skip_flag = false;
+        temp_node = que.front();
+        que.pop();
+
+        if (temp_node->is_leaf())
+        {
+            skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
+            if (!skip_flag)
+            {
+                temp_idxs_size = temp_node->idxs.size();
+                for (int i = 0; i < temp_idxs_size; i++)
+                {
+                    for (int j = i + 1; j < temp_idxs_size; j++)
+                    {
+                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                    }
+                }
+            }
+        }
+        else
+        {
+            left_skip_flag = temp_node->left->is_leaf() && temp_node->left->depth <= 0 && target_party_id != -1 && temp_node->left->party_id != target_party_id;
+            right_skip_flag = temp_node->right->is_leaf() && temp_node->right->depth <= 0 && target_party_id != -1 && temp_node->right->party_id != target_party_id;
+
+            if (left_skip_flag && right_skip_flag)
+            {
+                temp_idxs_size = temp_node->idxs.size();
+                for (int i = 0; i < temp_idxs_size; i++)
+                {
+                    for (int j = i + 1; j < temp_idxs_size; j++)
+                    {
+                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                    }
+                }
+            }
+
+            que.push(temp_node->left);
+            que.push(temp_node->right);
+        }
+    }
+
+    /*
     if (node->is_leaf())
     {
         skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
@@ -78,6 +163,7 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             }
         }
     }
+    */
     return skip_flag;
 }
 
