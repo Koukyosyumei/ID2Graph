@@ -16,7 +16,7 @@ struct Louvain
     Community community;
     Graph g;
 
-    Louvain(int max_itr_ = 1000, double precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
+    Louvain(int max_itr_ = 30, double precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
     {
         max_itr = max_itr_;
         precision = precision_;
@@ -48,6 +48,11 @@ struct Louvain
             if (!improvement)
             {
                 break;
+            }
+
+            if (i == max_itr - 1)
+            {
+                cout << "\033[31moptimization did not converge\033[0m" << endl;
             }
         }
     }
