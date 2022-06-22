@@ -1,7 +1,7 @@
 # SecureBoost
 
 ```
-./script/run.sh -d breastcancer -r 20 -c 1 -i 1 -e 0.3
+./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 300
 ```
 
 ## Usage
@@ -17,6 +17,8 @@
     -f : (float) the ratio of features owned by the active party
     -i : (float) the imlalance of dataset
     -e : (float) coefficient of edge weight (tau in our paper)
+    -l : (string) type of louvain method (vanila or random)
+    -z : wait for timeout of louvain
     -t : (str) the path to the folder where this script saves all results (default=`result`)
     -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
     -p : (int) number of parallelly executed experiments
