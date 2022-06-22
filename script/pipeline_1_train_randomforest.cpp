@@ -17,8 +17,8 @@ using namespace std;
 const int min_leaf = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
-const int max_timeout_num_patience = 3;
-const int num_random_trials = 2;
+const int max_timeout_num_patience = 10;
+const int num_random_trials = 5;
 
 string folderpath;
 string fileprefix;

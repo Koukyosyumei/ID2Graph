@@ -22,8 +22,8 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 5;
-const int num_random_trials = 2;
+const int max_timeout_num_patience = 10;
+const int num_random_trials = 5;
 
 string folderpath;
 string fileprefix;
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
            int(random_unfolding), fileprefix.c_str());
     Louvain louvain = Louvain(random_unfolding);
     future<void> future = async(launch::async, [&louvain, &g]()
-                                { louvain.fit(g); });
+                                { cout << louvain.seed << " " << louvain.random_unforlding << "\n"; louvain.fit(g); });
     future_status status;
     int count_timeout = 0;
     do
@@ -285,8 +285,12 @@ int main(int argc, char *argv[])
         status = future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
 
-        if (status == std::future_status::timeout)
+        switch (status)
         {
+        case future_status::deferred:
+            printf("deferred\n");
+            break;
+        case future_status::timeout:
             printf("\033[33mTimeout of community detection -> retry seed=%s\033[0m\n",
                    fileprefix.c_str());
             if (count_timeout == max_timeout_num_patience)
@@ -298,14 +302,13 @@ int main(int argc, char *argv[])
                 louvain.random_unforlding = true;
             }
             louvain.reseed(louvain.seed + 1);
-        }
-        else if (status == future_status::ready)
-        {
+            break;
+        case future_status::ready:
             elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
             printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
             break;
         }
-    } while (count_timeout < max_timeout_num_patience);
+    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
