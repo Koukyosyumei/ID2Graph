@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <limits>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include "graph.h"
 using namespace std;
@@ -172,8 +172,8 @@ struct Community
         int comm_deg = comm2nodes.size();
         for (int comm = 0; comm < comm_deg; comm++)
         {
-            map<int, float> m;
-            map<int, float>::iterator it;
+            unordered_map<int, float> m;
+            unordered_map<int, float>::iterator it;
 
             int comm_size = comm2nodes[comm].size();
             for (int node = 0; node < comm_size; node++)
