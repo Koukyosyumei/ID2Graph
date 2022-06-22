@@ -236,7 +236,8 @@ int main(int argc, char *argv[])
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
-    printf("Start community detection seed=%s\n", fileprefix.c_str());
+    printf("Start community detection (random_unforlding=%d) seed=%s\n",
+           int(random_unfolding), fileprefix.c_str());
     start = chrono::system_clock::now();
     Louvain louvain = Louvain(random_unfolding);
     louvain.fit(g);

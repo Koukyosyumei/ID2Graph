@@ -18,7 +18,7 @@ VALUE_K="vanila"
 VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
-VALUE_L="random"
+VALUE_L="vanila"
 
 while getopts d:m:r:c:h:j:n:f:i:e:l:t:u:p:wg OPT
 do
