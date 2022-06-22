@@ -47,30 +47,6 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
             }
         }
     }
-
-    /*
-    if (node->is_leaf())
-    {
-        skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
-    }
-    else
-    {
-        travase_nodes_to_extract_weighted_adjacency_matrix(node->left, max_depth, adj_mat, weight, target_party_id);
-        travase_nodes_to_extract_weighted_adjacency_matrix(node->right, max_depth, adj_mat, weight, target_party_id);
-    }
-
-    if (!skip_flag)
-    {
-        int num_idxs_size = node->idxs.size();
-        for (int i = 0; i < num_idxs_size; i++)
-        {
-            for (int j = i + 1; j < num_idxs_size; j++)
-            {
-                adj_mat.add(node->idxs[i], node->idxs[j], weight * float(max_depth - node->depth));
-            }
-        }
-    }
-    */
     return skip_flag;
 }
 
@@ -128,42 +104,6 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             que.push(temp_node->right);
         }
     }
-
-    /*
-    if (node->is_leaf())
-    {
-        skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
-        if (!skip_flag)
-        {
-            int num_idxs_size = node->idxs.size();
-            for (int i = 0; i < num_idxs_size; i++)
-            {
-                for (int j = i + 1; j < num_idxs_size; j++)
-                {
-                    adj_mat.add(node->idxs[i], node->idxs[j], weight);
-                }
-            }
-        }
-    }
-    else
-    {
-        skip_flag = false;
-        bool left_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->left, adj_mat, weight, target_party_id);
-        bool right_skip_flag = travase_nodes_to_extract_adjacency_matrix<NodeType>(node->right, adj_mat, weight, target_party_id);
-
-        if (left_skip_flag && right_skip_flag)
-        {
-            int num_idxs_size = node->idxs.size();
-            for (int i = 0; i < num_idxs_size; i++)
-            {
-                for (int j = i + 1; j < num_idxs_size; j++)
-                {
-                    adj_mat.add(node->idxs[i], node->idxs[j], weight);
-                }
-            }
-        }
-    }
-    */
     return skip_flag;
 }
 
