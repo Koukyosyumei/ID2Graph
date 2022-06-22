@@ -28,7 +28,7 @@ struct Community
     float min_modularity;
 
     Community(){};
-    Community(Graph &gc, int nbp, float minm)
+    Community(Graph &gc, int nbp, float minm, int seed = 42)
     {
         g = gc;
         num_nodes = g.num_nodes;
@@ -50,6 +50,8 @@ struct Community
 
         nb_pass = nbp;
         min_modularity = minm;
+
+        srand(seed);
     }
 
     // remove the node from its current community with which it has weights_from_node_to_comm links
