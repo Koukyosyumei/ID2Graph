@@ -118,16 +118,16 @@ if __name__ == "__main__":
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
-        pos_df = df[df["SeriousDlqin2yrs"] == 1]
-        neg_df = df[df["SeriousDlqin2yrs"] == 0]
 
         if parsed_args.num_samples > 0:
+            pos_df = df[df["SeriousDlqin2yrs"] == 1]
+            neg_df = df[df["SeriousDlqin2yrs"] == 0]
             pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
             neg_num = parsed_args.num_samples - pos_num
             pos_df = pos_df.sample(pos_num)
             neg_df = neg_df.sample(neg_num)
+            df = pd.concat([pos_df, neg_df])
 
-        df = pd.concat([pos_df, neg_df])
         X = df[
             [
                 "RevolvingUtilizationOfUnsecuredLines",
@@ -206,7 +206,9 @@ if __name__ == "__main__":
         y_train,
         X_val,
         y_val,
-        os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"),
+        os.path.join(
+            parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"
+        ),
         col_alloc=None,
         feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
         parties_num=2,
