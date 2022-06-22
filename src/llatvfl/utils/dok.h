@@ -3,6 +3,8 @@
 #include <random>
 #include <utility>
 #include <unordered_map>
+#include "../tsl/robin_map.h"
+#include "../tsl/robin_set.h"
 using namespace std;
 
 struct HashPairSzudzik
@@ -35,7 +37,7 @@ struct SparseMatrixDOK
 
     vector<vector<int>> row2nonzero_idx;
 
-    unordered_map<pair<unsigned int, unsigned int>, DataType, HashPairSzudzik> um_ij2w;
+    tsl::robin_map<pair<unsigned int, unsigned int>, DataType, HashPairSzudzik> um_ij2w;
 
     SparseMatrixDOK(){};
     SparseMatrixDOK(size_t dim_row_, size_t dim_column_, DataType zero_val_ = 0,
