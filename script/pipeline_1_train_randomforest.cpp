@@ -5,6 +5,8 @@
 #include <numeric>
 #include <string>
 #include <cassert>
+#include <future>
+#include <utility>
 #include <chrono>
 #include <unistd.h>
 #include "../src/llatvfl/attack/attack.h"
@@ -15,6 +17,7 @@ using namespace std;
 const int min_leaf = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
+const int max_timeout_num_patience = 3;
 
 string folderpath;
 string fileprefix;
@@ -25,11 +28,12 @@ bool is_weighted_graph = false;
 int skip_round = 0;
 float eta = 0.3;
 bool random_unfolding = false;
+int seconds_wait4timeout = 300;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:w")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:z:w")) != -1)
     {
         switch (opt)
         {
@@ -56,6 +60,10 @@ void parse_args(int argc, char *argv[])
             break;
         case 'l':
             random_unfolding = (string(optarg) == "random") ? true : false;
+            break;
+        case 'z':
+            seconds_wait4timeout = stoi(string(optarg));
+            break;
         case 'w':
             is_weighted_graph = true;
             break;
@@ -238,12 +246,30 @@ int main(int argc, char *argv[])
 
     printf("Start community detection (random_unforlding=%d) seed=%s\n",
            int(random_unfolding), fileprefix.c_str());
-    start = chrono::system_clock::now();
     Louvain louvain = Louvain(random_unfolding);
-    louvain.fit(g);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    future<void> future = async(launch::async, [&louvain, &g]()
+                                { louvain.fit(g); });
+    future_status status;
+    int count_timeout = 0;
+    do
+    {
+        start = chrono::system_clock::now();
+        status = future.wait_for(chrono::seconds(seconds_wait4timeout));
+        end = chrono::system_clock::now();
+
+        if (status == std::future_status::timeout)
+        {
+            printf("\033[33mTimeout of community detection -> retry seed=%s\033[0m\n",
+                   fileprefix.c_str());
+        }
+        else if (status == future_status::ready)
+        {
+            elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+            printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+            break;
+        }
+        count_timeout++;
+    } while (count_timeout <= max_timeout_num_patience);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
