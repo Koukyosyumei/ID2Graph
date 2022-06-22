@@ -11,17 +11,20 @@
 struct RandomForestTree : Tree<RandomForestNode>
 {
     RandomForestTree() {}
-    void fit(vector<RandomForestParty> *parties, vector<double> y,
+    void fit(vector<RandomForestParty> *parties, vector<float> &y,
              int min_leaf, int depth, float max_samples_ratio = 1.0,
              int active_party_id = -1, int n_job = 1, int seed = 0)
     {
         vector<int> idxs(y.size());
         iota(idxs.begin(), idxs.end(), 0);
 
-        mt19937 engine(seed);
-        shuffle(idxs.begin(), idxs.end(), engine);
-        int temp_subsampled_size = int(max_samples_ratio * double(y.size()));
-        idxs.resize(temp_subsampled_size);
+        if (max_samples_ratio < 1.0)
+        {
+            mt19937 engine(seed);
+            shuffle(idxs.begin(), idxs.end(), engine);
+            int temp_subsampled_size = int(max_samples_ratio * float(y.size()));
+            idxs.resize(temp_subsampled_size);
+        }
 
         for (int i = 0; i < parties->size(); i++)
         {

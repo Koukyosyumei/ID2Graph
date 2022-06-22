@@ -19,36 +19,36 @@ struct Tree
         return *dtree;
     }
 
-    vector<double> predict(vector<vector<double>> &X)
+    vector<float> predict(vector<vector<float>> &X)
     {
         return dtree.predict(X);
     }
 
-    vector<pair<vector<int>, vector<double>>> extract_train_prediction_from_node(NodeType &node)
+    vector<pair<vector<int>, vector<float>>> extract_train_prediction_from_node(NodeType &node)
     {
         if (node.is_leaf())
         {
-            vector<pair<vector<int>, vector<double>>> result;
+            vector<pair<vector<int>, vector<float>>> result;
             result.push_back(make_pair(node.idxs,
-                                       vector<double>(node.idxs.size(),
-                                                      node.val)));
+                                       vector<float>(node.idxs.size(),
+                                                     node.val)));
             return result;
         }
         else
         {
-            vector<pair<vector<int>, vector<double>>> left_result =
+            vector<pair<vector<int>, vector<float>>> left_result =
                 extract_train_prediction_from_node(*node.left);
-            vector<pair<vector<int>, vector<double>>> right_result =
+            vector<pair<vector<int>, vector<float>>> right_result =
                 extract_train_prediction_from_node(*node.right);
             left_result.insert(left_result.end(), right_result.begin(), right_result.end());
             return left_result;
         }
     }
 
-    vector<double> get_train_prediction()
+    vector<float> get_train_prediction()
     {
-        vector<pair<vector<int>, vector<double>>> result = extract_train_prediction_from_node(dtree);
-        vector<double> y_train_pred(dtree.y.size());
+        vector<pair<vector<int>, vector<float>>> result = extract_train_prediction_from_node(dtree);
+        vector<float> y_train_pred(dtree.y.size());
         for (int i = 0; i < result.size(); i++)
             for (int j = 0; j < result[i].first.size(); j++)
                 y_train_pred[result[i].first[j]] = result[i].second[j];
@@ -61,7 +61,7 @@ struct Tree
         return nodeapi.print(&dtree, show_purity, binary_color, target_party_id);
     }
 
-    double get_leaf_purity()
+    float get_leaf_purity()
     {
         return nodeapi.get_leaf_purity(&dtree);
     }

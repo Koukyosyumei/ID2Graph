@@ -9,14 +9,14 @@ struct Graph
 {
     unsigned long num_nodes = 0;
     unsigned long num_links = 0;
-    double total_weight = 0;
+    float total_weight = 0;
 
     // cumulative degree for each node, deg(0) = degrees[0]
     // deg(k) = degrees[k] - degrees[k-1]
     vector<unsigned long> degrees;
     vector<vector<int>> nodes; // current node idx to original record idxs
     vector<unsigned int> links;
-    vector<float> weights; // TODO check if `double` works or not
+    vector<float> weights; // TODO check if `float` works or not
 
     Graph(){};
     Graph(vector<vector<int>> &node2original_records)
@@ -61,7 +61,7 @@ struct Graph
         // compute total weight
         for (unsigned int i = 0; i < num_nodes; i++)
         {
-            total_weight += (double)get_weighted_degree(i);
+            total_weight += (float)get_weighted_degree(i);
         }
     }
     Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
@@ -83,7 +83,7 @@ struct Graph
         // compute total weight
         for (unsigned int i = 0; i < num_nodes; i++)
         {
-            total_weight += (double)get_weighted_degree(i);
+            total_weight += (float)get_weighted_degree(i);
         }
     }
 
@@ -123,16 +123,17 @@ struct Graph
     }
 
     // return the number or the weight of self loops of the node
-    double get_num_selfloops(unsigned int node)
+    float get_num_selfloops(unsigned int node)
     {
+        bool is_weights_size_is_not_zero = weights.size() != 0;
         pair<vector<unsigned int>::iterator, vector<float>::iterator> p = get_neighbors(node);
         for (unsigned int i = 0; i < get_num_neighbors(node); i++)
         {
             if (*(p.first + i) == node)
             {
-                if (weights.size() != 0)
+                if (is_weights_size_is_not_zero)
                 {
-                    return (double)*(p.second + i);
+                    return (float)*(p.second + i);
                 }
                 else
                 {
@@ -144,19 +145,20 @@ struct Graph
     }
 
     // retrn the weighed degree of the node
-    double get_weighted_degree(unsigned int node)
+    float get_weighted_degree(unsigned int node)
     {
         if (weights.size() == 0)
         {
-            return (double)get_num_neighbors(node);
+            return (float)get_num_neighbors(node);
         }
         else
         {
+            unsigned int num_neighbors = get_num_neighbors(node);
             pair<vector<unsigned int>::iterator, vector<float>::iterator> p = get_neighbors(node);
-            double res = 0;
-            for (unsigned int i = 0; i < get_num_neighbors(node); i++)
+            float res = 0;
+            for (unsigned int i = 0; i < num_neighbors; i++)
             {
-                res += (double)*(p.second + i);
+                res += (float)*(p.second + i);
             }
             return res;
         }

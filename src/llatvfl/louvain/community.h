@@ -8,14 +8,14 @@ using namespace std;
 
 struct Community
 {
-    vector<double> neigh_weight;
+    vector<float> neigh_weight;
     vector<unsigned int> neigh_pos;
     unsigned int neigh_last;
     Graph g;                    // network to compute communities for
     int num_nodes;              // nummber of nodes in the network and num_nodes of all vectors
     vector<int> node2community; // community to which each node belongs
-    vector<double> in;          // in[c] = total weights within c-th commynity (\sum_{(i, j) \in c} w_(i, j))
-    vector<double> tot;         // tot[c]
+    vector<float> in;           // in[c] = total weights within c-th commynity (\sum_{(i, j) \in c} w_(i, j))
+    vector<float> tot;          // tot[c]
     // used to compute the modularity participation of each community
 
     // number of pass for one level computation
@@ -25,10 +25,10 @@ struct Community
     // a new pass is computed if the last one has generated an increase
     // greater than min_modularity
     // if 0. even a minor increase is enough to go for one more pass
-    double min_modularity;
+    float min_modularity;
 
     Community(){};
-    Community(Graph gc, int nbp, double minm)
+    Community(Graph &gc, int nbp, float minm, int seed = 42)
     {
         g = gc;
         num_nodes = g.num_nodes;
@@ -50,10 +50,12 @@ struct Community
 
         nb_pass = nbp;
         min_modularity = minm;
+
+        srand(seed);
     }
 
     // remove the node from its current community with which it has weights_from_node_to_comm links
-    void remove(int node, int comm, double weights_from_node_to_comm)
+    void remove(int node, int comm, float weights_from_node_to_comm)
     {
         tot[comm] -= g.get_weighted_degree(node);
         in[comm] -= 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
@@ -61,7 +63,7 @@ struct Community
     }
 
     // insert the node in comm with which it shares weights_from_node_to_comm links
-    void insert(int node, int comm, double weights_from_node_to_comm)
+    void insert(int node, int comm, float weights_from_node_to_comm)
     {
         tot[comm] += g.get_weighted_degree(node);
         in[comm] += 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
@@ -70,15 +72,15 @@ struct Community
 
     // calculate the current modularity
     // Note that each community consists of only ond node due to contraction
-    double modularity()
+    float modularity()
     {
-        double q = 0.;
-        double m2 = (double)g.total_weight;
+        float q = 0.;
+        float m2 = (float)g.total_weight;
 
         for (int i = 0; i < num_nodes; i++)
         {
             if (tot[i] > 0)
-                q += (double)in[i] / m2 - ((double)tot[i] / m2) * ((double)tot[i] / m2);
+                q += (float)in[i] / m2 - ((float)tot[i] / m2) * ((float)tot[i] / m2);
         }
 
         return q;
@@ -93,11 +95,11 @@ struct Community
     //       d(node,com) = number or total weights of links from node to comm
     //       deg(node)   = node degree
     //       m           = number or wegihts of all links
-    double modularity_gain(int node, int comm, double weights_from_node_to_comm, double w_degree)
+    float modularity_gain(int node, int comm, float weights_from_node_to_comm, float w_degree)
     {
         // ignore const (1/2m)
-        return ((double)weights_from_node_to_comm -
-                (double)tot[comm] * (double)w_degree / (double)g.total_weight);
+        return ((float)weights_from_node_to_comm -
+                (float)tot[comm] * (float)w_degree / (float)g.total_weight);
     }
 
     // compute the set of neighboring communities of node
@@ -119,7 +121,7 @@ struct Community
         {
             unsigned int neigh = *(pointer2neigh_weight.first + i);
             unsigned int neigh_comm = node2community[neigh];
-            double neigh_w = (g.weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
+            float neigh_w = (g.weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
             if (neigh != node)
             {
                 if (neigh_weight[neigh_comm] == -1)
@@ -182,7 +184,7 @@ struct Community
                 {
                     int neigh = *(p.first + i);
                     int neigh_comm = renumber[node2community[neigh]];
-                    double neigh_weight_i = (g.weights.size() == 0) ? 1. : *(p.second + i);
+                    float neigh_weight_i = (g.weights.size() == 0) ? 1. : *(p.second + i);
 
                     it = m.find(neigh_comm);
                     if (it == m.end())
@@ -210,8 +212,8 @@ struct Community
         bool improvement = false;
         int nb_moves;
         int nb_pass_done = 0;
-        double new_mod = modularity();
-        double cur_mod = new_mod;
+        float new_mod = modularity();
+        float cur_mod = new_mod;
 
         vector<int> random_order(num_nodes);
         for (int i = 0; i < num_nodes; i++)
@@ -240,7 +242,7 @@ struct Community
                 //      int node = node_tmp;
                 int node = random_order[node_tmp];
                 int node_comm = node2community[node];
-                double w_degree = g.get_weighted_degree(node);
+                float w_degree = g.get_weighted_degree(node);
 
                 // computation of all neighboring communities of current node
                 compute_neigh_comms(node);
@@ -250,11 +252,11 @@ struct Community
                 // compute the nearest community for node
                 // default choice for future insertion is the former community
                 int best_comm = node_comm;
-                double best_nblinks = 0.;
-                double best_increase = 0.;
+                float best_nblinks = 0.;
+                float best_increase = 0.;
                 for (unsigned int i = 0; i < neigh_last; i++)
                 {
-                    double increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
+                    float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
                     if (increase > best_increase)
                     {
                         best_comm = neigh_pos[i];
@@ -270,9 +272,10 @@ struct Community
                     nb_moves++;
             }
 
-            double total_tot = 0;
-            double total_in = 0;
-            for (unsigned int i = 0; i < tot.size(); i++)
+            float total_tot = 0;
+            float total_in = 0;
+            unsigned int tot_size = tot.size();
+            for (unsigned int i = 0; i < tot_size; i++)
             {
                 total_tot += tot[i];
                 total_in += in[i];

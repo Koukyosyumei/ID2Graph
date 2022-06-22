@@ -46,11 +46,11 @@ void test_louvain_from_dense_matrix()
     assert(g.total_weight == 14);
 
     Community c = Community(g, -1, 0.000001);
-    assert(c.modularity() == -0.1326530612244898);
+    assert(abs(c.modularity() - -0.1326530612244898) < 1e-6);
     c.compute_neigh_comms(0);
     assert(c.neigh_last == 3);
 
-    vector<double> test_neigh_weight = {0, -1, 1, -1, -1, -1, -1, 1};
+    vector<float> test_neigh_weight = {0, -1, 1, -1, -1, -1, -1, 1};
     for (int i = 0; i < c.num_nodes; i++)
     {
         assert(c.neigh_weight[i] == test_neigh_weight[i]);
@@ -82,11 +82,11 @@ void test_louvain_from_sparse_matrix()
     assert(g.total_weight == 14);
 
     Community c = Community(g, -1, 0.000001);
-    assert(c.modularity() == -0.1326530612244898);
+    assert(abs(c.modularity() - -0.1326530612244898) < 1e-6);
     c.compute_neigh_comms(0);
     assert(c.neigh_last == 3);
 
-    vector<double> test_neigh_weight = {0, -1, 1, -1, -1, -1, -1, 1};
+    vector<float> test_neigh_weight = {0, -1, 1, -1, -1, -1, -1, 1};
     for (int i = 0; i < c.num_nodes; i++)
     {
         assert(c.neigh_weight[i] == test_neigh_weight[i]);

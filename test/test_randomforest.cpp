@@ -9,16 +9,16 @@ using namespace std;
 const int min_leaf = 1;
 const int depth = 2;
 const int num_trees = 1;
-const double subsample_cols = 1.0;
-const double max_samples_ratio = 1.0;
+const float subsample_cols = 1.0;
+const float max_samples_ratio = 1.0;
 
 int main()
 {
     // --- Load Data --- //
     int num_row, num_col, num_party;
     cin >> num_row >> num_col >> num_party;
-    vector<double> y(num_row);
-    vector<vector<double>> X(num_row, vector<double>(num_col));
+    vector<float> y(num_row);
+    vector<vector<float>> X(num_row, vector<float>(num_col));
     vector<RandomForestParty> parties(num_party);
 
     int temp_count_feature = 0;
@@ -27,7 +27,7 @@ int main()
         int num_col = 0;
         cin >> num_col;
         vector<int> feature_idxs(num_col);
-        vector<vector<double>> x(num_row, vector<double>(num_col));
+        vector<vector<float>> x(num_row, vector<float>(num_col));
         for (int j = 0; j < num_col; j++)
         {
             feature_idxs[j] = temp_count_feature;
@@ -52,8 +52,8 @@ int main()
     // --- Check Training --- //
     clf.fit(parties, y);
 
-    assert(clf.estimators[0].dtree.giniimp == 0.46875);
-    assert(clf.estimators[0].dtree.score == 0.16875);
+    assert(abs(clf.estimators[0].dtree.giniimp - 0.46875) < 1e-6);
+    assert(abs(clf.estimators[0].dtree.score - 0.16875) < 1e-6);
     assert(clf.estimators[0].dtree.best_party_id == 0);
     assert(clf.estimators[0].dtree.best_col_id == 0);
     assert(clf.estimators[0].dtree.best_threshold_id == 2);
@@ -108,18 +108,18 @@ int main()
         assert(test_idxs_right_right[i] == idxs_right_right[i]);
     }
 
-    vector<double> test_predict_raw = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
-    vector<double> predict_raw = clf.predict_raw(X);
+    vector<float> test_predict_raw = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
+    vector<float> predict_raw = clf.predict_raw(X);
     for (int i = 0; i < predict_raw.size(); i++)
     {
         assert(test_predict_raw[i] == predict_raw[i]);
     }
 
-    vector<double> test_predict_proba = {0.7310585786300049, 0.6607563732194243,
-                                         0.7310585786300049, 0.5,
-                                         0.6607563732194243, 0.6607563732194243,
-                                         0.5, 0.7310585786300049};
-    vector<double> predict_proba = clf.predict_proba(X);
+    vector<float> test_predict_proba = {0.7310585786300049, 0.6607563732194243,
+                                        0.7310585786300049, 0.5,
+                                        0.6607563732194243, 0.6607563732194243,
+                                        0.5, 0.7310585786300049};
+    vector<float> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)
     {
         assert(abs(test_predict_proba[i] - predict_proba[i]) < 1e-6);

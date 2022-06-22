@@ -9,9 +9,9 @@
 struct XGBoostTree : Tree<XGBoostNode>
 {
     XGBoostTree() {}
-    void fit(vector<XGBoostParty> *parties, vector<double> y,
-             vector<double> gradient, vector<double> hessian,
-             double min_child_weight, double lam, double gamma, double eps,
+    void fit(vector<XGBoostParty> *parties, vector<float> y,
+             vector<float> gradient, vector<float> hessian,
+             float min_child_weight, float lam, float gamma, float eps,
              int min_leaf, int depth, int active_party_id = -1, bool use_only_active_party = false, int n_job = 1)
     {
         vector<int> idxs(y.size());

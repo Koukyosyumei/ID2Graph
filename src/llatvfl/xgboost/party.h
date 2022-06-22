@@ -6,8 +6,8 @@ struct XGBoostParty : Party
     int num_percentile_bin;
 
     XGBoostParty() {}
-    XGBoostParty(vector<vector<double>> &x_, vector<int> &feature_id_, int &party_id_,
-                 int min_leaf_, double subsample_cols_, int num_precentile_bin_ = 256,
+    XGBoostParty(vector<vector<float>> &x_, vector<int> &feature_id_, int &party_id_,
+                 int min_leaf_, float subsample_cols_, int num_precentile_bin_ = 256,
                  bool use_missing_value_ = false, int seed_ = 0) : Party(x_, feature_id_, party_id_,
                                                                          min_leaf_, subsample_cols_,
                                                                          use_missing_value_, seed_)
@@ -15,30 +15,30 @@ struct XGBoostParty : Party
         num_percentile_bin = num_precentile_bin_;
     }
 
-    vector<double> get_threshold_candidates(vector<double> &x_col)
+    vector<float> get_threshold_candidates(vector<float> &x_col)
     {
         if (x_col.size() > num_percentile_bin)
         {
-            vector<double> probs(num_percentile_bin);
+            vector<float> probs(num_percentile_bin);
             for (int i = 1; i <= num_percentile_bin; i++)
-                probs[i] = double(i) / double(num_percentile_bin);
-            vector<double> percentiles_candidate = Quantile<double>(x_col, probs);
-            vector<double> percentiles = remove_duplicates<double>(percentiles_candidate);
+                probs[i] = float(i) / float(num_percentile_bin);
+            vector<float> percentiles_candidate = Quantile<float>(x_col, probs);
+            vector<float> percentiles = remove_duplicates<float>(percentiles_candidate);
             return percentiles;
         }
         else
         {
-            vector<double> x_col_wo_duplicates = remove_duplicates<double>(x_col);
-            vector<double> percentiles(x_col_wo_duplicates.size());
+            vector<float> x_col_wo_duplicates = remove_duplicates<float>(x_col);
+            vector<float> percentiles(x_col_wo_duplicates.size());
             copy(x_col_wo_duplicates.begin(), x_col_wo_duplicates.end(), percentiles.begin());
             sort(percentiles.begin(), percentiles.end());
             return percentiles;
         }
     }
 
-    vector<vector<pair<double, double>>> greedy_search_split(vector<double> &gradient,
-                                                             vector<double> &hessian,
-                                                             vector<int> &idxs)
+    vector<vector<pair<float, float>>> greedy_search_split(vector<float> &gradient,
+                                                           vector<float> &hessian,
+                                                           vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -47,8 +47,8 @@ struct XGBoostParty : Party
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<double, double>>> split_candidates_grad_hess(num_thresholds);
-        temp_thresholds = vector<vector<double>>(num_thresholds);
+        vector<vector<pair<float, float>>> split_candidates_grad_hess(num_thresholds);
+        temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
@@ -57,7 +57,7 @@ struct XGBoostParty : Party
         {
             // extract the necessary data
             int k = temp_column_subsample[i];
-            vector<double> x_col(row_count);
+            vector<float> x_col(row_count);
 
             int not_missing_values_count = 0;
             int missing_values_count = 0;
@@ -83,15 +83,15 @@ struct XGBoostParty : Party
             sort(x_col.begin(), x_col.end());
 
             // get percentiles of x_col
-            vector<double> percentiles = get_threshold_candidates(x_col);
+            vector<float> percentiles = get_threshold_candidates(x_col);
 
             // enumerate all threshold value (missing value goto right)
             int current_min_idx = 0;
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                double temp_grad = 0;
-                double temp_hess = 0;
+                float temp_grad = 0;
+                float temp_hess = 0;
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
@@ -124,8 +124,8 @@ struct XGBoostParty : Party
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    double temp_grad = 0;
-                    double temp_hess = 0;
+                    float temp_grad = 0;
+                    float temp_hess = 0;
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
