@@ -18,8 +18,9 @@ VALUE_K="vanila"
 VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
+VALUE_L="vanila"
 
-while getopts d:m:r:c:h:j:n:f:i:e:t:u:p:wg OPT
+while getopts d:m:r:c:h:j:n:f:i:e:l:t:u:p:wg OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -32,6 +33,7 @@ do
     "f" ) FLG_F="TRUE" ; VALUE_F="$OPTARG" ;;
     "i" ) FLG_I="TRUE" ; VALUE_I="$OPTARG" ;;
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
+    "l" ) FLG_L="TRUE" ; VALUE_L="$OPTARG" ;;
     "k" ) FLG_K="TRUE" ; VALUE_K="$OPTARG" ;;
     "t" ) FLG_T="TRUE" ; VALUE_T="$OPTARG" ;;
     "u" ) FLG_U="TRUE" ; VALUE_U="$OPTARG" ;;
@@ -44,7 +46,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" > "${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" > "${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   g++ -O3 -mtune=native -march=native -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_xgboost.cpp
@@ -57,7 +59,7 @@ fi
 
 for s in $(seq 1 ${NUM_TRIAL})
 do 
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E} -k ${VALUE_K}"
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -h ${VALUE_H} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -k ${VALUE_K}"
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
   fi

@@ -24,11 +24,12 @@ int n_job = 1;
 bool is_weighted_graph = false;
 int skip_round = 0;
 float eta = 0.3;
+bool random_unfolding = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:w")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:w")) != -1)
     {
         switch (opt)
         {
@@ -53,6 +54,8 @@ void parse_args(int argc, char *argv[])
         case 'e':
             eta = stof(string(optarg));
             break;
+        case 'l':
+            random_unfolding = (string(optarg) == "random") ? true : false;
         case 'w':
             is_weighted_graph = true;
             break;
@@ -233,9 +236,10 @@ int main(int argc, char *argv[])
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
 
-    printf("Start community detection seed=%s\n", fileprefix.c_str());
+    printf("Start community detection (random_unforlding=%d) seed=%s\n",
+           int(random_unfolding), fileprefix.c_str());
     start = chrono::system_clock::now();
-    Louvain louvain = Louvain();
+    Louvain louvain = Louvain(random_unfolding);
     louvain.fit(g);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();

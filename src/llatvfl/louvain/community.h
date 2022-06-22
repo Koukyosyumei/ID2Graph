@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <limits>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include "graph.h"
 using namespace std;
@@ -27,6 +27,8 @@ struct Community
     // if 0. even a minor increase is enough to go for one more pass
     float min_modularity;
 
+    mt19937 gen;
+
     Community(){};
     Community(Graph &gc, int nbp, float minm, int seed = 42)
     {
@@ -51,6 +53,7 @@ struct Community
         nb_pass = nbp;
         min_modularity = minm;
 
+        gen = mt19937(seed);
         srand(seed);
     }
 
@@ -172,8 +175,8 @@ struct Community
         int comm_deg = comm2nodes.size();
         for (int comm = 0; comm < comm_deg; comm++)
         {
-            map<int, float> m;
-            map<int, float>::iterator it;
+            unordered_map<int, float> m;
+            unordered_map<int, float>::iterator it;
 
             int comm_size = comm2nodes[comm].size();
             for (int node = 0; node < comm_size; node++)
@@ -207,7 +210,7 @@ struct Community
         return g2;
     }
 
-    bool one_level()
+    bool one_level(bool random_unforlding = false)
     {
         bool improvement = false;
         int nb_moves;
@@ -254,14 +257,26 @@ struct Community
                 int best_comm = node_comm;
                 float best_nblinks = 0.;
                 float best_increase = 0.;
-                for (unsigned int i = 0; i < neigh_last; i++)
+
+                if (random_unforlding)
                 {
-                    float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
-                    if (increase > best_increase)
+                    // https://arxiv.org/abs/1503.01322
+                    uniform_int_distribution<> distr(0, neigh_last - 1);
+                    int i = distr(gen);
+                    best_comm = neigh_pos[i];
+                    best_nblinks = neigh_weight[neigh_pos[i]];
+                }
+                else
+                {
+                    for (unsigned int i = 0; i < neigh_last; i++)
                     {
-                        best_comm = neigh_pos[i];
-                        best_nblinks = neigh_weight[neigh_pos[i]];
-                        best_increase = increase;
+                        float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
+                        if (increase > best_increase)
+                        {
+                            best_comm = neigh_pos[i];
+                            best_nblinks = neigh_weight[neigh_pos[i]];
+                            best_increase = increase;
+                        }
                     }
                 }
 
