@@ -31,11 +31,12 @@ bool use_missing_value = false;
 bool is_weighted_graph = false;
 int skip_round = 0;
 float eta = 0.3;
+bool random_unfolding = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:e:h:j:mw")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:e:h:j:l:mw")) != -1)
     {
         switch (opt)
         {
@@ -60,6 +61,8 @@ void parse_args(int argc, char *argv[])
         case 'j':
             n_job = stoi(string(optarg));
             break;
+        case 'l':
+            random_unfolding = (string(optarg) == "random") ? true : false;
         case 'm':
             use_missing_value = true;
             break;
@@ -261,7 +264,7 @@ int main(int argc, char *argv[])
 
     printf("Start community detection seed=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    Louvain louvain = Louvain();
+    Louvain louvain = Louvain(random_unfolding);
     louvain.fit(g);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
