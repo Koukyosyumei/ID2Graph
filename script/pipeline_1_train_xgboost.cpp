@@ -5,6 +5,8 @@
 #include <numeric>
 #include <string>
 #include <cassert>
+#include <future>
+#include <utility>
 #include <chrono>
 #include <unistd.h>
 #include "../src/llatvfl/attack/attack.h"
@@ -20,7 +22,8 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 3;
+const int max_timeout_num_patience = 5;
+const int num_random_trials = 2;
 
 string folderpath;
 string fileprefix;
@@ -98,7 +101,7 @@ int main(int argc, char *argv[])
         }
         catch (std::runtime_error e)
         {
-            cerr << e.what() << "/n";
+            cerr << e.what() << "\n";
         }
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
@@ -117,7 +120,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
         vector<int> feature_idxs(num_col);
@@ -135,7 +138,7 @@ int main(int argc, char *argv[])
                     }
                     catch (std::runtime_error e)
                     {
-                        cerr << e.what() << "/n";
+                        cerr << e.what() << "\n";
                     }
                 }
                 if (use_missing_value && x[k][j] == -1)
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
     }
@@ -173,7 +176,7 @@ int main(int argc, char *argv[])
         }
         catch (std::runtime_error e)
         {
-            cerr << e.what() << "/n";
+            cerr << e.what() << "\n";
         }
     }
     vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
@@ -190,7 +193,7 @@ int main(int argc, char *argv[])
                 }
                 catch (std::runtime_error e)
                 {
-                    cerr << e.what() << "/n";
+                    cerr << e.what() << "\n";
                 }
             }
             if (use_missing_value && X_val[j][i] == -1)
@@ -209,7 +212,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
     }
@@ -277,6 +280,7 @@ int main(int argc, char *argv[])
     int count_timeout = 0;
     do
     {
+        count_timeout++;
         start = chrono::system_clock::now();
         status = future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
@@ -285,6 +289,15 @@ int main(int argc, char *argv[])
         {
             printf("\033[33mTimeout of community detection -> retry seed=%s\033[0m\n",
                    fileprefix.c_str());
+            if (count_timeout == max_timeout_num_patience)
+            {
+                throw runtime_error("Maximum number of attempts at timeout reached");
+            }
+            if (count_timeout == max_timeout_num_patience - num_random_trials)
+            {
+                louvain.random_unforlding = true;
+            }
+            louvain.reseed(louvain.seed + 1);
         }
         else if (status == future_status::ready)
         {
@@ -292,8 +305,7 @@ int main(int argc, char *argv[])
             printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
             break;
         }
-        count_timeout++;
-    } while (count_timeout <= max_timeout_num_patience);
+    } while (count_timeout < max_timeout_num_patience);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
