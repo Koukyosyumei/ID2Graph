@@ -109,6 +109,20 @@ def convert_df_to_input(
         f.write(" ".join([str(y) for y in y_val]))
 
 
+def sampling(df, yname, parsed_args):
+    if parsed_args.num_samples == -1:
+        return df
+    else:
+        pos_df = df[df[yname] == 1]
+        neg_df = df[df[yname] == 0]
+        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+        neg_num = parsed_args.num_samples - pos_num
+        pos_df = pos_df.sample(pos_num)
+        neg_df = neg_df.sample(neg_num)
+        df_ = pd.concat([pos_df, neg_df])
+        return df_
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
@@ -118,15 +132,7 @@ if __name__ == "__main__":
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
-
-        if parsed_args.num_samples > 0:
-            pos_df = df[df["SeriousDlqin2yrs"] == 1]
-            neg_df = df[df["SeriousDlqin2yrs"] == 0]
-            pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
-            neg_num = parsed_args.num_samples - pos_num
-            pos_df = pos_df.sample(pos_num)
-            neg_df = neg_df.sample(neg_num)
-            df = pd.concat([pos_df, neg_df])
+        df = sampling(df, "SeriousDlqin2yrs", parsed_args)
 
         X = df[
             [
@@ -144,18 +150,71 @@ if __name__ == "__main__":
         ].values
         y = df["SeriousDlqin2yrs"].values
 
+    elif parsed_args.dataset_type == "ionosphere":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "ionosphere.data"), header=None
+        )
+        df[34] = df[34].apply(lambda x: 0 if x == "g" else 1)
+        df = sampling(df, 34, parsed_args)
+
+        X = df[list(range(34))].values
+        y = df[34].values
+
+    elif parsed_args.dataset_type == "spambase":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "spambase.data"), header=None
+        )
+        df = sampling(df, 57, parsed_args)
+
+        X = df[list(range(57))].values
+        y = df[57].values
+
+    elif parsed_args.dataset_type == "parkinson":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "parkinsons.data"))
+        df = sampling(df, "status", parsed_args)
+
+        X = df[
+            [
+                "MDVP:Fo(Hz)",
+                "MDVP:Fhi(Hz)",
+                "MDVP:Flo(Hz)",
+                "MDVP:Jitter(%)",
+                "MDVP:Jitter(Abs)",
+                "MDVP:RAP",
+                "MDVP:PPQ",
+                "Jitter:DDP",
+                "MDVP:Shimmer",
+                "MDVP:Shimmer(dB)",
+                "Shimmer:APQ3",
+                "Shimmer:APQ5",
+                "MDVP:APQ",
+                "Shimmer:DDA",
+                "NHR",
+                "HNR",
+                "RPDE",
+                "DFA",
+                "spread1",
+                "spread2",
+                "D2",
+                "PPE",
+            ]
+        ].values
+        y = df["status"].values
+
+    elif parsed_args.dataset_type == "sonar":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "sonar.all-data"), header=None
+        )
+        df[60] = df[60].apply(lambda x: 1 if x == "R" else 0)
+        df = sampling(df, 60, parsed_args)
+
+        X = df[list(range(60))].values
+        y = df[60].values
+
     elif parsed_args.dataset_type == "ucicreditcard":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
-        pos_df = df[df["default.payment.next.month"] == 1]
-        neg_df = df[df["default.payment.next.month"] == 0]
+        df = sampling(df, "default.payment.next.month", parsed_args)
 
-        if parsed_args.num_samples > 0:
-            pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
-            neg_num = parsed_args.num_samples - pos_num
-            pos_df = pos_df.sample(pos_num)
-            neg_df = neg_df.sample(neg_num)
-
-        df = pd.concat([pos_df, neg_df])
         X = df[
             [
                 "LIMIT_BAL",
