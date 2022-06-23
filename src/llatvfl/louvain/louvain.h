@@ -12,18 +12,26 @@ struct Louvain
     int max_itr;
     float precision;
     int ndp;
+    int seed;
     int verbose;
 
     Community community;
     Graph g;
 
-    Louvain(bool random_unforlding_ = false, int max_itr_ = 30, float precision_ = 0.000001, int ndp_ = -1, int verbose_ = -1)
+    Louvain(bool random_unforlding_ = false, int max_itr_ = 30, float precision_ = 0.000001,
+            int ndp_ = -1, int seed_ = 42, int verbose_ = -1)
     {
         random_unforlding = random_unforlding_;
         max_itr = max_itr_;
         precision = precision_;
         ndp = ndp_;
+        seed = seed_;
         verbose = verbose_;
+    }
+
+    void reseed(int seed_)
+    {
+        seed = seed_;
     }
 
     void fit(Graph gc)
@@ -31,7 +39,7 @@ struct Louvain
         bool improvement = true;
 
         g = gc;
-        community = Community(gc, ndp, precision);
+        community = Community(gc, ndp, precision, seed);
         float mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
@@ -39,7 +47,7 @@ struct Louvain
             improvement = community.one_level(random_unforlding);
             new_mod = community.modularity();
             g = community.partition2graph_binary();
-            community = Community(g, -1, precision);
+            community = Community(g, -1, precision, seed);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)

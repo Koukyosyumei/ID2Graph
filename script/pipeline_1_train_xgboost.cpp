@@ -5,6 +5,8 @@
 #include <numeric>
 #include <string>
 #include <cassert>
+#include <future>
+#include <utility>
 #include <chrono>
 #include <unistd.h>
 #include "../src/llatvfl/attack/attack.h"
@@ -20,7 +22,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 3;
+const int max_timeout_num_patience = 5;
 
 string folderpath;
 string fileprefix;
@@ -98,7 +100,7 @@ int main(int argc, char *argv[])
         }
         catch (std::runtime_error e)
         {
-            cerr << e.what() << "/n";
+            cerr << e.what() << "\n";
         }
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
@@ -117,7 +119,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
         vector<int> feature_idxs(num_col);
@@ -135,7 +137,7 @@ int main(int argc, char *argv[])
                     }
                     catch (std::runtime_error e)
                     {
-                        cerr << e.what() << "/n";
+                        cerr << e.what() << "\n";
                     }
                 }
                 if (use_missing_value && x[k][j] == -1)
@@ -160,7 +162,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
     }
@@ -173,7 +175,7 @@ int main(int argc, char *argv[])
         }
         catch (std::runtime_error e)
         {
-            cerr << e.what() << "/n";
+            cerr << e.what() << "\n";
         }
     }
     vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
@@ -190,7 +192,7 @@ int main(int argc, char *argv[])
                 }
                 catch (std::runtime_error e)
                 {
-                    cerr << e.what() << "/n";
+                    cerr << e.what() << "\n";
                 }
             }
             if (use_missing_value && X_val[j][i] == -1)
@@ -209,7 +211,7 @@ int main(int argc, char *argv[])
             }
             catch (std::runtime_error e)
             {
-                cerr << e.what() << "/n";
+                cerr << e.what() << "\n";
             }
         }
     }
@@ -233,13 +235,13 @@ int main(int argc, char *argv[])
                                               0, completelly_secure_round,
                                               0.5, n_job, true);
 
-    printf("Start training seed=%s\n", fileprefix.c_str());
+    printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.logging_loss.size(); i++)
     {
@@ -260,15 +262,15 @@ int main(int argc, char *argv[])
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();
 
-    printf("Start graph extraction seed=%s\n", fileprefix.c_str());
+    printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round, eta);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
-    printf("Start community detection (random_unforlding=%d) seed=%s\n",
+    printf("Start community detection (random_unforlding=%d) trial=%s\n",
            int(random_unfolding), fileprefix.c_str());
     Louvain louvain = Louvain(random_unfolding);
     future<void> future = async(launch::async, [&louvain, &g]()
@@ -277,23 +279,31 @@ int main(int argc, char *argv[])
     int count_timeout = 0;
     do
     {
+        count_timeout++;
         start = chrono::system_clock::now();
         status = future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
 
-        if (status == std::future_status::timeout)
+        switch (status)
         {
-            printf("\033[33mTimeout of community detection -> retry seed=%s\033[0m\n",
+        case future_status::deferred:
+            printf("deferred\n");
+            break;
+        case future_status::timeout:
+            printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
                    fileprefix.c_str());
-        }
-        else if (status == future_status::ready)
-        {
+            if (count_timeout == max_timeout_num_patience)
+            {
+                throw runtime_error("Maximum number of attempts at timeout reached");
+            }
+            louvain.reseed(louvain.seed + 1);
+            break;
+        case future_status::ready:
             elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+            printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
             break;
         }
-        count_timeout++;
-    } while (count_timeout <= max_timeout_num_patience);
+    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
