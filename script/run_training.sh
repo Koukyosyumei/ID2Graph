@@ -40,4 +40,26 @@ else
   echo "m=${VALUE_M} is not supported"
 fi
 
+if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
+  echo "Start Clustering trial=${VALUE_S}"
+else
+  echo "Community detection failed trial=${VALUE_S}. Switch to ramdom unfolding."
+  if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
+    if [ "${FLG_W}" = "TRUE" ]; then
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    else
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+    fi
+  elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
+    if [ "${FLG_W}" = "TRUE" ]; then
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    else
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
+    fi
+  else
+    echo "m=${VALUE_M} is not supported"
+  fi
+fi
+
 python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} > "${VALUE_P}/${VALUE_S}_leak.csv"
+echo "Clustering is complete trial=${VALUE_S}"

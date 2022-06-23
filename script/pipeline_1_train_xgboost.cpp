@@ -22,8 +22,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 10;
-const int num_random_trials = 5;
+const int max_timeout_num_patience = 5;
 
 string folderpath;
 string fileprefix;
@@ -236,13 +235,13 @@ int main(int argc, char *argv[])
                                               0, completelly_secure_round,
                                               0.5, n_job, true);
 
-    printf("Start training seed=%s\n", fileprefix.c_str());
+    printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
     clf.fit(parties, y_train);
     end = chrono::system_clock::now();
     float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Training is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.logging_loss.size(); i++)
     {
@@ -263,19 +262,19 @@ int main(int argc, char *argv[])
     result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
     result_file.close();
 
-    printf("Start graph extraction seed=%s\n", fileprefix.c_str());
+    printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round, eta);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
-    printf("Start community detection (random_unforlding=%d) seed=%s\n",
+    printf("Start community detection (random_unforlding=%d) trial=%s\n",
            int(random_unfolding), fileprefix.c_str());
     Louvain louvain = Louvain(random_unfolding);
     future<void> future = async(launch::async, [&louvain, &g]()
-                                { cout << louvain.seed << " " << louvain.random_unforlding << "\n"; louvain.fit(g); });
+                                { louvain.fit(g); });
     future_status status;
     int count_timeout = 0;
     do
@@ -291,21 +290,17 @@ int main(int argc, char *argv[])
             printf("deferred\n");
             break;
         case future_status::timeout:
-            printf("\033[33mTimeout of community detection -> retry seed=%s\033[0m\n",
+            printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
                    fileprefix.c_str());
             if (count_timeout == max_timeout_num_patience)
             {
                 throw runtime_error("Maximum number of attempts at timeout reached");
             }
-            if (count_timeout == max_timeout_num_patience - num_random_trials)
-            {
-                louvain.random_unforlding = true;
-            }
             louvain.reseed(louvain.seed + 1);
             break;
         case future_status::ready:
             elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] seed=%s\n", elapsed, fileprefix.c_str());
+            printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
             break;
         }
     } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
