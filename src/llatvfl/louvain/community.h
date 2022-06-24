@@ -28,6 +28,7 @@ struct Community
     float min_modularity;
 
     mt19937 gen;
+    uniform_real_distribution<> uniform_dist_0_to_1;
 
     Community(){};
     Community(Graph &gc, int nbp, float minm, int seed = 42)
@@ -55,6 +56,7 @@ struct Community
 
         gen = mt19937(seed);
         srand(seed);
+        uniform_dist_0_to_1 = uniform_real_distribution<>(0, 1);
     }
 
     // remove the node from its current community with which it has weights_from_node_to_comm links
@@ -210,7 +212,7 @@ struct Community
         return g2;
     }
 
-    bool one_level(bool random_unforlding = false)
+    bool one_level(float epsilon)
     {
         bool improvement = false;
         int nb_moves;
@@ -258,7 +260,7 @@ struct Community
                 float best_nblinks = 0.;
                 float best_increase = 0.;
 
-                if (random_unforlding)
+                if (epsilon > uniform_dist_0_to_1(gen))
                 {
                     // https://arxiv.org/abs/1503.01322
                     uniform_int_distribution<> distr(0, neigh_last - 1);

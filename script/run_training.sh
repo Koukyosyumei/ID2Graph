@@ -43,18 +43,18 @@ fi
 if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
   echo "Start Clustering trial=${VALUE_S}"
 else
-  echo "Community detection failed trial=${VALUE_S}. Switch to ramdom unfolding."
+  echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=1.0."
   if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
     if [ "${FLG_W}" = "TRUE" ]; then
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
     else
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0-z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
     fi
   elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
     if [ "${FLG_W}" = "TRUE" ]; then
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
     else
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l random -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
     fi
   else
     echo "m=${VALUE_M} is not supported"

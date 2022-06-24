@@ -18,7 +18,7 @@ VALUE_K="vanila"
 VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
-VALUE_L="vanila"
+VALUE_L=0.0
 VALUE_Z=300
 
 while getopts d:m:r:c:h:j:n:f:i:e:l:z:t:u:p:wg OPT
