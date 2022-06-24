@@ -34,7 +34,7 @@ bool use_missing_value = false;
 bool is_weighted_graph = false;
 int skip_round = 0;
 float eta = 0.3;
-bool random_unfolding = false;
+float epsilon_random_unfolding = 0.0;
 int seconds_wait4timeout = 300;
 
 void parse_args(int argc, char *argv[])
@@ -66,7 +66,7 @@ void parse_args(int argc, char *argv[])
             n_job = stoi(string(optarg));
             break;
         case 'l':
-            random_unfolding = (string(optarg) == "random") ? true : false;
+            epsilon_random_unfolding = stof(string(optarg));
             break;
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
@@ -270,9 +270,9 @@ int main(int argc, char *argv[])
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
-    printf("Start community detection (random_unforlding=%d) trial=%s\n",
-           int(random_unfolding), fileprefix.c_str());
-    Louvain louvain = Louvain(random_unfolding);
+    printf("Start community detection (epsilon=%f) trial=%s\n",
+           epsilon_random_unfolding, fileprefix.c_str());
+    Louvain louvain = Louvain(epsilon_random_unfolding);
     future<void> future = async(launch::async, [&louvain, &g]()
                                 { louvain.fit(g); });
     future_status status;
