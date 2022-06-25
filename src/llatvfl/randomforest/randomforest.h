@@ -35,9 +35,14 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         seed = seed_;
     }
 
-    void load_estimators(vector<RandomForestTree> _estimators)
+    void load_estimators(vector<RandomForestTree> &_estimators)
     {
         estimators = _estimators;
+    }
+
+    void clear()
+    {
+        estimators.clear();
     }
 
     vector<RandomForestTree> get_estimators()

@@ -58,9 +58,15 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     virtual float get_loss(vector<float> &y_pred, vector<float> &y) = 0;
     virtual vector<float> get_init_pred(vector<float> &y) = 0;
 
-    void load_estimators(vector<XGBoostTree> _estimators)
+    void load_estimators(vector<XGBoostTree> &_estimators)
     {
         estimators = _estimators;
+    }
+
+    void clear()
+    {
+        estimators.clear();
+        logging_loss.clear();
     }
 
     vector<XGBoostTree> get_estimators()
