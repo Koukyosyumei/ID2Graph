@@ -40,10 +40,9 @@ if __name__ == "__main__":
                 temp_adj_num = int(temp_row[0])
                 for k in range(temp_adj_num):
                     adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
-
-        G = nx.from_numpy_matrix(
-            adj_mat, create_using=nx.MultiGraph, parallel_edges=False
-        )
+                    adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
+                        j, int(temp_row[2 * k + 1])
+                    ]
 
         path_to_community_file = path_to_adj_file.split("_")[0] + "_communities.out"
         with open(path_to_community_file, mode="r") as f:
@@ -83,10 +82,14 @@ if __name__ == "__main__":
                         edge_in_list.append((j, k))
                         edge_color_in_list.append(node2comm[j] + 3)
 
+        plt.style.use("ggplot")
         cmap = cm.get_cmap("plasma", comm_num + 3)
 
-        plt.style.use("ggplot")
-        pos = nx.spring_layout(G, k=0.01)
+        G = nx.from_numpy_matrix(
+            adj_mat, create_using=nx.MultiGraph, parallel_edges=False
+        )
+        pos = nx.spring_layout(G)
+
         nx.draw_networkx(
             G,
             pos,
@@ -117,4 +120,6 @@ if __name__ == "__main__":
             edge_color=[],
             node_color=["g" if y == 0 else "r" for y in y_train],
         )
+
         plt.savefig(path_to_adj_file.split(".")[0] + "_plot.png")
+        plt.close()
