@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:i:r:c:h:j:e:l:z:k:s:w OPT
+while getopts d:m:p:n:f:i:r:c:a:h:j:e:l:z:k:s:w OPT
 do
   case $OPT in
     "d" ) FLG_D="TRUE" ; VALUE_D="$OPTARG" ;;
@@ -9,6 +9,7 @@ do
     "i" ) FLG_I="TRUE" ; VALUE_I="$OPTARG" ;;
     "r" ) FLG_R="TRUE" ; VALUE_R="$OPTARG" ;;
     "c" ) FLG_C="TRUE" ; VALUE_C="$OPTARG" ;;
+    "a" ) FLG_A="TRUE" ; VALUE_A="$OPTARG" ;;
     "h" ) FLG_H="TRUE" ; VALUE_H="$OPTARG" ;;
     "j" ) FLG_J="TRUE" ; VALUE_J="$OPTARG" ;;
     "e" ) FLG_E="TRUE" ; VALUE_E="$OPTARG" ;;
@@ -26,15 +27,15 @@ cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   if [ "${FLG_W}" = "TRUE" ]; then
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
   else
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
   fi
 elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
   if [ "${FLG_W}" = "TRUE" ]; then
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
   else
-    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
+    script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l ${VALUE_L} -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
   fi
 else
   echo "m=${VALUE_M} is not supported"
@@ -46,15 +47,15 @@ else
   echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=1.0."
   if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
     if [ "${FLG_W}" = "TRUE" ]; then
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} -w < "${VALUE_P}/${VALUE_S}_data.in"
     else
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0-z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l 1.0-z ${VALUE_Z} -h ${VALUE_H} -j ${VALUE_J} < "${VALUE_P}/${VALUE_S}_data.in"
     fi
   elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
     if [ "${FLG_W}" = "TRUE" ]; then
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} -w < "${VALUE_P}/${VALUE_S}_data.in"
     else
-      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
+      script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -a ${VALUE_A} -e ${VALUE_E}$ -l 1.0 -z ${VALUE_Z} < "${VALUE_P}/${VALUE_S}_data.in"
     fi
   else
     echo "m=${VALUE_M} is not supported"

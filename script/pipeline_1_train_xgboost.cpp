@@ -16,7 +16,6 @@ using namespace std;
 
 const int min_leaf = 1;
 const int max_bin = 32;
-const float learning_rate = 0.3;
 const float lam = 0.0;
 const float const_gamma = 0.0;
 const float eps = 1.0;
@@ -27,12 +26,12 @@ const int max_timeout_num_patience = 5;
 string folderpath;
 string fileprefix;
 int boosting_rounds = 20;
-int completelly_secure_round = 0;
+int completely_secure_round = 0;
 int depth = 3;
 int n_job = 1;
 bool use_missing_value = false;
 bool is_weighted_graph = false;
-int skip_round = 0;
+float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
 int seconds_wait4timeout = 300;
@@ -40,7 +39,7 @@ int seconds_wait4timeout = 300;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:e:h:j:l:z:mw")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:z:mw")) != -1)
     {
         switch (opt)
         {
@@ -54,7 +53,10 @@ void parse_args(int argc, char *argv[])
             boosting_rounds = stoi(string(optarg));
             break;
         case 'c':
-            completelly_secure_round = stoi(string(optarg));
+            completely_secure_round = stoi(string(optarg));
+            break;
+        case 'a':
+            learning_rate = stof(string(optarg));
             break;
         case 'e':
             eta = stof(string(optarg));
@@ -232,7 +234,7 @@ int main(int argc, char *argv[])
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
-                                              0, completelly_secure_round,
+                                              0, completely_secure_round,
                                               0.5, n_job, true);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
@@ -264,7 +266,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round, eta);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, completely_secure_round, eta);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
