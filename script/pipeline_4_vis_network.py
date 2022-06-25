@@ -27,24 +27,19 @@ def add_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
-    list_adj_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*adj_mat.txt"))
+    list_adj_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*_adj_mat.txt"))
 
     for path_to_adj_file in list_adj_files:
         with open(path_to_adj_file, mode="r") as f:
             lines = f.readlines()
-            round_num = int(lines[0])
-            node_num = int(lines[1])
+            node_num = int(lines[0])
 
             adj_mat = np.zeros((node_num, node_num))
-
-            for i in range(round_num):
-                for j in range(node_num):
-                    temp_row = lines[i * node_num + 2 + j].split(" ")[:-1]
-                    temp_adj_num = int(temp_row[0])
-                    for k in range(temp_adj_num):
-                        adj_mat[
-                            j, int(temp_row[2 * k + 1])
-                        ] += parsed_args.edge_weight * float(temp_row[2 * (k + 1)])
+            for j in range(node_num):
+                temp_row = lines[1 + j].split(" ")[:-1]
+                temp_adj_num = int(temp_row[0])
+                for k in range(temp_adj_num):
+                    adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
 
         G = nx.from_numpy_matrix(
             adj_mat, create_using=nx.MultiGraph, parallel_edges=False
@@ -91,7 +86,7 @@ if __name__ == "__main__":
         cmap = cm.get_cmap("plasma", comm_num + 3)
 
         plt.style.use("ggplot")
-        pos = nx.spring_layout(G)
+        pos = nx.spring_layout(G, k=0.01)
         nx.draw_networkx(
             G,
             pos,
@@ -122,4 +117,4 @@ if __name__ == "__main__":
             edge_color=[],
             node_color=["g" if y == 0 else "r" for y in y_train],
         )
-        plt.savefig(path_to_adj_file.split(".")[0] + "_plot.pdf")
+        plt.savefig(path_to_adj_file.split(".")[0] + "_plot.png")
