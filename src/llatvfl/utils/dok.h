@@ -3,6 +3,7 @@
 #include <random>
 #include <utility>
 #include <unordered_map>
+#include <fstream>
 #include "../tsl/robin_map.h"
 #include "../tsl/robin_set.h"
 using namespace std;
@@ -138,5 +139,24 @@ struct SparseMatrixDOK
         }
 
         return adj_mat;
+    }
+
+    void save(string filepath)
+    {
+        ofstream adj_mat_file;
+        adj_mat_file.open(filepath, ios::out);
+        adj_mat_file << dim_row << "\n";
+        int temp_num_link = 0;
+        for (int i = 0; i < dim_row; i++)
+        {
+            temp_num_link = row2nonzero_idx[i].size();
+            adj_mat_file << temp_num_link << " ";
+            for (int j = 0; j < temp_num_link; j++)
+            {
+                adj_mat_file << row2nonzero_idx[i][j] << " " << (*this)(i, row2nonzero_idx[i][j]) << " ";
+            }
+            adj_mat_file << "\n";
+        }
+        adj_mat_file.close();
     }
 };

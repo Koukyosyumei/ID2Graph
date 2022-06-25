@@ -11,6 +11,7 @@
     -m : (str) type of the model
     -r : (int) total number of rounds for training
     -c : (int) the number of completely secure rounds
+    -a : (float) learning rate of XGBoost
     -h : (int) depth
     -j : (int) the number of jobs
     -n : (int) the number of data records sampled for training

@@ -24,16 +24,17 @@ string fileprefix;
 int num_trees = 20;
 int depth = 3;
 int n_job = 1;
-bool is_weighted_graph = false;
 int skip_round = 0;
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
 int seconds_wait4timeout = 300;
+bool is_weighted_graph = false;
+bool save_adj_mat = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:z:w")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:z:wg")) != -1)
     {
         switch (opt)
         {
@@ -66,6 +67,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'w':
             is_weighted_graph = true;
+            break;
+        case 'g':
+            save_adj_mat = true;
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
@@ -243,6 +247,11 @@ int main(int argc, char *argv[])
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+
+    if (save_adj_mat)
+    {
+        adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
+    }
 
     printf("Start community detection (epsilon=%f) trial=%s\n",
            epsilon_random_unfolding, fileprefix.c_str());
