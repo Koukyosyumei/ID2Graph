@@ -10,5 +10,7 @@ g++ -O3 -mtune=native -march=native -pthread -o script/build/test_xgboost.out te
 ./script/build/test_xgboost.out < test/data/test_data.in
 g++ -O3 -mtune=native -march=native -o script/build/test_louvain.out test/test_louvain.cpp
 ./script/build/test_louvain.out
+g++ -O3 -mtune=native -march=native -o script/build/test_lpmst.out test/test_lpmst.cpp
+./script/build/test_lpmst.out
 
 rm script/build/test*
