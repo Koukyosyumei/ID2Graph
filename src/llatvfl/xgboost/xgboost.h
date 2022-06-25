@@ -19,7 +19,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     float lam;
     float gamma;
     float eps;
-    bool use_ispure;
     int active_party_id;
     int completelly_secure_round;
     float init_value;

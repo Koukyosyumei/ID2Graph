@@ -15,7 +15,6 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int min_leaf;
     float max_samples_ratio;
     int num_trees;
-    bool use_ispure;
     int active_party_id;
     int n_job;
     int seed;
