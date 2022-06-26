@@ -37,7 +37,7 @@ struct LPMST
         int class_num = *max_element(y.begin(), y.end()) + 1;
         vector<float> prior_dist(class_num, 1.0 / float(class_num));
 
-        if (M == 0)
+        if (M == 1)
         {
             rrp = RRWithPrior(epsilon, prior_dist, seed);
             vector<float> y_hat(y_size);
