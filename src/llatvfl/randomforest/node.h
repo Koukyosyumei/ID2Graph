@@ -11,6 +11,7 @@
 #include <random>
 #include <ctime>
 #include <string>
+#include <queue>
 #include <unordered_map>
 #include <stdexcept>
 #include "party.h"

@@ -19,7 +19,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     float lam;
     float gamma;
     float eps;
-    bool use_ispure;
     int active_party_id;
     int completelly_secure_round;
     float init_value;
@@ -59,9 +58,15 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     virtual float get_loss(vector<float> &y_pred, vector<float> &y) = 0;
     virtual vector<float> get_init_pred(vector<float> &y) = 0;
 
-    void load_estimators(vector<XGBoostTree> _estimators)
+    void load_estimators(vector<XGBoostTree> &_estimators)
     {
         estimators = _estimators;
+    }
+
+    void clear()
+    {
+        estimators.clear();
+        logging_loss.clear();
     }
 
     vector<XGBoostTree> get_estimators()
