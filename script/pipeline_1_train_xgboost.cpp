@@ -10,6 +10,7 @@
 #include <chrono>
 #include <unistd.h>
 #include "../src/llatvfl/attack/attack.h"
+#include "../src/llatvfl/lpmst/lpmst.h"
 #include "../src/llatvfl/louvain/louvain.h"
 #include "../src/llatvfl/utils/metric.h"
 using namespace std;
@@ -22,6 +23,7 @@ const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
 const int max_timeout_num_patience = 5;
+const int M_LPMST = 1;
 
 string folderpath;
 string fileprefix;
@@ -32,6 +34,7 @@ int n_job = 1;
 float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
+float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
 bool use_missing_value = false;
 bool is_weighted_graph = false;
@@ -40,7 +43,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:z:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:mwg")) != -1)
     {
         switch (opt)
         {
@@ -70,6 +73,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'l':
             epsilon_random_unfolding = stof(string(optarg));
+            break;
+        case 'o':
+            epsilon_ldp = stof(string(optarg));
             break;
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
@@ -244,7 +250,15 @@ int main(int argc, char *argv[])
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
-    clf.fit(parties, y_train);
+    if (epsilon_ldp > 0)
+    {
+        LPMST lp_1st(M_LPMST, epsilon_ldp, 0);
+        lp_1st.fit(clf, parties, y_train);
+    }
+    else
+    {
+        clf.fit(parties, y_train);
+    }
     end = chrono::system_clock::now();
     float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
     printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());

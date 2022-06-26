@@ -18,7 +18,8 @@
     -f : (float) the ratio of features owned by the active party
     -i : (float) the imlalance of dataset
     -e : (float) coefficient of edge weight (tau in our paper)
-    -l : (string) type of louvain method (vanila or random)
+    -l : (float) epsilon of epsilon-greedy louvain
+    -o : (float) epsilon of LP-MST
     -z : wait for timeout of louvain
     -t : (str) the path to the folder where this script saves all results (default=`result`)
     -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
