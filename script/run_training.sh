@@ -102,7 +102,7 @@ else
   echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=1.0."
   RUNCMD="script/build/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -o ${VALUE_O} -z ${VALUE_Z}"
   if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
-    RUNCMD+=" -a ${VALUES_A}"
+    RUNCMD+=" -a ${VALUE_A}"
   fi
   if [ "${FLG_W}" = "TRUE" ]; then
     RUNCMD+=" -w"
