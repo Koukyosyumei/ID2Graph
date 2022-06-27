@@ -31,19 +31,10 @@
 
 ## Overview of datasets
 
-- Give Me Some Credit
-
-|label   |count   |
-|---|---|
-|0  |139974|
-|1  |10026|
-
-- UCI Credit Card
-
-|label   |count   |
-|---|---|
-|0  |23364|
-|1  |6636|
+|label|Give Me Some Credit|UCI Credit Card|ionospere|parkinsons|sonar|spambase|
+|---|---   | --- | --- | --- | --- | --- |
+|0  |139974|23364| 126 |48   | 111 | 2788|
+|1  |10026 |6636 | 225 |147  | 97  | 1813|
 
 
 ## Idea
