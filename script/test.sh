@@ -13,4 +13,6 @@ g++ -O3 -mtune=native -march=native -o script/build/test_louvain.out test/test_l
 g++ -O3 -mtune=native -march=native -o script/build/test_lpmst.out test/test_lpmst.cpp
 ./script/build/test_lpmst.out
 
+python3 -m pytest test/.
+
 rm script/build/test*
