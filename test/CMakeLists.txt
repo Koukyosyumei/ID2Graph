@@ -7,12 +7,17 @@ FetchContent_Declare(
   URL https://github.com/google/googletest/archive/refs/tags/release-1.12.0.zip
 )
 FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
+
+set(TEST_NAME llatvfl-test)
 
 file(GLOB testSRC
     "*.cpp"
 )
 set(TEST_RUNNER main.cpp ${testSRC})
-add_executable(tests_main ${TEST_RUNNER})
+add_executable(${TEST_NAME} ${TEST_RUNNER})
 
-target_link_libraries(tests_main gtest llatvfl)
-install(TARGETS tests_main DESTINATION bin)
+target_link_libraries(${TEST_NAME} gtest gtest_main pthread llatvfl)
+#install(TARGETS tests_main DESTINATION bin)
+
+add_test(Name ${TEST_NAME} COMMAND "${TEST_NAME}")
