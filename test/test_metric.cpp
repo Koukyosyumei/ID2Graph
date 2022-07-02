@@ -3,25 +3,13 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include "../src/llatvfl/utils/metric.h"
+#include "llatvfl/utils/metric.h"
+#include "gtest/gtest.h"
 using namespace std;
 
-int main()
+TEST(Metric, AUCTest)
 {
     vector<int> y_true = {0, 0, 0, 0, 1, 1, 1, 1};
     vector<float> y_pred = {0.2, 0.3, 0.6, 0.8, 0.4, 0.5, 0.7, 0.9};
-
-    /*
-    pair<float, float> fpr_and_tpr = get_fpr_and_tpr(y_pred, y_true, 0.2);
-    assert(fpr_and_tpr.first == 1 && fpr_and_tpr.second == 1);
-    fpr_and_tpr = get_fpr_and_tpr(y_pred, y_true, 0.4);
-    assert(fpr_and_tpr.first == 0.5 && fpr_and_tpr.second == 1);
-    fpr_and_tpr = get_fpr_and_tpr(y_pred, y_true, 0.7);
-    assert(fpr_and_tpr.first == 0.25 && fpr_and_tpr.second == 0.5);
-    fpr_and_tpr = get_fpr_and_tpr(y_pred, y_true, 0.9);
-    assert(fpr_and_tpr.first == 0 && fpr_and_tpr.second == 0.25);
-    */
-    assert(roc_auc_score(y_pred, y_true) == 0.6875);
-
-    cout << "test_metric: all passed!" << endl;
+    ASSERT_EQ(roc_auc_score(y_pred, y_true), 0.6875);
 }
