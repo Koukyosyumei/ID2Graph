@@ -5,7 +5,7 @@
 #include <set>
 using namespace std;
 
-float sigmoid(float x)
+inline float sigmoid(float x)
 {
     float sigmoid_range = 34.538776394910684;
     if (x <= -1 * sigmoid_range)
@@ -17,7 +17,7 @@ float sigmoid(float x)
 }
 
 template <typename T>
-vector<T> remove_duplicates(vector<T> &inData)
+inline vector<T> remove_duplicates(vector<T> &inData)
 {
     vector<float> outData;
     set<float> s{};
@@ -72,7 +72,7 @@ static inline std::vector<T> Quantile(const std::vector<T> &inData, const std::v
     return quantiles;
 }
 
-vector<int> get_num_parties_per_process(int n_job, int num_parties)
+inline vector<int> get_num_parties_per_process(int n_job, int num_parties)
 {
     vector<int> num_parties_per_thread(n_job, num_parties / n_job);
     for (int i = 0; i < num_parties % n_job; i++)

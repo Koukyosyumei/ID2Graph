@@ -1,7 +1,5 @@
-#include <iostream>
 #include <limits>
 #include <vector>
-#include <cassert>
 #include "llatvfl/louvain/louvain.h"
 #include "gtest/gtest.h"
 using namespace std;

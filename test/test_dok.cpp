@@ -1,6 +1,4 @@
 #include <vector>
-#include <iostream>
-#include <cassert>
 #include "llatvfl/utils/dok.h"
 #include "gtest/gtest.h"
 

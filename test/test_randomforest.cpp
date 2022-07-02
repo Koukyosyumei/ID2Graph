@@ -1,8 +1,6 @@
-#include <iostream>
 #include <algorithm>
 #include <limits>
 #include <vector>
-#include <cassert>
 #include "llatvfl/attack/attack.h"
 #include "gtest/gtest.h"
 using namespace std;
@@ -21,8 +19,14 @@ TEST(RandomForest, RandomForestClassifierTest)
     int num_party = 2;
 
     vector<float> y = {1, 0, 1, 0, 1, 1, 0, 1};
-    vector<vector<float>> X = {{12.0, 32.0, 15.0, 24.0, 20.0, 25.0, 17.0, 16.0},
-                               {1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0}};
+    vector<vector<float>> X = {{12, 1},
+                               {32, 1},
+                               {15, 0},
+                               {24, 0},
+                               {20, 1},
+                               {25, 1},
+                               {17, 0},
+                               {16, 1}};
     vector<vector<int>> feature_idxs = {{0}, {1}};
     vector<RandomForestParty> parties(num_party);
 
@@ -34,7 +38,7 @@ TEST(RandomForest, RandomForestClassifierTest)
         {
             for (int k = 0; k < num_row; k++)
             {
-                x[k][j] = X[feature_idxs[i][j]][k];
+                x[k][j] = X[k][feature_idxs[i][j]];
             }
         }
         RandomForestParty party(x, feature_idxs[i], i, min_leaf, subsample_cols);
@@ -141,6 +145,4 @@ TEST(RandomForest, RandomForestClassifierTest)
             ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
         }
     }
-
-    cout << "test_randomforest: all passed!" << endl;
 }
