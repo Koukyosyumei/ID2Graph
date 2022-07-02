@@ -9,11 +9,11 @@
 using namespace std;
 
 template <typename NodeType>
-bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
-                                                        int max_depth,
-                                                        SparseMatrixDOK<float> &adj_mat,
-                                                        float weight,
-                                                        int target_party_id)
+inline bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
+                                                               int max_depth,
+                                                               SparseMatrixDOK<float> &adj_mat,
+                                                               float weight,
+                                                               int target_party_id)
 {
     bool skip_flag = false;
     queue<NodeType *> que;
@@ -51,10 +51,10 @@ bool travase_nodes_to_extract_weighted_adjacency_matrix(NodeType *node,
 }
 
 template <typename NodeType>
-bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
-                                               SparseMatrixDOK<float> &adj_mat,
-                                               float weight,
-                                               int target_party_id)
+inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
+                                                      SparseMatrixDOK<float> &adj_mat,
+                                                      float weight,
+                                                      int target_party_id)
 {
     bool skip_flag, left_skip_flag, right_skip_flag;
 
@@ -107,11 +107,11 @@ bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
     return skip_flag;
 }
 
-void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
-                                        SparseMatrixDOK<float> &adj_mat,
-                                        float weight,
-                                        int target_party_id,
-                                        bool is_weighted)
+inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
+                                               SparseMatrixDOK<float> &adj_mat,
+                                               float weight,
+                                               int target_party_id,
+                                               bool is_weighted)
 {
     int num_row = tree->dtree.y.size();
     if (is_weighted)
@@ -124,11 +124,11 @@ void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
     }
 }
 
-void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
-                                        SparseMatrixDOK<float> &adj_mat,
-                                        float weight,
-                                        int target_party_id,
-                                        bool is_weighted)
+inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
+                                               SparseMatrixDOK<float> &adj_mat,
+                                               float weight,
+                                               int target_party_id,
+                                               bool is_weighted)
 {
     int num_row = tree->dtree.y.size();
     if (is_weighted)
@@ -141,11 +141,11 @@ void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
     }
 }
 
-SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
-                                                            int target_party_id = -1,
-                                                            bool is_weighted = true,
-                                                            int skip_round = 0,
-                                                            float eta = 0.3)
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                   int target_party_id = -1,
+                                                                   bool is_weighted = true,
+                                                                   int skip_round = 0,
+                                                                   float eta = 0.3)
 {
     int num_row = model->estimators[0].dtree.y.size();
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
@@ -161,10 +161,10 @@ SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
     return adj_matrix;
 }
 
-SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
-                                                            int target_party_id = -1,
-                                                            bool is_weighted = true,
-                                                            int skip_round = 0)
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
+                                                                   int target_party_id = -1,
+                                                                   bool is_weighted = true,
+                                                                   int skip_round = 0)
 {
     int num_row = model->estimators[0].dtree.y.size();
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);

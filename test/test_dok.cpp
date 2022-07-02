@@ -1,13 +1,15 @@
 #include <vector>
-#include <iostream>
-#include <cassert>
-#include "../src/llatvfl/utils/dok.h"
+#include "llatvfl/utils/dok.h"
+#include "gtest/gtest.h"
 
-int main()
+TEST(DOK, HashTest)
 {
     HashPairSzudzik hashfunc;
-    assert(hashfunc(make_pair(92, 23)) == 8579);
+    ASSERT_EQ(hashfunc(make_pair(92, 23)), 8579);
+}
 
+TEST(DOK, DOKTest)
+{
     SparseMatrixDOK<float> sm = SparseMatrixDOK<float>(3, 3, 0, false, true);
     sm.add(1, 1, 0.5);
     sm.add(2, 1, 0.1);
@@ -25,8 +27,8 @@ int main()
         assert(adj_mat.size() == test_adj_mat.size());
         for (int j = 0; j < test_adj_mat[i].size(); j++)
         {
-            assert(sm(i, j) == test_adj_mat[i][j]);
-            assert(adj_mat[i][j] == test_adj_mat[i][j]);
+            ASSERT_EQ(sm(i, j), test_adj_mat[i][j]);
+            ASSERT_EQ(adj_mat[i][j], test_adj_mat[i][j]);
         }
     }
 
@@ -35,7 +37,7 @@ int main()
     {
         for (int j = 0; j < test_row2nonzero_idx[i].size(); j++)
         {
-            assert(test_row2nonzero_idx[i][j] == sm.row2nonzero_idx[i][j]);
+            ASSERT_EQ(test_row2nonzero_idx[i][j], sm.row2nonzero_idx[i][j]);
         }
     }
 
@@ -46,7 +48,7 @@ int main()
     {
         for (int j = 0; j < test_adj_mat[i].size(); j++)
         {
-            assert(test_adj_mat[i][j] == reconstructed_dm[i][j]);
+            ASSERT_EQ(test_adj_mat[i][j], reconstructed_dm[i][j]);
         }
     }
 
@@ -67,8 +69,8 @@ int main()
         assert(adj_mat_symme.size() == test_adj_mat_symme.size());
         for (int j = 0; j < test_adj_mat_symme[i].size(); j++)
         {
-            assert(sm_symme(i, j) == test_adj_mat_symme[i][j]);
-            assert(adj_mat_symme[i][j] == test_adj_mat_symme[i][j]);
+            ASSERT_EQ(sm_symme(i, j), test_adj_mat_symme[i][j]);
+            ASSERT_EQ(adj_mat_symme[i][j], test_adj_mat_symme[i][j]);
         }
     }
 
@@ -77,7 +79,7 @@ int main()
     {
         for (int j = 0; j < test_row2nonzero_idx_symme[i].size(); j++)
         {
-            assert(test_row2nonzero_idx_symme[i][j] == sm_symme.row2nonzero_idx[i][j]);
+            ASSERT_EQ(test_row2nonzero_idx_symme[i][j], sm_symme.row2nonzero_idx[i][j]);
         }
     }
 
@@ -88,9 +90,7 @@ int main()
     {
         for (int j = 0; j < test_adj_mat_symme[i].size(); j++)
         {
-            assert(test_adj_mat_symme[i][j] == reconstructed_dm_symme[i][j]);
+            ASSERT_EQ(test_adj_mat_symme[i][j], reconstructed_dm_symme[i][j]);
         }
     }
-
-    cout << "test_dok: all passed!" << endl;
 }
