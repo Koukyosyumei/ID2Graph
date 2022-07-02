@@ -18,7 +18,5 @@ set(TEST_RUNNER main.cpp ${testSRC})
 add_executable(${TEST_NAME} ${TEST_RUNNER})
 
 target_link_libraries(${TEST_NAME} gtest gtest_main pthread llatvfl)
-#install(TARGETS tests_main DESTINATION bin)
 
-#add_test(Name ${TEST_NAME} COMMAND ${TEST_NAME})
 gtest_discover_tests(${TEST_NAME})
