@@ -14,4 +14,6 @@ include(GNUInstallDirs)
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 add_subdirectory(${SOURCE_DIR})
+
+enable_testing()
 add_subdirectory(${TEST_DIR})
