@@ -1,5 +1,7 @@
 #pragma once
 #include <unordered_map>
+#include <random>
+#include <cmath>
 using namespace std;
 
 struct PublicKey;
@@ -8,40 +10,65 @@ struct PaillierCipherText;
 struct PaillierKeyRing;
 struct PaillierKeyGenerator;
 
-struct PublicKey
-{
-    PaillierCipherText encrypt(int v)
-    {
-    }
-};
-
-struct SecretKey
-{
-    int decrypt(PaillierCipherText pt)
-    {
-    }
-};
-
 struct PaillierCipherText
 {
     PublicKey pk;
-    int val;
+    long c;
 
-    PaillierCipherText(PublicKey pk_, int val_)
+    PaillierCipherText(PublicKey *pk_, long c_)
     {
-        pk = pk_;
-        val = val_;
+        pk = *pk_;
+        c = c_;
     };
 
     PaillierCipherText operator+(PaillierCipherText ct)
     {
     }
 
-    PaillierCipherText operator+(int v)
+    PaillierCipherText operator+(long v)
     {
     }
 
-    PaillierCipherText operator*(int v)
+    PaillierCipherText operator*(long v)
+    {
+    }
+};
+
+struct PublicKey
+{
+    long n, g;
+    uniform_int_distribution<long> distr;
+    mt19937 mt;
+
+    PublicKey(){};
+    PublicKey(long n_, long g_, mt19937 &mt_)
+    {
+        n = n_;
+        g = g_;
+        distr = uniform_int_distribution<long>(0, n * n - 1);
+        mt = mt_;
+    }
+
+    PaillierCipherText encrypt(long m)
+    {
+        long r = distr(mt);
+        long c = (long(pow(g, m)) * long(pow(r, n))) % (n * n);
+        return PaillierCipherText(this, c);
+    }
+};
+
+struct SecretKey
+{
+    long p, q;
+
+    SecretKey(){};
+    SecretKey(long p_, long q_)
+    {
+        p = p_;
+        q = q_;
+    }
+
+    long decrypt(PaillierCipherText pt)
     {
     }
 };
