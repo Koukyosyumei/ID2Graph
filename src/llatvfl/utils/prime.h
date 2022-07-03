@@ -2,7 +2,7 @@
 #include <random>
 using namespace std;
 
-long modpow(long x, long n, long m)
+long long modpow(long long x, long long n, long long m)
 {
     // returns x^n (mod m)
     long long ret = 1;
@@ -16,7 +16,7 @@ long modpow(long x, long n, long m)
     return ret;
 }
 
-bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
+bool miller_rabin_primality_test(long long n, mt19937 &mt, long long k = 40)
 {
     if (n <= 0)
     {
@@ -33,18 +33,18 @@ bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
         return false;
     }
 
-    long d = n - 1;
-    long s = 0;
+    long long d = n - 1;
+    long long s = 0;
     while ((d % 2 == 0))
     {
         d /= 2;
         s += 1;
     }
 
-    long nm1 = n - 1;
-    uniform_int_distribution<long> distr(1, n - 1);
-    long a, t, y;
-    for (long i = 0; i < k; i++)
+    long long nm1 = n - 1;
+    uniform_int_distribution<long long> distr(1, n - 1);
+    long long a, t, y;
+    for (long long i = 0; i < k; i++)
     {
         a = distr(mt);
         t = d;

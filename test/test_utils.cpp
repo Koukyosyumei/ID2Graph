@@ -43,9 +43,14 @@ TEST(utils, MillerRabinPrimalityTest)
     ASSERT_TRUE(miller_rabin_primality_test(1223, mt));
     ASSERT_TRUE(miller_rabin_primality_test(9973, mt));
     ASSERT_TRUE(miller_rabin_primality_test(99991, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(524287, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(2147483647, mt));
     ASSERT_TRUE(!miller_rabin_primality_test(0, mt));
     ASSERT_TRUE(!miller_rabin_primality_test(1, mt));
     ASSERT_TRUE(!miller_rabin_primality_test(99991 * 9973, mt));
     ASSERT_TRUE(!miller_rabin_primality_test(1234567892, mt));
     ASSERT_TRUE(!miller_rabin_primality_test(12345678900, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(75361, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(512461, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(1565912117761, mt));
 }
