@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include "llatvfl/utils/utils.h"
+#include "llatvfl/utils/prime.h"
 #include "gtest/gtest.h"
 
 TEST(Utils, QuantileTest)
@@ -23,4 +24,10 @@ TEST(Utils, NumPartiesTest)
     {
         ASSERT_EQ(num_parties_per_process[i], test_num_parties_per_process[i]);
     }
+}
+
+TEST(utils, ModPowTest)
+{
+    ASSERT_EQ(modpow(17, 20, 17345), 13896);
+    ASSERT_EQ(modpow(23, 19, 1), 0);
 }
