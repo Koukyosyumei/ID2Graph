@@ -1,9 +1,11 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <random>
 #include "llatvfl/utils/utils.h"
 #include "llatvfl/utils/prime.h"
 #include "gtest/gtest.h"
+using namespace std;
 
 TEST(Utils, QuantileTest)
 {
@@ -30,4 +32,20 @@ TEST(utils, ModPowTest)
 {
     ASSERT_EQ(modpow(17, 20, 17345), 13896);
     ASSERT_EQ(modpow(23, 19, 1), 0);
+}
+
+TEST(utils, MillerRabinPrimalityTest)
+{
+    mt19937 mt(42);
+    ASSERT_TRUE(miller_rabin_primality_test(2, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(3, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(5, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(1223, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(9973, mt));
+    ASSERT_TRUE(miller_rabin_primality_test(99991, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(0, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(1, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(99991 * 9973, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(1234567892, mt));
+    ASSERT_TRUE(!miller_rabin_primality_test(12345678900, mt));
 }

@@ -16,7 +16,7 @@ long modpow(long x, long n, long m)
     return ret;
 }
 
-bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 1024)
+bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
 {
     if (n <= 0)
     {
@@ -28,7 +28,7 @@ bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 1024)
         return true;
     }
 
-    if (n % 2 == 0)
+    if (n == 1 || n % 2 == 0)
     {
         return false;
     }
@@ -37,7 +37,7 @@ bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 1024)
     long s = 0;
     while ((d % 2 == 0))
     {
-        d >>= 2;
+        d /= 2;
         s += 1;
     }
 
