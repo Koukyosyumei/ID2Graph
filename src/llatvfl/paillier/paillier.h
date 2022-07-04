@@ -7,13 +7,14 @@
 #include <stdexcept>
 #include <cassert>
 #include "../utils/prime.h"
+#include "../utils/dok.h"
 using namespace std;
 
 struct PaillierPublicKey;
 struct PaillierSecretKey;
 struct PaillierCipherText;
-struct PaillierKeyRing;
 struct PaillierKeyGenerator;
+struct PaillierKeyRing;
 
 inline long L(long u, long n)
 {
@@ -108,7 +109,25 @@ struct PaillierCipherText
     }
 };
 
-inline PaillierCipherText PaillierPublicKey::encrypt(long m)
+struct PaillierKeyRing
+{
+    tsl::robin_map<pair<long, long>, PaillierSecretKey, HashPairSzudzik> keyring;
+
+    PaillierKeyRing(){};
+
+    void add(PaillierSecretKey sk)
+    {
+        keyring.emplace(make_pair(sk.n, sk.g), sk);
+    }
+
+    PaillierSecretKey get_sk(PaillierPublicKey pk)
+    {
+        return keyring[make_pair(pk.n, pk.g)];
+    }
+};
+
+inline PaillierCipherText
+PaillierPublicKey::encrypt(long m)
 {
     if (m < 0 || m >= n)
     {
