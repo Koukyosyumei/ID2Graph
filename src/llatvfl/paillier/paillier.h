@@ -210,6 +210,8 @@ struct PaillierKeyRing
     {
         return keyring[make_pair(pk.n, pk.g)];
     }
+
+    Bint decrypt(PaillierCipherText pt);
 };
 
 inline PaillierCipherText
@@ -254,4 +256,9 @@ inline Bint PaillierSecretKey::decrypt(PaillierCipherText pt)
         }
     }
     return (L(modpow(pt.c, lam, n2), n) * mu) % n;
+}
+
+inline Bint PaillierKeyRing::decrypt(PaillierCipherText pt)
+{
+    return get_sk(pt.pk).decrypt(pt);
 }
