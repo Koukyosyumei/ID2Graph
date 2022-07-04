@@ -6,6 +6,7 @@
 #include <exception>
 #include <stdexcept>
 #include <cassert>
+#include <boost/integer/mod_inverse.hpp>
 #include "../tsl/robin_map.h"
 #include "../tsl/robin_set.h"
 #include "../utils/prime.h"
@@ -38,6 +39,15 @@ struct PaillierPublicKey
         mt = mt_;
     }
 
+    PaillierPublicKey(Bint n_, Bint g_, Bint n2_, boost::random::mt19937 &mt_)
+    {
+        n = n_;
+        n2 = n2_;
+        g = g_;
+        distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
+        mt = mt_;
+    }
+
     bool operator==(PaillierPublicKey pk2)
     {
         return (n == pk2.n) && (g == pk2.g);
@@ -53,7 +63,7 @@ struct PaillierPublicKey
 
 struct PaillierSecretKey
 {
-    Bint p, q, n, n2, g, lam, l_g2lam_mod_n2;
+    Bint p, q, n, n2, g, lam, mu;
 
     PaillierSecretKey(){};
     PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_)
@@ -65,11 +75,11 @@ struct PaillierSecretKey
 
         n2 = n * n;
         lam = lcm(p - 1, q - 1);
-        l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
+        mu = boost::integer::mod_inverse(L(modpow(g, lam, n * n), n), n);
     }
 
     PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_,
-                      Bint n2_, Bint lam_, Bint l_g2lam_mod_n2_)
+                      Bint n2_, Bint lam_, Bint mu_)
     {
         p = p_;
         q = q_;
@@ -78,7 +88,7 @@ struct PaillierSecretKey
 
         n2 = n2_;
         lam = lam_;
-        l_g2lam_mod_n2 = l_g2lam_mod_n2_;
+        mu = mu_;
     }
 
     Bint decrypt(PaillierCipherText pt);
@@ -128,7 +138,7 @@ struct PaillierKeyGenerator
     int bit_size;
     boost::random::mt19937 mt;
 
-    PaillierKeyGenerator(int bit_size_ = 3, int seed = 42)
+    PaillierKeyGenerator(int bit_size_ = 512, int seed = 42)
     {
         bit_size = bit_size_;
         mt = boost::random::mt19937(seed);
@@ -145,20 +155,22 @@ struct PaillierKeyGenerator
         }
 
         Bint n = p * q;
-        boost::random::uniform_int_distribution<Bint> distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
+        Bint n2 = n * n;
+        boost::random::uniform_int_distribution<Bint> distr = boost::random::uniform_int_distribution<Bint>(0, n2 - 1);
 
-        Bint k, g, lam, l_g2lam_mod_n2;
+        Bint g, lam, l_g2lam_mod_n2, mu;
         do
         {
-            k = distr(mt);
-            g = (1 + k * n) % (n * n);
+            g = distr(mt);
             lam = lcm(p - 1, q - 1);
             l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
 
-        } while (gcd(l_g2lam_mod_n2, n) != 1);
+        } while ((gcd(g, n2) != 1) && (gcd(l_g2lam_mod_n2, n) != 1));
 
-        PaillierPublicKey pk = PaillierPublicKey(n, g, mt);
-        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n * n, lam, l_g2lam_mod_n2);
+        mu = boost::integer::mod_inverse(l_g2lam_mod_n2, n);
+
+        PaillierPublicKey pk = PaillierPublicKey(n, g, n2, mt);
+        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n2, lam, mu);
 
         return make_pair(pk, sk);
     }
@@ -225,7 +237,6 @@ PaillierPublicKey::encrypt(Bint m)
         }
     }
     Bint c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
-    cout << r << " " << c << endl;
     return PaillierCipherText(*this, c);
 }
 
@@ -242,5 +253,5 @@ inline Bint PaillierSecretKey::decrypt(PaillierCipherText pt)
             cerr << e.what() << endl;
         }
     }
-    return L(modpow(pt.c, lam, n2), n) / l_g2lam_mod_n2;
+    return (L(modpow(pt.c, lam, n2), n) * mu) % n;
 }

@@ -19,7 +19,7 @@ TEST(utils, PaillierBaseTest)
     PaillierPublicKey pk = PaillierPublicKey(n, g, mt);
     PaillierSecretKey sk = PaillierSecretKey(p, q, n, g);
     ASSERT_EQ(sk.lam, 4);
-    ASSERT_EQ(sk.l_g2lam_mod_n2, 1);
+    ASSERT_EQ(sk.mu, 1);
 
     PaillierCipherText ct_1 = pk.encrypt(3);
     ASSERT_EQ(sk.decrypt(ct_1), 3);
@@ -56,7 +56,7 @@ TEST(utils, PaillierBaseTest)
 
 TEST(utils, PaillierKeyGeneratorTest)
 {
-    PaillierKeyGenerator keygenerator = PaillierKeyGenerator();
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
     pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
     PaillierPublicKey pk = keypair.first;
     PaillierSecretKey sk = keypair.second;
@@ -65,4 +65,8 @@ TEST(utils, PaillierKeyGeneratorTest)
     ASSERT_EQ(sk.decrypt(ct_1), 1);
     PaillierCipherText ct_2 = pk.encrypt(2);
     ASSERT_EQ(sk.decrypt(ct_2), 2);
+    PaillierCipherText ct_3 = pk.encrypt(123456);
+    ASSERT_EQ(sk.decrypt(ct_3), 123456);
+    PaillierCipherText ct_4 = ct_3 * 2;
+    ASSERT_EQ(sk.decrypt(ct_4), 246912);
 }
