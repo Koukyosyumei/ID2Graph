@@ -2,73 +2,118 @@
 #include <unordered_map>
 #include <random>
 #include <cmath>
+#include <iostream>
+#include <exception>
+#include <stdexcept>
+#include <cassert>
+#include "../utils/prime.h"
 using namespace std;
 
-struct PublicKey;
-struct SecretKey;
+struct PaillierPublicKey;
+struct PaillierSecretKey;
 struct PaillierCipherText;
 struct PaillierKeyRing;
 struct PaillierKeyGenerator;
 
-struct PaillierCipherText
+inline long L(long u, long n)
 {
-    PublicKey pk;
-    long c;
+    return (u - 1) / n;
+}
 
-    PaillierCipherText(PublicKey *pk_, long c_)
-    {
-        pk = *pk_;
-        c = c_;
-    };
-
-    PaillierCipherText operator+(PaillierCipherText ct)
-    {
-    }
-
-    PaillierCipherText operator+(long v)
-    {
-    }
-
-    PaillierCipherText operator*(long v)
-    {
-    }
-};
-
-struct PublicKey
+struct PaillierPublicKey
 {
     long n, g;
     uniform_int_distribution<long> distr;
     mt19937 mt;
 
-    PublicKey(){};
-    PublicKey(long n_, long g_, mt19937 &mt_)
+    PaillierPublicKey(){};
+    PaillierPublicKey(long n_, long g_, mt19937 &mt_)
     {
         n = n_;
         g = g_;
-        distr = uniform_int_distribution<long>(0, n * n - 1);
+        distr = uniform_int_distribution<long>(0, n - 1);
         mt = mt_;
     }
 
-    PaillierCipherText encrypt(long m)
-    {
-        long r = distr(mt);
-        long c = (long(pow(g, m)) * long(pow(r, n))) % (n * n);
-        return PaillierCipherText(this, c);
-    }
+    PaillierCipherText encrypt(long m);
 };
 
-struct SecretKey
+struct PaillierSecretKey
 {
-    long p, q;
+    long p, q, n, n2, g, lam, l_g2lam_mod_n2;
 
-    SecretKey(){};
-    SecretKey(long p_, long q_)
+    PaillierSecretKey(){};
+    PaillierSecretKey(long p_, long q_, long n_, long g_)
     {
         p = p_;
         q = q_;
+        n = n_;
+        g = g_;
+
+        n2 = n * n;
+        lam = lcm(p - 1, q - 1);
+        l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
     }
 
-    long decrypt(PaillierCipherText pt)
-    {
-    }
+    long decrypt(PaillierCipherText pt);
 };
+
+struct PaillierCipherText
+{
+    PaillierPublicKey pk;
+    long c;
+
+    PaillierCipherText(PaillierPublicKey *pk_, long c_)
+    {
+        pk = *pk_;
+        c = c_;
+    };
+
+    PaillierCipherText operator+(PaillierCipherText ct);
+    PaillierCipherText operator+(long v);
+    PaillierCipherText operator*(long v);
+};
+
+inline PaillierCipherText PaillierPublicKey::encrypt(long m)
+{
+    if (m < 0 || m >= n)
+    {
+        try
+        {
+            throw range_error("m should be [0, n)");
+        }
+        catch (range_error e)
+        {
+            cerr << e.what() << endl;
+        }
+    }
+
+    long r;
+    while (true)
+    {
+        r = distr(mt);
+        if (gcd(r, n) == 1)
+        {
+            break;
+        }
+    }
+    long c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
+    cout << r << " " << c << endl;
+    return PaillierCipherText(this, c);
+}
+
+inline long PaillierSecretKey::decrypt(PaillierCipherText pt)
+{
+    if (pt.c <= 0 || pt.c >= (n2))
+    {
+        try
+        {
+            throw range_error("pt.c should be (0, n^2)");
+        }
+        catch (range_error e)
+        {
+            cerr << e.what() << endl;
+        }
+    }
+    return L(modpow(pt.c, lam, n2), n) / l_g2lam_mod_n2;
+}
