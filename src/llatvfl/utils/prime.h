@@ -93,7 +93,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 1373653)
+    else if (n < Bint(1373653))
     {
         for (Bint a : {2, 3})
         {
@@ -103,7 +103,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 9080191)
+    else if (n < Bint(9080191))
     {
         for (Bint a : {31, 73})
         {
@@ -113,7 +113,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 25326001)
+    else if (n < Bint(25326001))
     {
         for (Bint a : {2, 3, 5})
         {
@@ -123,7 +123,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 3215031751)
+    else if (n < Bint(3215031751))
     {
         for (Bint a : {2, 3, 5, 7})
         {
@@ -133,7 +133,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 4759123141)
+    else if (n < Bint(4759123141))
     {
         for (Bint a : {2, 7, 61})
         {
@@ -143,7 +143,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 2152302898747)
+    else if (n < Bint(2152302898747))
     {
         for (Bint a : {2, 3, 5, 7, 11})
         {
@@ -153,7 +153,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 3474749660383)
+    else if (n < Bint(3474749660383))
     {
         for (Bint a : {2, 3, 5, 7, 11, 13})
         {
@@ -163,7 +163,7 @@ inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
             }
         }
     }
-    else if (n < 341550071728321)
+    else if (n < Bint(341550071728321))
     {
         for (Bint a : {2, 3, 5, 7, 11, 13, 17})
         {
