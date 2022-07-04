@@ -2,6 +2,23 @@
 #include <random>
 using namespace std;
 
+long long gcd(long long a, long long b)
+{
+    if (a % b == 0)
+    {
+        return b;
+    }
+    else
+    {
+        return gcd(b, a % b);
+    }
+}
+
+long long lcm(long long a, long long b)
+{
+    return abs(a) / gcd(a, b) * abs(b);
+}
+
 long long modpow(long long x, long long n, long long m)
 {
     // returns x^n (mod m)

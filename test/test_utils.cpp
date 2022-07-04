@@ -28,6 +28,18 @@ TEST(Utils, NumPartiesTest)
     }
 }
 
+TEST(utils, GCDTest)
+{
+    ASSERT_EQ(gcd(12, 42), 6);
+    ASSERT_EQ(gcd(42, 12), 6);
+}
+
+TEST(utils, LCMTest)
+{
+    ASSERT_EQ(lcm(3, 4), 12);
+    ASSERT_EQ(lcm(4, 3), 12);
+}
+
 TEST(utils, ModPowTest)
 {
     ASSERT_EQ(modpow(17, 20, 17345), 13896);
