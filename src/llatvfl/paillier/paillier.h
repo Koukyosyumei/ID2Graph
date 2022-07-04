@@ -164,20 +164,28 @@ struct PaillierKeyGenerator
     }
 };
 
-struct hash4keyring
+struct HashPairSzudzikBint
 {
-    template <typename K, typename V>
-    size_t operator()(std::pair<K, V> const &pair) const
+    // implementation of szudzik paring
+    template <class T1, class T2>
+    size_t operator()(const pair<T1, T2> &p) const
     {
-        size_t seed = std::hash<K>{}(pair.first);
-        boost::hash_combine(seed, pair.second);
+        size_t seed;
+        if (p.first >= p.second)
+        {
+            seed = std::hash<T1>{}(p.first * p.first + p.first + p.second);
+        }
+        else
+        {
+            seed = std::hash<T1>{}(p.second * p.second + p.first);
+        }
         return seed;
     }
 };
 
 struct PaillierKeyRing
 {
-    tsl::robin_map<pair<Bint, Bint>, PaillierSecretKey, hash4keyring> keyring;
+    tsl::robin_map<pair<Bint, Bint>, PaillierSecretKey, HashPairSzudzikBint> keyring;
 
     PaillierKeyRing(){};
 
