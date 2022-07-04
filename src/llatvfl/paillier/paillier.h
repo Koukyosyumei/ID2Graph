@@ -67,6 +67,19 @@ struct PaillierSecretKey
         l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
     }
 
+    PaillierSecretKey(long p_, long q_, long n_, long g_,
+                      long n2_, long lam_, long l_g2lam_mod_n2_)
+    {
+        p = p_;
+        q = q_;
+        n = n_;
+        g = g_;
+
+        n2 = n2_;
+        lam = lam_;
+        l_g2lam_mod_n2 = l_g2lam_mod_n2_;
+    }
+
     long decrypt(PaillierCipherText pt);
 };
 
@@ -106,6 +119,47 @@ struct PaillierCipherText
     PaillierCipherText operator*(long pt)
     {
         return PaillierCipherText(pk, modpow(c, pt, pk.n2));
+    }
+};
+
+struct PaillierKeyGenerator
+{
+    int bit_size;
+    mt19937 mt;
+
+    PaillierKeyGenerator(int bit_size_ = 3, int seed = 42)
+    {
+        bit_size = bit_size_;
+        mt = mt19937(seed);
+    }
+
+    pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
+    {
+        long p = generate_probably_prime(bit_size, mt);
+        long q = generate_probably_prime(bit_size, mt);
+
+        if (p == q)
+        {
+            return generate_keypair();
+        }
+
+        long n = p * q;
+        uniform_int_distribution<long> distr = uniform_int_distribution<long>(0, n - 1);
+
+        long k, g, lam, l_g2lam_mod_n2;
+        do
+        {
+            k = distr(mt);
+            g = (1 + k * n) % (n * n);
+            lam = lcm(p - 1, q - 1);
+            l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
+
+        } while (gcd(l_g2lam_mod_n2, n) != 1);
+
+        PaillierPublicKey pk = PaillierPublicKey(n, g, mt);
+        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n * n, lam, l_g2lam_mod_n2);
+
+        return make_pair(pk, sk);
     }
 };
 

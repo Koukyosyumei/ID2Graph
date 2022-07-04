@@ -6,13 +6,13 @@
 #include "gtest/gtest.h"
 using namespace std;
 
-TEST(utils, PaillierTest)
+TEST(utils, PaillierBaseTest)
 {
     long long p = 3;
     long long q = 5;
     long long n = p * q;
     long long k = 4;
-    long long g = (1 + 4 * n) % (n * n);
+    long long g = (1 + k * n) % (n * n);
 
     ASSERT_EQ(L(g, n), k);
 
@@ -53,4 +53,17 @@ TEST(utils, PaillierTest)
     PaillierCipherText ct_8 = ct_1 * 3;
     ASSERT_TRUE(ct_1.pk == ct_8.pk);
     ASSERT_EQ(sk.decrypt(ct_8), 9);
+}
+
+TEST(utils, PaillierKeyGeneratorTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator();
+    pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
+    PaillierPublicKey pk = keypair.first;
+    PaillierSecretKey sk = keypair.second;
+
+    PaillierCipherText ct_1 = pk.encrypt(1);
+    ASSERT_EQ(sk.decrypt(ct_1), 1);
+    PaillierCipherText ct_2 = pk.encrypt(2);
+    ASSERT_EQ(sk.decrypt(ct_2), 2);
 }

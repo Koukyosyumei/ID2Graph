@@ -181,7 +181,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     return true;
 }
 
-inline long generate_probably_prime(int bits_size, mt19937 mt)
+inline long generate_probably_prime(int bits_size, mt19937 &mt)
 {
     long min_val = pow(2, bits_size - 1);
     long max_val = min_val * 2 - 1;
