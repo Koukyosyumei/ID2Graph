@@ -97,12 +97,15 @@ struct PaillierCipherText
         return PaillierCipherText(pk, c * ct.c);
     }
 
-    PaillierCipherText operator+(long v)
+    PaillierCipherText operator+(long pt)
     {
-        return PaillierCipherText(pk, (c * modpow(pk.g, v, pk.n2) % pk.n2));
+        return PaillierCipherText(pk, (c * modpow(pk.g, pt, pk.n2) % pk.n2));
     }
 
-    PaillierCipherText operator*(long v);
+    PaillierCipherText operator*(long pt)
+    {
+        return PaillierCipherText(pk, modpow(c, pt, pk.n2));
+    }
 };
 
 inline PaillierCipherText PaillierPublicKey::encrypt(long m)
