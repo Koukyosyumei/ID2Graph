@@ -15,8 +15,7 @@ TEST(paillier, PaillierBaseTest)
 
     ASSERT_EQ(L(g, n), k);
 
-    boost::random::mt19937 mt(42);
-    PaillierPublicKey pk = PaillierPublicKey(n, g, mt);
+    PaillierPublicKey pk = PaillierPublicKey(n, g);
     PaillierSecretKey sk = PaillierSecretKey(p, q, n, g);
     ASSERT_EQ(sk.lam, 4);
     ASSERT_EQ(sk.mu, 1);

@@ -27,25 +27,22 @@ struct PaillierPublicKey
 {
     Bint n, n2, g;
     boost::random::uniform_int_distribution<Bint> distr;
-    boost::random::mt19937 mt;
 
     PaillierPublicKey(){};
-    PaillierPublicKey(Bint n_, Bint g_, boost::random::mt19937 &mt_)
+    PaillierPublicKey(Bint n_, Bint g_)
     {
         n = n_;
         n2 = n * n;
         g = g_;
         distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
-        mt = mt_;
     }
 
-    PaillierPublicKey(Bint n_, Bint g_, Bint n2_, boost::random::mt19937 &mt_)
+    PaillierPublicKey(Bint n_, Bint g_, Bint n2_)
     {
         n = n_;
         n2 = n2_;
         g = g_;
         distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
-        mt = mt_;
     }
 
     bool operator==(PaillierPublicKey pk2)
@@ -136,18 +133,18 @@ struct PaillierCipherText
 struct PaillierKeyGenerator
 {
     int bit_size;
-    boost::random::mt19937 mt;
 
-    PaillierKeyGenerator(int bit_size_ = 512, int seed = 42)
+    PaillierKeyGenerator(int bit_size_ = 512)
     {
         bit_size = bit_size_;
-        mt = boost::random::mt19937(seed);
     }
 
     pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
     {
-        Bint p = generate_probably_prime(bit_size, mt);
-        Bint q = generate_probably_prime(bit_size, mt);
+        boost::random::random_device rng;
+
+        Bint p = generate_probably_prime(bit_size);
+        Bint q = generate_probably_prime(bit_size);
 
         if (p == q)
         {
@@ -161,7 +158,7 @@ struct PaillierKeyGenerator
         Bint g, lam, l_g2lam_mod_n2, mu;
         do
         {
-            g = distr(mt);
+            g = distr(rng);
             lam = lcm(p - 1, q - 1);
             l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
 
@@ -169,7 +166,7 @@ struct PaillierKeyGenerator
 
         mu = boost::integer::mod_inverse(l_g2lam_mod_n2, n);
 
-        PaillierPublicKey pk = PaillierPublicKey(n, g, n2, mt);
+        PaillierPublicKey pk = PaillierPublicKey(n, g, n2);
         PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n2, lam, mu);
 
         return make_pair(pk, sk);
@@ -217,6 +214,8 @@ struct PaillierKeyRing
 inline PaillierCipherText
 PaillierPublicKey::encrypt(Bint m)
 {
+    boost::random::random_device rng;
+
     if (m < 0 || m >= n)
     {
         try
@@ -232,7 +231,7 @@ PaillierPublicKey::encrypt(Bint m)
     Bint r;
     while (true)
     {
-        r = distr(mt);
+        r = distr(rng);
         if (gcd(r, n) == 1)
         {
             break;

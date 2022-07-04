@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <boost/random.hpp>
+#include <boost/random/random_device.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 using namespace std;
 
@@ -52,8 +53,10 @@ inline bool cond_of_miller_rabin(Bint d, Bint a, Bint n)
     return (y != n - 1) && (t % 2) == 0;
 }
 
-inline bool miller_rabin_primality_test(Bint n, boost::random::mt19937 &mt, Bint k = 40)
+inline bool miller_rabin_primality_test(Bint n, Bint k = 40)
 {
+    boost::random::random_device rng;
+
     if (n <= 0)
     {
         return false;
@@ -175,7 +178,7 @@ inline bool miller_rabin_primality_test(Bint n, boost::random::mt19937 &mt, Bint
         Bint a;
         for (Bint i = 0; i < k; i++)
         {
-            a = distr(mt);
+            a = distr(rng);
             if (cond_of_miller_rabin(d, a, n))
             {
                 return false;
@@ -185,15 +188,17 @@ inline bool miller_rabin_primality_test(Bint n, boost::random::mt19937 &mt, Bint
     return true;
 }
 
-inline Bint generate_probably_prime(int bits_size, boost::random::mt19937 &mt)
+inline Bint generate_probably_prime(int bits_size)
 {
+    boost::random::random_device rng;
+
     Bint min_val = mp::pow(Bint(2), bits_size - 1);
     Bint max_val = min_val * 2 - 1;
     boost::random::uniform_int_distribution<Bint> distr(min_val, max_val);
     Bint p = 0;
-    while (!miller_rabin_primality_test(p, mt))
+    while (!miller_rabin_primality_test(p))
     {
-        p = distr(mt);
+        p = distr(rng);
     }
     return p;
 }
