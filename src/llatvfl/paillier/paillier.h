@@ -22,7 +22,7 @@ inline long L(long u, long n)
 
 struct PaillierPublicKey
 {
-    long n, g;
+    long n, n2, g;
     uniform_int_distribution<long> distr;
     mt19937 mt;
 
@@ -30,6 +30,7 @@ struct PaillierPublicKey
     PaillierPublicKey(long n_, long g_, mt19937 &mt_)
     {
         n = n_;
+        n2 = n * n;
         g = g_;
         distr = uniform_int_distribution<long>(0, n - 1);
         mt = mt_;
@@ -95,7 +96,12 @@ struct PaillierCipherText
 
         return PaillierCipherText(pk, c * ct.c);
     }
-    PaillierCipherText operator+(long v);
+
+    PaillierCipherText operator+(long v)
+    {
+        return PaillierCipherText(pk, (c * modpow(pk.g, v, pk.n2) % pk.n2));
+    }
+
     PaillierCipherText operator*(long v);
 };
 

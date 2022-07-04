@@ -33,4 +33,12 @@ TEST(utils, PaillierTest)
     PaillierCipherText ct_3 = ct_1 + ct_2;
     ASSERT_TRUE(ct_1.pk == ct_3.pk);
     ASSERT_EQ(sk.decrypt(ct_3), 11);
+
+    PaillierCipherText ct_4 = ct_1 + 0;
+    ASSERT_TRUE(ct_1.pk == ct_4.pk);
+    ASSERT_EQ(sk.decrypt(ct_4), 3);
+
+    PaillierCipherText ct_5 = ct_1 + 3;
+    ASSERT_TRUE(ct_1.pk == ct_5.pk);
+    ASSERT_EQ(sk.decrypt(ct_5), 6);
 }
