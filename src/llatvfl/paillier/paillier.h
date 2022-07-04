@@ -35,6 +35,16 @@ struct PaillierPublicKey
         mt = mt_;
     }
 
+    bool operator==(PaillierPublicKey pk2)
+    {
+        return (n == pk2.n) && (g == pk2.g);
+    }
+
+    bool operator!=(PaillierPublicKey pk2)
+    {
+        return (n != pk2.n) || (g != pk2.g);
+    }
+
     PaillierCipherText encrypt(long m);
 };
 
@@ -63,13 +73,28 @@ struct PaillierCipherText
     PaillierPublicKey pk;
     long c;
 
-    PaillierCipherText(PaillierPublicKey *pk_, long c_)
+    PaillierCipherText(PaillierPublicKey pk_, long c_)
     {
-        pk = *pk_;
+        pk = pk_;
         c = c_;
     };
 
-    PaillierCipherText operator+(PaillierCipherText ct);
+    PaillierCipherText operator+(PaillierCipherText ct)
+    {
+        if (ct.pk != pk)
+        {
+            try
+            {
+                throw runtime_error("public key does not match");
+            }
+            catch (runtime_error e)
+            {
+                cerr << e.what() << endl;
+            }
+        }
+
+        return PaillierCipherText(pk, c * ct.c);
+    }
     PaillierCipherText operator+(long v);
     PaillierCipherText operator*(long v);
 };
@@ -99,7 +124,7 @@ inline PaillierCipherText PaillierPublicKey::encrypt(long m)
     }
     long c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
     cout << r << " " << c << endl;
-    return PaillierCipherText(this, c);
+    return PaillierCipherText(*this, c);
 }
 
 inline long PaillierSecretKey::decrypt(PaillierCipherText pt)

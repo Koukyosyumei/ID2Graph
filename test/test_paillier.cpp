@@ -26,4 +26,11 @@ TEST(utils, PaillierTest)
     ASSERT_EQ(sk.decrypt(ct_1), 3);
     PaillierCipherText ct_2 = pk.encrypt(8);
     ASSERT_EQ(sk.decrypt(ct_2), 8);
+
+    ASSERT_TRUE(ct_1.pk == ct_2.pk);
+    ASSERT_TRUE(!(ct_1.pk != ct_2.pk));
+
+    PaillierCipherText ct_3 = ct_1 + ct_2;
+    ASSERT_TRUE(ct_1.pk == ct_3.pk);
+    ASSERT_EQ(sk.decrypt(ct_3), 11);
 }
