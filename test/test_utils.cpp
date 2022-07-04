@@ -49,7 +49,7 @@ TEST(utils, ModPowTest)
 
 TEST(utils, MillerRabinPrimalityTest)
 {
-    mt19937 mt(42);
+    boost::random::mt19937 mt(42);
     ASSERT_TRUE(miller_rabin_primality_test(2, mt));
     ASSERT_TRUE(miller_rabin_primality_test(3, mt));
     ASSERT_TRUE(miller_rabin_primality_test(5, mt));
@@ -70,10 +70,10 @@ TEST(utils, MillerRabinPrimalityTest)
 
 TEST(utils, GenerateProbablyPrimeTest)
 {
-    mt19937 mt(42);
-    long p = generate_probably_prime(3, mt);
+    boost::random::mt19937 mt(42);
+    Bint p = generate_probably_prime(3, mt);
     ASSERT_TRUE(p == 5 || p == 7);
 
-    long q = generate_probably_prime(4, mt);
+    Bint q = generate_probably_prime(4, mt);
     ASSERT_TRUE(q == 11 || q == 13);
 }

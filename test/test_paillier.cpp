@@ -1,7 +1,6 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
-#include <random>
 #include "llatvfl/paillier/paillier.h"
 #include "gtest/gtest.h"
 using namespace std;
@@ -16,7 +15,7 @@ TEST(utils, PaillierBaseTest)
 
     ASSERT_EQ(L(g, n), k);
 
-    mt19937 mt(42);
+    boost::random::mt19937 mt(42);
     PaillierPublicKey pk = PaillierPublicKey(n, g, mt);
     PaillierSecretKey sk = PaillierSecretKey(p, q, n, g);
     ASSERT_EQ(sk.lam, 4);

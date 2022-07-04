@@ -1,9 +1,13 @@
 #pragma once
 #include <cmath>
-#include <random>
+#include <boost/random.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 using namespace std;
 
-inline long gcd(long a, long b)
+namespace mp = boost::multiprecision;
+using Bint = mp::cpp_int;
+
+inline Bint gcd(Bint a, Bint b)
 {
     if (a % b == 0)
     {
@@ -15,15 +19,15 @@ inline long gcd(long a, long b)
     }
 }
 
-inline long lcm(long a, long b)
+inline Bint lcm(Bint a, Bint b)
 {
     return abs(a) / gcd(a, b) * abs(b);
 }
 
-inline long modpow(long x, long n, long m)
+inline Bint modpow(Bint x, Bint n, Bint m)
 {
     // returns x^n (mod m)
-    long ret = 1;
+    Bint ret = 1;
     while (n > 0)
     {
         if (n & 1)
@@ -34,10 +38,10 @@ inline long modpow(long x, long n, long m)
     return ret;
 }
 
-inline bool cond_of_miller_rabin(long d, long a, long n)
+inline bool cond_of_miller_rabin(Bint d, Bint a, Bint n)
 {
-    long t = d;
-    long y = modpow(a, t, n);
+    Bint t = d;
+    Bint y = modpow(a, t, n);
 
     while ((t != n - 1) && (y != 1) && (y != n - 1))
     {
@@ -48,7 +52,7 @@ inline bool cond_of_miller_rabin(long d, long a, long n)
     return (y != n - 1) && (t % 2) == 0;
 }
 
-inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
+inline bool miller_rabin_primality_test(Bint n, boost::random::mt19937 &mt, Bint k = 40)
 {
     if (n <= 0)
     {
@@ -65,20 +69,20 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
         return false;
     }
 
-    long d = n - 1;
-    long s = 0;
+    Bint d = n - 1;
+    Bint s = 0;
     while ((d % 2 == 0))
     {
         d /= 2;
         s += 1;
     }
 
-    long nm1 = n - 1;
-    uniform_int_distribution<long> distr(1, n - 1);
+    Bint nm1 = n - 1;
+    boost::random::uniform_int_distribution<Bint> distr(1, n - 1);
 
     if (n < 2047)
     {
-        for (long a : {2})
+        for (Bint a : {2})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -88,7 +92,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 1373653)
     {
-        for (long a : {2, 3})
+        for (Bint a : {2, 3})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -98,7 +102,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 9080191)
     {
-        for (long a : {31, 73})
+        for (Bint a : {31, 73})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -108,7 +112,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 25326001)
     {
-        for (long a : {2, 3, 5})
+        for (Bint a : {2, 3, 5})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -118,7 +122,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 3215031751)
     {
-        for (long a : {2, 3, 5, 7})
+        for (Bint a : {2, 3, 5, 7})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -128,7 +132,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 4759123141)
     {
-        for (long a : {2, 7, 61})
+        for (Bint a : {2, 7, 61})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -138,7 +142,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 2152302898747)
     {
-        for (long a : {2, 3, 5, 7, 11})
+        for (Bint a : {2, 3, 5, 7, 11})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -148,7 +152,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 3474749660383)
     {
-        for (long a : {2, 3, 5, 7, 11, 13})
+        for (Bint a : {2, 3, 5, 7, 11, 13})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -158,7 +162,7 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else if (n < 341550071728321)
     {
-        for (long a : {2, 3, 5, 7, 11, 13, 17})
+        for (Bint a : {2, 3, 5, 7, 11, 13, 17})
         {
             if (cond_of_miller_rabin(d, a, n))
             {
@@ -168,8 +172,8 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     }
     else
     {
-        long a;
-        for (long i = 0; i < k; i++)
+        Bint a;
+        for (Bint i = 0; i < k; i++)
         {
             a = distr(mt);
             if (cond_of_miller_rabin(d, a, n))
@@ -181,12 +185,12 @@ inline bool miller_rabin_primality_test(long n, mt19937 &mt, long k = 40)
     return true;
 }
 
-inline long generate_probably_prime(int bits_size, mt19937 &mt)
+inline Bint generate_probably_prime(int bits_size, boost::random::mt19937 &mt)
 {
-    long min_val = pow(2, bits_size - 1);
-    long max_val = min_val * 2 - 1;
-    uniform_int_distribution<long> distr(min_val, max_val);
-    long p = 0;
+    Bint min_val = mp::pow(Bint(2), bits_size - 1);
+    Bint max_val = min_val * 2 - 1;
+    boost::random::uniform_int_distribution<Bint> distr(min_val, max_val);
+    Bint p = 0;
     while (!miller_rabin_primality_test(p, mt))
     {
         p = distr(mt);

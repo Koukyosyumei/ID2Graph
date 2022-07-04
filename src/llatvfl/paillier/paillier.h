@@ -6,8 +6,9 @@
 #include <exception>
 #include <stdexcept>
 #include <cassert>
+#include "../tsl/robin_map.h"
+#include "../tsl/robin_set.h"
 #include "../utils/prime.h"
-#include "../utils/dok.h"
 using namespace std;
 
 struct PaillierPublicKey;
@@ -16,24 +17,24 @@ struct PaillierCipherText;
 struct PaillierKeyGenerator;
 struct PaillierKeyRing;
 
-inline long L(long u, long n)
+inline Bint L(Bint u, Bint n)
 {
     return (u - 1) / n;
 }
 
 struct PaillierPublicKey
 {
-    long n, n2, g;
-    uniform_int_distribution<long> distr;
-    mt19937 mt;
+    Bint n, n2, g;
+    boost::random::uniform_int_distribution<Bint> distr;
+    boost::random::mt19937 mt;
 
     PaillierPublicKey(){};
-    PaillierPublicKey(long n_, long g_, mt19937 &mt_)
+    PaillierPublicKey(Bint n_, Bint g_, boost::random::mt19937 &mt_)
     {
         n = n_;
         n2 = n * n;
         g = g_;
-        distr = uniform_int_distribution<long>(0, n - 1);
+        distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
         mt = mt_;
     }
 
@@ -47,15 +48,15 @@ struct PaillierPublicKey
         return (n != pk2.n) || (g != pk2.g);
     }
 
-    PaillierCipherText encrypt(long m);
+    PaillierCipherText encrypt(Bint m);
 };
 
 struct PaillierSecretKey
 {
-    long p, q, n, n2, g, lam, l_g2lam_mod_n2;
+    Bint p, q, n, n2, g, lam, l_g2lam_mod_n2;
 
     PaillierSecretKey(){};
-    PaillierSecretKey(long p_, long q_, long n_, long g_)
+    PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_)
     {
         p = p_;
         q = q_;
@@ -67,8 +68,8 @@ struct PaillierSecretKey
         l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
     }
 
-    PaillierSecretKey(long p_, long q_, long n_, long g_,
-                      long n2_, long lam_, long l_g2lam_mod_n2_)
+    PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_,
+                      Bint n2_, Bint lam_, Bint l_g2lam_mod_n2_)
     {
         p = p_;
         q = q_;
@@ -80,15 +81,15 @@ struct PaillierSecretKey
         l_g2lam_mod_n2 = l_g2lam_mod_n2_;
     }
 
-    long decrypt(PaillierCipherText pt);
+    Bint decrypt(PaillierCipherText pt);
 };
 
 struct PaillierCipherText
 {
     PaillierPublicKey pk;
-    long c;
+    Bint c;
 
-    PaillierCipherText(PaillierPublicKey pk_, long c_)
+    PaillierCipherText(PaillierPublicKey pk_, Bint c_)
     {
         pk = pk_;
         c = c_;
@@ -111,12 +112,12 @@ struct PaillierCipherText
         return PaillierCipherText(pk, c * ct.c);
     }
 
-    PaillierCipherText operator+(long pt)
+    PaillierCipherText operator+(Bint pt)
     {
         return PaillierCipherText(pk, (c * modpow(pk.g, pt, pk.n2) % pk.n2));
     }
 
-    PaillierCipherText operator*(long pt)
+    PaillierCipherText operator*(Bint pt)
     {
         return PaillierCipherText(pk, modpow(c, pt, pk.n2));
     }
@@ -125,28 +126,28 @@ struct PaillierCipherText
 struct PaillierKeyGenerator
 {
     int bit_size;
-    mt19937 mt;
+    boost::random::mt19937 mt;
 
     PaillierKeyGenerator(int bit_size_ = 3, int seed = 42)
     {
         bit_size = bit_size_;
-        mt = mt19937(seed);
+        mt = boost::random::mt19937(seed);
     }
 
     pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
     {
-        long p = generate_probably_prime(bit_size, mt);
-        long q = generate_probably_prime(bit_size, mt);
+        Bint p = generate_probably_prime(bit_size, mt);
+        Bint q = generate_probably_prime(bit_size, mt);
 
         if (p == q)
         {
             return generate_keypair();
         }
 
-        long n = p * q;
-        uniform_int_distribution<long> distr = uniform_int_distribution<long>(0, n - 1);
+        Bint n = p * q;
+        boost::random::uniform_int_distribution<Bint> distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
 
-        long k, g, lam, l_g2lam_mod_n2;
+        Bint k, g, lam, l_g2lam_mod_n2;
         do
         {
             k = distr(mt);
@@ -163,9 +164,20 @@ struct PaillierKeyGenerator
     }
 };
 
+struct hash4keyring
+{
+    template <typename K, typename V>
+    size_t operator()(std::pair<K, V> const &pair) const
+    {
+        size_t seed = std::hash<K>{}(pair.first);
+        boost::hash_combine(seed, pair.second);
+        return seed;
+    }
+};
+
 struct PaillierKeyRing
 {
-    tsl::robin_map<pair<long, long>, PaillierSecretKey, HashPairSzudzik> keyring;
+    tsl::robin_map<pair<Bint, Bint>, PaillierSecretKey, hash4keyring> keyring;
 
     PaillierKeyRing(){};
 
@@ -181,7 +193,7 @@ struct PaillierKeyRing
 };
 
 inline PaillierCipherText
-PaillierPublicKey::encrypt(long m)
+PaillierPublicKey::encrypt(Bint m)
 {
     if (m < 0 || m >= n)
     {
@@ -195,7 +207,7 @@ PaillierPublicKey::encrypt(long m)
         }
     }
 
-    long r;
+    Bint r;
     while (true)
     {
         r = distr(mt);
@@ -204,12 +216,12 @@ PaillierPublicKey::encrypt(long m)
             break;
         }
     }
-    long c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
+    Bint c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
     cout << r << " " << c << endl;
     return PaillierCipherText(*this, c);
 }
 
-inline long PaillierSecretKey::decrypt(PaillierCipherText pt)
+inline Bint PaillierSecretKey::decrypt(PaillierCipherText pt)
 {
     if (pt.c <= 0 || pt.c >= (n2))
     {
