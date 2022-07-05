@@ -71,6 +71,16 @@ TEST(paillier, PaillierKeyGeneratorTest)
     ASSERT_EQ(sk.decrypt<int>(ct_4), 246912);
     PaillierCipherText ct_5 = ct_4 + ct_2;
     ASSERT_EQ(sk.decrypt<int>(ct_5), 246914);
+
+    PaillierCipherText ct_6 = pk.encrypt<int>(-15);
+    PaillierCipherText ct_7 = pk.encrypt<int>(1);
+    PaillierCipherText ct_8 = ct_6 + ct_7;
+    ASSERT_EQ(sk.decrypt<int>(ct_8), -14);
+    PaillierCipherText ct_9 = pk.encrypt<int>(-1);
+    PaillierCipherText ct_10 = ct_6 + ct_9;
+    ASSERT_EQ(ct_10, -16);
+    PaillierCipherText ct_11 = ct_6 * -1;
+    ASSERT_EQ(ct_11, 15);
 }
 
 TEST(paillier, PaillierKeyRingTest)
