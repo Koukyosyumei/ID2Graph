@@ -147,3 +147,22 @@ TEST(paillier, PaillierDecodingTest)
     EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double, 1e-10);
     ASSERT_NEAR(large_postive_double, enc_7.decode(), 1e-6);
 }
+
+TEST(paillier, PaillierDecreaseExponentTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+
+    EncodedNumber<float> enc_1 = EncodedNumber<float>(pk_1, 3.14);
+    int new_exponent = enc_1.exponent - 3;
+    enc_1.decrease_exponent(new_exponent);
+    ASSERT_EQ(enc_1.exponent, new_exponent);
+    ASSERT_NEAR(3.14, enc_1.decode(), 1e-6);
+
+    EncodedNumber<float> enc_2 = EncodedNumber<float>(pk_1, -3.14);
+    int new_exponent_2 = enc_2.exponent - 3;
+    enc_2.decrease_exponent(new_exponent_2);
+    ASSERT_EQ(enc_2.exponent, new_exponent_2);
+    ASSERT_NEAR(-3.14, enc_2.decode(), 1e-6);
+}

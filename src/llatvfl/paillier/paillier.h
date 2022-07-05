@@ -150,6 +150,25 @@ struct EncodedNumber
         }
         return T(Bfloat(mantissa) * mp::pow(Bfloat(BASE), Bfloat(exponent)));
     }
+
+    void decrease_exponent(int new_exponent)
+    {
+        if (new_exponent > exponent)
+        {
+            try
+            {
+                throw range_error("new exponent should be less than the current exponent");
+            }
+            catch (range_error e)
+            {
+                cerr << e.what() << endl;
+            }
+        }
+
+        int factor = pow(BASE, exponent - new_exponent);
+        encoding = encoding * factor % pk.n;
+        exponent = new_exponent;
+    }
 };
 
 struct PaillierCipherText
