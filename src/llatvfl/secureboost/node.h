@@ -4,7 +4,7 @@
 #include "party.h"
 using namespace std;
 
-struct SecureBoostNode : XGBoostNode
+struct SecureBoostNode : Node<SecureBoostParty>
 {
     vector<SecureBoostParty> *parties;
     vector<PaillierCipherText> gradient, hessian;
@@ -39,18 +39,6 @@ struct SecureBoostNode : XGBoostNode
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
 
-        try
-        {
-            if ((active_party_id < 0) || (active_party_id > parties->size()))
-            {
-                throw invalid_argument("invalid active_party_id");
-            }
-        }
-        catch (std::exception &e)
-        {
-            std::cout << e.what() << std::endl;
-        }
-
         row_count = idxs.size();
         num_parties = parties->size();
 
@@ -74,6 +62,67 @@ struct SecureBoostNode : XGBoostNode
         }
     }
 
+    vector<int> get_idxs()
+    {
+        return idxs;
+    }
+
+    int get_party_id()
+    {
+        return party_id;
+    }
+
+    int get_record_id()
+    {
+        return record_id;
+    }
+
+    float get_val()
+    {
+        return val;
+    }
+
+    float get_score()
+    {
+        return score;
+    }
+
+    SecureBoostNode get_left()
+    {
+        return *left;
+    }
+
+    SecureBoostNode get_right()
+    {
+        return *right;
+    }
+
+    int get_num_parties()
+    {
+        return parties->size();
+    }
+
+    float compute_weight()
+    {
+        float sum_grad = 0;
+        float sum_hess = 0;
+        for (int i = 0; i < row_count; i++)
+        {
+            sum_grad += vanila_gradient[idxs[i]];
+            sum_hess += vanila_hessian[idxs[i]];
+        }
+        return -1 * (sum_grad / (sum_hess + lam));
+    }
+
+    float compute_gain(float left_grad, float right_grad, float left_hess, float right_hess)
+    {
+        return 0.5 * ((left_grad * left_grad) / (left_hess + lam) +
+                      (right_grad * right_grad) / (right_hess + lam) -
+                      ((left_grad + right_grad) *
+                       (left_grad + right_grad) / (left_hess + right_hess + lam))) -
+               gamma;
+    }
+
     void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
     {
         for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
@@ -82,7 +131,7 @@ struct SecureBoostNode : XGBoostNode
             vector<vector<pair<float, float>>> search_results;
             if (party_id == active_party_id)
             {
-                parties->at(party_id).greedy_search_split(vanila_gradient, vanila_hessian, idxs);
+                search_results = parties->at(party_id).greedy_search_split(vanila_gradient, vanila_hessian, idxs);
             }
             else
             {
@@ -136,6 +185,51 @@ struct SecureBoostNode : XGBoostNode
         }
     }
 
+    tuple<int, int, int> find_split()
+    {
+        float sum_grad = 0;
+        float sum_hess = 0;
+        for (int i = 0; i < row_count; i++)
+        {
+            sum_grad += vanila_gradient[idxs[i]];
+            sum_hess += vanila_hessian[idxs[i]];
+        }
+
+        float temp_score, temp_left_grad, temp_left_hess;
+
+        if (use_only_active_party)
+        {
+            find_split_per_party(active_party_id, 1, sum_grad, sum_hess);
+        }
+        else
+        {
+            if (n_job == 1)
+            {
+                find_split_per_party(0, num_parties, sum_grad, sum_hess);
+            }
+            else
+            {
+                vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
+                int cnt_parties = 0;
+                vector<thread> threads_parties;
+                for (int i = 0; i < n_job; i++)
+                {
+                    int local_num_parties = num_parties_per_thread[i];
+                    thread temp_th([this, cnt_parties, local_num_parties, sum_grad, sum_hess]
+                                   { this->find_split_per_party(cnt_parties, local_num_parties, sum_grad, sum_hess); });
+                    threads_parties.push_back(move(temp_th));
+                    cnt_parties += num_parties_per_thread[i];
+                }
+                for (int i = 0; i < num_parties; i++)
+                {
+                    threads_parties[i].join();
+                }
+            }
+        }
+        score = best_score;
+        return make_tuple(best_party_id, best_col_id, best_threshold_id);
+    }
+
     void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id)
     {
         // TODO: remove idx with nan values from right_idxs;
@@ -162,5 +256,31 @@ struct SecureBoostNode : XGBoostNode
         {
             right->party_id = party_id;
         }
+    }
+
+    bool is_leaf()
+    {
+        if (is_leaf_flag == -1)
+        {
+            return is_pure() || std::isinf(score) || depth <= 0;
+        }
+        else
+        {
+            return is_leaf_flag;
+        }
+    }
+
+    bool is_pure()
+    {
+        set<float> s{};
+        for (int i = 0; i < row_count; i++)
+        {
+            if (s.insert(y[idxs[i]]).second)
+            {
+                if (s.size() == 2)
+                    return false;
+            }
+        }
+        return true;
     }
 };

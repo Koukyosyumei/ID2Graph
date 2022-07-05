@@ -19,9 +19,13 @@ struct SecureBoostParty : XGBoostParty
                                                    num_precentile_bin_,
                                                    use_missing_value_, seed_) {}
 
-    void set_keypair(PaillierPublicKey pk_, PaillierSecretKey sk_)
+    void set_publickey(PaillierPublicKey pk_)
     {
         pk = pk_;
+    }
+
+    void set_secretkey(PaillierSecretKey sk_)
+    {
         sk = sk_;
     }
 
