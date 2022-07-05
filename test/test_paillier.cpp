@@ -7,6 +7,11 @@
 #include "gtest/gtest.h"
 using namespace std;
 
+TEST(paillier, PaillierUtilsTest)
+{
+    ASSERT_EQ(positive_mod(-13, 15), 2);
+}
+
 TEST(paillier, PaillierBaseTest)
 {
     long long p = 19;
@@ -72,6 +77,13 @@ TEST(paillier, PaillierAdvancedIntegerTest)
     PaillierCipherText ct_5 = ct_4 + ct_2;
     ASSERT_EQ(sk.decrypt<int>(ct_5), 246914);
 
+    long large_positive = 9223372036854775807;
+    PaillierCipherText ct_lp = pk.encrypt(large_positive);
+    ASSERT_EQ(sk.decrypt<long>(ct_lp), large_positive);
+    long large_negative = -9223372036854775807;
+    PaillierCipherText ct_ln = pk.encrypt(large_negative);
+    ASSERT_EQ(sk.decrypt<long>(ct_ln), large_negative);
+
     PaillierCipherText ct_6 = pk.encrypt<int>(-15);
     ASSERT_EQ(sk.decrypt<int>(ct_6), -15);
     PaillierCipherText ct_7 = pk.encrypt<int>(1);
@@ -131,7 +143,7 @@ TEST(paillier, PaillierEncodingTest)
 
     EncodedNumber<int> enc_2 = EncodedNumber<int>(pk_1, -15);
     ASSERT_EQ(0, enc_2.exponent);
-    ASSERT_EQ(-15, enc_2.encoding);
+    ASSERT_EQ(positive_mod(-15, pk_1.n), enc_2.encoding);
 
     EncodedNumber<float> enc_3 = EncodedNumber<float>(pk_1, 15.1);
     ASSERT_NEAR(15.1, pow(enc_3.BASE, enc_3.exponent) * float(enc_3.encoding), 1e-6);
@@ -144,7 +156,6 @@ TEST(paillier, PaillierDecodingTest)
     PaillierPublicKey pk_1 = keypair_1.first;
 
     EncodedNumber<int> enc_1 = EncodedNumber<int>(pk_1, 15);
-    cout << enc_1.encoding << endl;
     ASSERT_EQ(0, enc_1.exponent);
     ASSERT_EQ(15, enc_1.decode());
 

@@ -16,6 +16,22 @@ struct PaillierSecretKey;
 struct PaillierCipherText;
 struct PaillierKeyGenerator;
 
+inline Bint positive_mod(Bint x, Bint y)
+{
+    Bint divisor = y;
+    Bint dividend = x;
+    Bint remainder;
+
+    remainder = dividend % divisor;
+
+    if (remainder < 0)
+    {
+        remainder += divisor;
+    }
+
+    return remainder;
+}
+
 inline Bint L(Bint u, Bint n)
 {
     return (u - 1) / n;
@@ -146,7 +162,7 @@ struct EncodedNumber
             exponent = int(floor(log(precision) / log(BASE)));
         }
         Bint int_rep = (boost::math::round(Bfloat(scalar) * Bfloat(mp::pow(Bint(BASE), -1 * exponent)))).convert_to<Bint>();
-        encoding = int_rep % pk.n;
+        encoding = positive_mod(int_rep, pk.n);
     }
 
     T decode()
@@ -350,18 +366,6 @@ struct PaillierCipherText
 
 inline Bint PaillierPublicKey::raw_encrypt(Bint m, Bint r)
 {
-    if (m < 0 || m >= n)
-    {
-        try
-        {
-            throw range_error("m should be [0, n)");
-        }
-        catch (range_error e)
-        {
-            cerr << e.what() << endl;
-        }
-    }
-
     Bint g2m_mod_n2;
 
     if (n - max_val <= m)

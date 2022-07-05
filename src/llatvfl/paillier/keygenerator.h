@@ -40,7 +40,8 @@ struct PaillierKeyGenerator
         Bint g, lam, l_g2lam_mod_n2, mu;
         do
         {
-            g = distr(rng);
+            // g = distr(rng);
+            g = n + 1;
             lam = lcm(p - 1, q - 1);
             l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
 
