@@ -19,7 +19,7 @@ TEST(paillier, PaillierBaseTest)
 
     PaillierPublicKey pk = PaillierPublicKey(n, g);
     PaillierSecretKey sk = PaillierSecretKey(p, q, n, g);
-    ASSERT_EQ(sk.lam, 198);
+    // ASSERT_EQ(sk.lam, 198);
 
     PaillierCipherText ct_1 = pk.encrypt(3);
     ASSERT_EQ(sk.decrypt<int>(ct_1), 3);
@@ -54,7 +54,7 @@ TEST(paillier, PaillierBaseTest)
     ASSERT_EQ(sk.decrypt<int>(ct_8), 9);
 }
 
-TEST(paillier, PaillierKeyGeneratorTest)
+TEST(paillier, PaillierAdvancedIntegerTest)
 {
     PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
     pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
@@ -73,14 +73,28 @@ TEST(paillier, PaillierKeyGeneratorTest)
     ASSERT_EQ(sk.decrypt<int>(ct_5), 246914);
 
     PaillierCipherText ct_6 = pk.encrypt<int>(-15);
+    ASSERT_EQ(sk.decrypt<int>(ct_6), -15);
     PaillierCipherText ct_7 = pk.encrypt<int>(1);
     PaillierCipherText ct_8 = ct_6 + ct_7;
     ASSERT_EQ(sk.decrypt<int>(ct_8), -14);
     PaillierCipherText ct_9 = pk.encrypt<int>(-1);
     PaillierCipherText ct_10 = ct_6 + ct_9;
-    ASSERT_EQ(ct_10, -16);
+    ASSERT_EQ(sk.decrypt<int>(ct_10), -16);
     PaillierCipherText ct_11 = ct_6 * -1;
-    ASSERT_EQ(ct_11, 15);
+    ASSERT_EQ(sk.decrypt<int>(ct_11), 15);
+}
+
+TEST(paillier, PaillierAdvancedFloatTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
+    PaillierPublicKey pk = keypair.first;
+    PaillierSecretKey sk = keypair.second;
+
+    PaillierCipherText ct_1 = pk.encrypt(0.005743);
+    ASSERT_NEAR(sk.decrypt<float>(ct_1), 0.005743, 1e-6);
+    PaillierCipherText ct_2 = pk.encrypt(-0.005743);
+    ASSERT_NEAR(sk.decrypt<float>(ct_2), -0.005743, 1e-6);
 }
 
 TEST(paillier, PaillierKeyRingTest)
