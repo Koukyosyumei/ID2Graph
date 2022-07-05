@@ -17,6 +17,6 @@ file(GLOB testSRC
 set(TEST_RUNNER main.cpp ${testSRC})
 add_executable(${TEST_NAME} ${TEST_RUNNER})
 
-target_link_libraries(${TEST_NAME} gtest gtest_main pthread llatvfl)
+target_link_libraries(${TEST_NAME} gtest gtest_main boost_random pthread llatvfl)
 
 gtest_discover_tests(${TEST_NAME})
