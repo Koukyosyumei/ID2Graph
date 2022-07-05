@@ -93,3 +93,57 @@ TEST(paillier, PaillierKeyRingTest)
     ASSERT_EQ(keyring.decrypt(ct_1), 34567);
     ASSERT_EQ(keyring.decrypt(ct_2), 56789);
 }
+
+TEST(paillier, PaillierEncodingTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+
+    EncodedNumber<int> enc_1 = EncodedNumber<int>(pk_1, 15);
+    ASSERT_EQ(0, enc_1.exponent);
+    ASSERT_EQ(15, enc_1.encoding);
+
+    EncodedNumber<int> enc_2 = EncodedNumber<int>(pk_1, -15);
+    ASSERT_EQ(0, enc_2.exponent);
+    ASSERT_EQ(-15, enc_2.encoding);
+
+    EncodedNumber<float> enc_3 = EncodedNumber<float>(pk_1, 15.1);
+    ASSERT_NEAR(15.1, pow(enc_3.BASE, enc_3.exponent) * float(enc_3.encoding), 1e-6);
+}
+
+TEST(paillier, PaillierDecodingTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+
+    EncodedNumber<int> enc_1 = EncodedNumber<int>(pk_1, 15);
+    cout << enc_1.encoding << endl;
+    ASSERT_EQ(0, enc_1.exponent);
+    ASSERT_EQ(15, enc_1.decode());
+
+    EncodedNumber<int> enc_2 = EncodedNumber<int>(pk_1, -15);
+    ASSERT_EQ(0, enc_2.exponent);
+    ASSERT_EQ(-15, enc_2.decode());
+
+    long large_positive = 9223372036854775807;
+    EncodedNumber<long> enc_3 = EncodedNumber<long>(pk_1, large_positive);
+    ASSERT_EQ(0, enc_3.exponent);
+    ASSERT_EQ(large_positive, enc_3.decode());
+
+    long large_negative = -9223372036854775807;
+    EncodedNumber<long> enc_4 = EncodedNumber<long>(pk_1, large_negative);
+    ASSERT_EQ(0, enc_4.exponent);
+    ASSERT_EQ(large_negative, enc_4.decode());
+
+    EncodedNumber<float> enc_5 = EncodedNumber<float>(pk_1, 15.1);
+    ASSERT_NEAR(15.1, enc_5.decode(), 1e-6);
+
+    EncodedNumber<float> enc_6 = EncodedNumber<float>(pk_1, -15.1);
+    ASSERT_NEAR(-15.1, enc_6.decode(), 1e-6);
+
+    double large_postive_double = 123456.123456;
+    EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double, 1e-10);
+    ASSERT_NEAR(large_postive_double, enc_7.decode(), 1e-6);
+}

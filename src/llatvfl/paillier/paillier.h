@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <boost/integer/mod_inverse.hpp>
+#include <boost/math/special_functions/round.hpp>
 #include "../tsl/robin_map.h"
 #include "../tsl/robin_set.h"
 #include "../utils/prime.h"
@@ -25,7 +26,7 @@ inline Bint L(Bint u, Bint n)
 
 struct PaillierPublicKey
 {
-    Bint n, n2, g;
+    Bint n, n2, g, max_val;
     boost::random::uniform_int_distribution<Bint> distr;
 
     PaillierPublicKey(){};
@@ -34,6 +35,7 @@ struct PaillierPublicKey
         n = n_;
         n2 = n * n;
         g = g_;
+        max_val = (n / Bint(3)) - Bint(1);
         distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
     }
 
@@ -42,6 +44,7 @@ struct PaillierPublicKey
         n = n_;
         n2 = n2_;
         g = g_;
+        max_val = (n / Bint(3)) - Bint(1);
         distr = boost::random::uniform_int_distribution<Bint>(0, n - 1);
     }
 
@@ -89,6 +92,64 @@ struct PaillierSecretKey
     }
 
     Bint decrypt(PaillierCipherText pt);
+};
+
+template <typename T>
+struct EncodedNumber
+{
+    int BASE = 16;
+    float LOG2_BASE = log2(BASE);
+
+    PaillierPublicKey pk;
+    Bint encoding;
+    int exponent;
+    double precision;
+
+    EncodedNumber(PaillierPublicKey pk_, T scalar, double precision_ = 1e-8)
+    {
+        pk = pk_;
+        precision = precision_;
+        encode(scalar);
+    }
+
+    void encode(T scalar)
+    {
+        if (floor(scalar) == scalar)
+        {
+            exponent = 0;
+        }
+        else
+        {
+            exponent = int(floor(log(precision) / log(BASE)));
+        }
+        Bint int_rep = (boost::math::round(Bfloat(scalar) * Bfloat(mp::pow(Bint(BASE), -1 * exponent)))).convert_to<Bint>();
+        encoding = int_rep % pk.n;
+    }
+
+    T decode()
+    {
+        Bint mantissa;
+        if (encoding <= pk.max_val)
+        {
+            mantissa = encoding;
+        }
+        else if (encoding >= (pk.n - pk.max_val))
+        {
+            mantissa = encoding - pk.n;
+        }
+        else
+        {
+            try
+            {
+                throw overflow_error("overflow detected");
+            }
+            catch (overflow_error e)
+            {
+                cerr << e.what() << endl;
+            }
+        }
+        return T(Bfloat(mantissa) * mp::pow(Bfloat(BASE), Bfloat(exponent)));
+    }
 };
 
 struct PaillierCipherText
@@ -228,6 +289,19 @@ PaillierPublicKey::encrypt(Bint m)
         }
     }
 
+    Bint g2m_mod_n2;
+
+    if (n - max_val <= m)
+    {
+        Bint neg_m = n - m;
+        Bint neg_c = modpow(g, neg_m, n2);
+        g2m_mod_n2 = boost::integer::mod_inverse(neg_c, n2);
+    }
+    else
+    {
+        g2m_mod_n2 = modpow(g, m, n2);
+    }
+
     Bint r;
     while (true)
     {
@@ -237,7 +311,7 @@ PaillierPublicKey::encrypt(Bint m)
             break;
         }
     }
-    Bint c = (modpow(g, m, n * n) * modpow(r, n, n * n)) % (n * n);
+    Bint c = (g2m_mod_n2 * modpow(r, n, n2)) % n2;
     return PaillierCipherText(*this, c);
 }
 

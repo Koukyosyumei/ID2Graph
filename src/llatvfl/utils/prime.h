@@ -3,10 +3,12 @@
 #include <boost/random.hpp>
 #include <boost/random/random_device.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>
 using namespace std;
 
 namespace mp = boost::multiprecision;
 using Bint = mp::cpp_int;
+using Bfloat = mp::cpp_dec_float_50;
 
 inline Bint gcd(Bint a, Bint b)
 {
