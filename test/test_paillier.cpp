@@ -191,7 +191,7 @@ TEST(paillier, PaillierDecodingTest)
     ASSERT_NEAR(-15.1, enc_6.decode(), 1e-6);
 
     double large_postive_double = 123456.123456;
-    EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double, 1e-10);
+    EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double);
     ASSERT_NEAR(large_postive_double, enc_7.decode(), 1e-6);
 }
 

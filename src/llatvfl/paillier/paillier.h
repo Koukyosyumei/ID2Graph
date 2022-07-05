@@ -6,6 +6,8 @@
 #include <exception>
 #include <stdexcept>
 #include <cassert>
+#include <cfloat>
+#include <limits>
 #include <boost/integer/mod_inverse.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include "../utils/prime.h"
@@ -44,7 +46,7 @@ struct PaillierPublicKey
     double precision;
 
     PaillierPublicKey(){};
-    PaillierPublicKey(Bint n_, Bint g_, double precision_ = 1e-8)
+    PaillierPublicKey(Bint n_, Bint g_, double precision_ = -1)
     {
         n = n_;
         n2 = n * n;
@@ -54,7 +56,7 @@ struct PaillierPublicKey
         precision = precision_;
     }
 
-    PaillierPublicKey(Bint n_, Bint g_, Bint n2_, double precision_ = 1e-8)
+    PaillierPublicKey(Bint n_, Bint g_, Bint n2_, double precision_ = -1)
     {
         n = n_;
         n2 = n2_;
@@ -84,10 +86,10 @@ struct PaillierPublicKey
 struct PaillierSecretKey
 {
     Bint p, q, n, n2, g, lam, mu;
-    double precision = 1e-8;
+    double precision = -1;
 
     PaillierSecretKey(){};
-    PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_, double precision_ = 1e-8)
+    PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_, double precision_ = -1)
     {
         p = p_;
         q = q_;
@@ -101,7 +103,7 @@ struct PaillierSecretKey
     }
 
     PaillierSecretKey(Bint p_, Bint q_, Bint n_, Bint g_,
-                      Bint n2_, Bint lam_, Bint mu_, double precision_ = 1e-8)
+                      Bint n2_, Bint lam_, Bint mu_, double precision_ = -1)
     {
         p = p_;
         q = q_;
@@ -122,7 +124,7 @@ template <typename T>
 struct EncodedNumber
 {
     int BASE = 16;
-    double precision = 1e-8;
+    double precision = -1;
 
     float LOG2_BASE = log2(BASE);
 
@@ -133,17 +135,18 @@ struct EncodedNumber
     EncodedNumber(PaillierPublicKey pk_, T scalar)
     {
         pk = pk_;
-        encode(scalar);
+        encode(scalar, numeric_limits<int>::infinity());
     }
 
-    EncodedNumber(PaillierPublicKey pk_, T scalar, double precision_)
+    EncodedNumber(PaillierPublicKey pk_, T scalar, double precision_, int max_exponent)
     {
         pk = pk_;
         precision = precision_;
-        encode(scalar);
+        encode(scalar, max_exponent);
     }
 
-    EncodedNumber(PaillierPublicKey pk_, Bint encoding_, int exponent_, double precision_)
+    EncodedNumber(PaillierPublicKey pk_, Bint encoding_, int exponent_,
+                  double precision_, int max_exponent)
     {
         pk = pk_;
         precision = precision_;
@@ -151,16 +154,32 @@ struct EncodedNumber
         exponent = exponent_;
     }
 
-    void encode(T scalar)
+    void encode(T scalar, int max_exponent)
     {
-        if (floor(scalar) == scalar)
+        if (precision <= 0)
         {
-            exponent = 0;
+            if (floor(scalar) == scalar)
+            {
+                exponent = 0;
+            }
+            else
+            {
+                int bin_flt_exponent;
+                frexp(scalar, &bin_flt_exponent);
+                int bin_lsb_exponent = bin_flt_exponent - DBL_MANT_DIG;
+                exponent = int(floor(bin_lsb_exponent / LOG2_BASE));
+            }
         }
         else
         {
             exponent = int(floor(log(precision) / log(BASE)));
         }
+
+        if (!isinf(max_exponent))
+        {
+            exponent = min(max_exponent, exponent);
+        }
+
         Bint int_rep = (boost::math::round(Bfloat(scalar) * Bfloat(mp::pow(Bint(BASE), -1 * exponent)))).convert_to<Bint>();
         encoding = positive_mod(int_rep, pk.n);
     }
@@ -220,7 +239,7 @@ struct PaillierCipherText
     int BASE = 16;
 
     PaillierCipherText(){};
-    PaillierCipherText(PaillierPublicKey pk_, Bint c_, int exponent_, double precision_ = 1e-8)
+    PaillierCipherText(PaillierPublicKey pk_, Bint c_, int exponent_, double precision_ = -1)
     {
         pk = pk_;
         c = c_;
@@ -293,25 +312,25 @@ struct PaillierCipherText
 
     PaillierCipherText operator+(int pt)
     {
-        EncodedNumber<int> encoded = EncodedNumber<int>(pk, pt, precision);
+        EncodedNumber<int> encoded = EncodedNumber<int>(pk, pt, precision, exponent);
         return _add_encoded(encoded);
     }
 
     PaillierCipherText operator+(long pt)
     {
-        EncodedNumber<long> encoded = EncodedNumber<long>(pk, pt, precision);
+        EncodedNumber<long> encoded = EncodedNumber<long>(pk, pt, precision, exponent);
         return _add_encoded(encoded);
     }
 
     PaillierCipherText operator+(float pt)
     {
-        EncodedNumber<float> encoded = EncodedNumber<float>(pk, pt, precision);
+        EncodedNumber<float> encoded = EncodedNumber<float>(pk, pt, precision, exponent);
         return _add_encoded(encoded);
     }
 
     PaillierCipherText operator+(double pt)
     {
-        EncodedNumber<double> encoded = EncodedNumber<double>(pk, pt, precision);
+        EncodedNumber<double> encoded = EncodedNumber<double>(pk, pt, precision, exponent);
         return _add_encoded(encoded);
     }
 
@@ -333,7 +352,7 @@ struct PaillierCipherText
 
     PaillierCipherText operator*(int pt)
     {
-        EncodedNumber<int> encoding = EncodedNumber<int>(pk, pt, precision);
+        EncodedNumber<int> encoding = EncodedNumber<int>(pk, pt, precision, numeric_limits<int>::infinity());
         Bint mul_with_encoded_pt = _mul(encoding.encoding);
         int new_exponent = exponent + encoding.exponent;
         return PaillierCipherText(pk, mul_with_encoded_pt, new_exponent);
@@ -341,7 +360,7 @@ struct PaillierCipherText
 
     PaillierCipherText operator*(long pt)
     {
-        EncodedNumber<long> encoding = EncodedNumber<long>(pk, pt, precision);
+        EncodedNumber<long> encoding = EncodedNumber<long>(pk, pt, precision, numeric_limits<int>::infinity());
         Bint mul_with_encoded_pt = _mul(encoding.encoding);
         int new_exponent = exponent + encoding.exponent;
         return PaillierCipherText(pk, mul_with_encoded_pt, new_exponent);
@@ -349,7 +368,7 @@ struct PaillierCipherText
 
     PaillierCipherText operator*(float pt)
     {
-        EncodedNumber<float> encoding = EncodedNumber<float>(pk, pt, precision);
+        EncodedNumber<float> encoding = EncodedNumber<float>(pk, pt, precision, numeric_limits<int>::infinity());
         Bint mul_with_encoded_pt = _mul(encoding.encoding);
         int new_exponent = exponent + encoding.exponent;
         return PaillierCipherText(pk, mul_with_encoded_pt, new_exponent);
@@ -357,7 +376,7 @@ struct PaillierCipherText
 
     PaillierCipherText operator*(double pt)
     {
-        EncodedNumber<double> encoding = EncodedNumber<double>(pk, pt, precision);
+        EncodedNumber<double> encoding = EncodedNumber<double>(pk, pt, precision, numeric_limits<int>::infinity());
         Bint mul_with_encoded_pt = _mul(encoding.encoding);
         int new_exponent = exponent + encoding.exponent;
         return PaillierCipherText(pk, mul_with_encoded_pt, new_exponent);
@@ -401,16 +420,16 @@ inline Bint PaillierPublicKey::raw_encrypt(Bint m)
 template <typename T>
 inline PaillierCipherText PaillierPublicKey::encrypt(T m)
 {
-    EncodedNumber<T> encoding = EncodedNumber<T>(*this, m, precision);
+    EncodedNumber<T> encoding = EncodedNumber<T>(*this, m, precision, numeric_limits<int>::infinity());
     Bint c = raw_encrypt(encoding.encoding);
     PaillierCipherText ciphertext = PaillierCipherText(*this, c, encoding.exponent);
     return ciphertext;
 }
 
 template <typename T>
-inline T PaillierSecretKey::decrypt(PaillierCipherText pt)
+inline T PaillierSecretKey::decrypt(PaillierCipherText ct)
 {
-    if (pt.c <= 0 || pt.c >= (n2))
+    if (ct.c <= 0 || ct.c >= (n2))
     {
         try
         {
@@ -422,7 +441,9 @@ inline T PaillierSecretKey::decrypt(PaillierCipherText pt)
         }
     }
 
-    Bint decrypted_encoding_val = (L(modpow(pt.c, lam, n2), n) * mu) % n;
-    EncodedNumber<T> encoded = EncodedNumber<T>(PaillierPublicKey(n, g, n2), decrypted_encoding_val, pt.exponent, pt.precision);
+    Bint decrypted_encoding_val = (L(modpow(ct.c, lam, n2), n) * mu) % n;
+    EncodedNumber<T> encoded = EncodedNumber<T>(PaillierPublicKey(n, g, n2),
+                                                decrypted_encoding_val, ct.exponent,
+                                                ct.precision, numeric_limits<int>::infinity());
     return encoded.decode();
 }
