@@ -107,6 +107,13 @@ TEST(paillier, PaillierAdvancedFloatTest)
     ASSERT_NEAR(sk.decrypt<float>(ct_1), 0.005743, 1e-6);
     PaillierCipherText ct_2 = pk.encrypt(-0.005743);
     ASSERT_NEAR(sk.decrypt<float>(ct_2), -0.005743, 1e-6);
+
+    PaillierCipherText ct_3 = pk.encrypt(15.5);
+    PaillierCipherText ct_4 = pk.encrypt(0.3);
+    PaillierCipherText ct_5 = ct_3 + ct_4;
+    ASSERT_NEAR(sk.decrypt<float>(ct_5), 15.8, 1e-6);
+    PaillierCipherText ct_6 = ct_4 * 0.5;
+    ASSERT_NEAR(sk.decrypt<float>(ct_6), 0.15, 1e-6);
 }
 
 TEST(paillier, PaillierKeyRingTest)
@@ -118,12 +125,16 @@ TEST(paillier, PaillierKeyRingTest)
     pair<PaillierPublicKey, PaillierSecretKey> keypair_2 = keygenerator.generate_keypair();
     PaillierPublicKey pk_2 = keypair_2.first;
     PaillierSecretKey sk_2 = keypair_2.second;
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_3 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_3 = keypair_3.first;
+    PaillierSecretKey sk_3 = keypair_3.second;
 
     ASSERT_TRUE(!(pk_1 == pk_2));
 
     PaillierKeyRing keyring = PaillierKeyRing();
     keyring.add(sk_1);
     keyring.add(sk_2);
+    keyring.add(sk_3);
 
     PaillierCipherText ct_1 = pk_1.encrypt(34567);
     PaillierCipherText ct_2 = pk_2.encrypt(56789);
