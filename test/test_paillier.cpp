@@ -2,6 +2,8 @@
 #include <cassert>
 #include <iostream>
 #include "llatvfl/paillier/paillier.h"
+#include "llatvfl/paillier/keyring.h"
+#include "llatvfl/paillier/keygenerator.h"
 #include "gtest/gtest.h"
 using namespace std;
 

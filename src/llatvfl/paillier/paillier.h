@@ -8,8 +8,6 @@
 #include <cassert>
 #include <boost/integer/mod_inverse.hpp>
 #include <boost/math/special_functions/round.hpp>
-#include "../tsl/robin_map.h"
-#include "../tsl/robin_set.h"
 #include "../utils/prime.h"
 using namespace std;
 
@@ -17,7 +15,6 @@ struct PaillierPublicKey;
 struct PaillierSecretKey;
 struct PaillierCipherText;
 struct PaillierKeyGenerator;
-struct PaillierKeyRing;
 
 inline Bint L(Bint u, Bint n)
 {
@@ -351,88 +348,6 @@ struct PaillierCipherText
     }
 };
 
-struct PaillierKeyGenerator
-{
-    int bit_size;
-
-    PaillierKeyGenerator(int bit_size_ = 512)
-    {
-        bit_size = bit_size_;
-    }
-
-    pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
-    {
-        boost::random::random_device rng;
-
-        Bint p = generate_probably_prime(bit_size);
-        Bint q = generate_probably_prime(bit_size);
-
-        if (p == q)
-        {
-            return generate_keypair();
-        }
-
-        Bint n = p * q;
-        Bint n2 = n * n;
-        boost::random::uniform_int_distribution<Bint> distr = boost::random::uniform_int_distribution<Bint>(0, n2 - 1);
-
-        Bint g, lam, l_g2lam_mod_n2, mu;
-        do
-        {
-            g = distr(rng);
-            lam = lcm(p - 1, q - 1);
-            l_g2lam_mod_n2 = L(modpow(g, lam, n * n), n);
-
-        } while ((gcd(g, n2) != 1) && (gcd(l_g2lam_mod_n2, n) != 1));
-
-        mu = boost::integer::mod_inverse(l_g2lam_mod_n2, n);
-
-        PaillierPublicKey pk = PaillierPublicKey(n, g, n2);
-        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n2, lam, mu);
-
-        return make_pair(pk, sk);
-    }
-};
-
-struct HashPairSzudzikBint
-{
-    // implementation of szudzik paring
-    template <class T1, class T2>
-    size_t operator()(const pair<T1, T2> &p) const
-    {
-        size_t seed;
-        if (p.first >= p.second)
-        {
-            seed = std::hash<T1>{}(p.first * p.first + p.first + p.second);
-        }
-        else
-        {
-            seed = std::hash<T1>{}(p.second * p.second + p.first);
-        }
-        return seed;
-    }
-};
-
-struct PaillierKeyRing
-{
-    tsl::robin_map<pair<Bint, Bint>, PaillierSecretKey, HashPairSzudzikBint> keyring;
-
-    PaillierKeyRing(){};
-
-    void add(PaillierSecretKey sk)
-    {
-        keyring.emplace(make_pair(sk.n, sk.g), sk);
-    }
-
-    PaillierSecretKey get_sk(PaillierPublicKey pk)
-    {
-        return keyring[make_pair(pk.n, pk.g)];
-    }
-
-    template <typename T>
-    T decrypt(PaillierCipherText pt);
-};
-
 inline Bint PaillierPublicKey::raw_encrypt(Bint m, Bint r)
 {
     if (m < 0 || m >= n)
@@ -506,10 +421,4 @@ inline T PaillierSecretKey::decrypt(PaillierCipherText pt)
     Bint decrypted_encoding_val = (L(modpow(pt.c, lam, n2), n) * mu) % n;
     EncodedNumber<T> encoded = EncodedNumber<T>(PaillierPublicKey(n, g, n2), decrypted_encoding_val, pt.exponent, pt.precision);
     return encoded.decode();
-}
-
-template <typename T>
-inline T PaillierKeyRing::decrypt(PaillierCipherText pt)
-{
-    return get_sk(pt.pk).decrypt<T>(pt);
 }
