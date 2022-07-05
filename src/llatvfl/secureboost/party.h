@@ -1,46 +1,33 @@
 #pragma once
-#include "../core/party.h"
+#include "../xgboost/party.h"
 #include "../paillier/paillier.h"
 using namespace std;
 
-struct XGBoostParty : Party
+struct SecureBoostParty : XGBoostParty
 {
-    int num_percentile_bin;
+    PaillierPublicKey pk;
+    PaillierSecretKey sk;
 
-    XGBoostParty() {}
-    XGBoostParty(vector<vector<float>> &x_, vector<int> &feature_id_, int &party_id_,
-                 int min_leaf_, float subsample_cols_, int num_precentile_bin_ = 256,
-                 bool use_missing_value_ = false, int seed_ = 0) : Party(x_, feature_id_, party_id_,
-                                                                         min_leaf_, subsample_cols_,
-                                                                         use_missing_value_, seed_)
+    SecureBoostParty() {}
+    SecureBoostParty(vector<vector<float>> &x_,
+                     vector<int> &feature_id_, int &party_id_,
+                     int min_leaf_, float subsample_cols_,
+                     int num_precentile_bin_ = 256,
+                     bool use_missing_value_ = false,
+                     int seed_ = 0) : XGBoostParty(x_, feature_id_, party_id_,
+                                                   min_leaf_, subsample_cols_,
+                                                   num_precentile_bin_,
+                                                   use_missing_value_, seed_) {}
+
+    void set_keypair(PaillierPublicKey pk_, PaillierSecretKey sk_)
     {
-        num_percentile_bin = num_precentile_bin_;
+        pk = pk_;
+        sk = sk_;
     }
 
-    vector<float> get_threshold_candidates(vector<float> &x_col)
-    {
-        if (x_col.size() > num_percentile_bin)
-        {
-            vector<float> probs(num_percentile_bin);
-            for (int i = 1; i <= num_percentile_bin; i++)
-                probs[i] = float(i) / float(num_percentile_bin);
-            vector<float> percentiles_candidate = Quantile<float>(x_col, probs);
-            vector<float> percentiles = remove_duplicates<float>(percentiles_candidate);
-            return percentiles;
-        }
-        else
-        {
-            vector<float> x_col_wo_duplicates = remove_duplicates<float>(x_col);
-            vector<float> percentiles(x_col_wo_duplicates.size());
-            copy(x_col_wo_duplicates.begin(), x_col_wo_duplicates.end(), percentiles.begin());
-            sort(percentiles.begin(), percentiles.end());
-            return percentiles;
-        }
-    }
-
-    vector<vector<pair<float, float>>> greedy_search_split(vector<float> &gradient,
-                                                           vector<float> &hessian,
-                                                           vector<int> &idxs)
+    vector<vector<pair<PaillierCipherText, PaillierCipherText>>> greedy_search_split_encrypt(vector<PaillierCipherText> &gradient,
+                                                                                             vector<PaillierCipherText> &hessian,
+                                                                                             vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -49,7 +36,7 @@ struct XGBoostParty : Party
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<float, float>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<pair<PaillierCipherText, PaillierCipherText>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
@@ -92,16 +79,16 @@ struct XGBoostParty : Party
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                float temp_grad = 0;
-                float temp_hess = 0;
+                PaillierCipherText temp_grad = pk.encrypt<float>(0);
+                PaillierCipherText temp_hess = pk.encrypt<float>(0);
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad += gradient[idxs[x_col_idxs[r]]];
-                        temp_hess += hessian[idxs[x_col_idxs[r]]];
+                        temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
+                        temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
                         cumulative_left_size += 1;
                     }
                     else
@@ -126,16 +113,16 @@ struct XGBoostParty : Party
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    float temp_grad = 0;
-                    float temp_hess = 0;
+                    PaillierCipherText temp_grad = pk.encrypt<float>(0);
+                    PaillierCipherText temp_hess = pk.encrypt<float>(0);
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            temp_grad += gradient[idxs[x_col_idxs[r]]];
-                            temp_hess += hessian[idxs[x_col_idxs[r]]];
+                            temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
+                            temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
                             cumulative_right_size += 1;
                         }
                         else
