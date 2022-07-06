@@ -9,11 +9,11 @@
 #include <utility>
 #include <chrono>
 #include <unistd.h>
-#include "../src/llatvfl/attack/attack.h"
-#include "../src/llatvfl/paillier/keygenerator.h"
-#include "../src/llatvfl/lpmst/lpmst.h"
-#include "../src/llatvfl/louvain/louvain.h"
-#include "../src/llatvfl/utils/metric.h"
+#include "llatvfl/attack/attack.h"
+#include "llatvfl/paillier/keygenerator.h"
+#include "llatvfl/lpmst/lpmst.h"
+#include "llatvfl/louvain/louvain.h"
+#include "llatvfl/utils/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
