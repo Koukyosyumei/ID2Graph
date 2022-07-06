@@ -273,6 +273,7 @@ int main(int argc, char *argv[])
     }
     end = chrono::system_clock::now();
     float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    result_file << "training time," << elapsed << "\n";
     printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     for (int i = 0; i < clf.logging_loss.size(); i++)
