@@ -114,9 +114,11 @@ TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T
 echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nk,${VALUE_K}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
-  g++ -O3 -mtune=native -march=native -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_xgboost.cpp
+  cp build/script/train_xgboost build/script/pipeline_1_training.out
+elif [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
+  cp build/script/train_secureboost build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
-  g++ -O3 -mtune=native -march=native -pthread -o script/build/pipeline_1_training.out script/pipeline_1_train_randomforest.cpp
+  cp build/script/train_randomforest build/script/pipeline_1_training.out
 else
   echo "m=${VALUE_M} is not supported"
 fi
