@@ -225,14 +225,18 @@ TEST(paillier, PaillierSerializationTest)
     pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
     PaillierPublicKey pk_1 = keypair_1.first;
 
-    ofstream file_o("test.txt");
+    ostringstream file_o;
     boost::archive::text_oarchive ar_o(file_o);
+    cout << "1" << endl;
     ar_o << boost::serialization::make_nvp("PaillierPublicKey", pk_1);
+    cout << "2" << endl;
 
-    ifstream file_i("test.txt");
+    istringstream file_i(file_o.str());
     boost::archive::text_iarchive ar_i(file_i);
     PaillierPublicKey pk_2;
+    cout << "3" << endl;
     ar_i >> boost::serialization::make_nvp("PaillierPublicKey", pk_2);
+    cout << "4" << endl;
 
-    ASSERT_EQ(pk_1, pk_2);
+    ASSERT_TRUE(pk_1 == pk_2);
 }
