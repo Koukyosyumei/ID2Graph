@@ -8,6 +8,7 @@ namespace boost
 {
     namespace serialization
     {
+
         template <class Archive>
         void serialize(Archive &ar, PaillierPublicKey &pk, unsigned int /* version */)
         {
@@ -25,6 +26,20 @@ namespace boost
             ar &make_nvp("c", ct.c);
             ar &make_nvp("exponent", ct.exponent);
             ar &make_nvp("precision", ct.precision);
+        }
+
+        template <class Archive>
+        void serialize(Archive &ar, pair<PaillierCipherText, PaillierCipherText> &pair_ct, unsigned int /* version */)
+        {
+            ar &make_nvp("first_pk", pair_ct.first.pk);
+            ar &make_nvp("first_c", pair_ct.first.c);
+            ar &make_nvp("first_exponent", pair_ct.first.exponent);
+            ar &make_nvp("first_precision", pair_ct.first.precision);
+
+            ar &make_nvp("second_pk", pair_ct.second.pk);
+            ar &make_nvp("second_c", pair_ct.second.c);
+            ar &make_nvp("second_exponent", pair_ct.second.exponent);
+            ar &make_nvp("second_precision", pair_ct.second.precision);
         }
     }
 }
