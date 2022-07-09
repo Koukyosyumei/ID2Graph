@@ -1,9 +1,14 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "llatvfl/paillier/paillier.h"
 #include "llatvfl/paillier/keyring.h"
 #include "llatvfl/paillier/keygenerator.h"
+#include "llatvfl/paillier/serialization.h"
 #include "gtest/gtest.h"
 using namespace std;
 
@@ -212,4 +217,22 @@ TEST(paillier, PaillierDecreaseExponentTest)
     enc_2.decrease_exponent(new_exponent_2);
     ASSERT_EQ(enc_2.exponent, new_exponent_2);
     ASSERT_NEAR(-3.14, enc_2.decode(), 1e-6);
+}
+
+TEST(paillier, PaillierSerializationTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+
+    ofstream file_o("test.txt");
+    boost::archive::text_oarchive ar_o(file_o);
+    ar_o << boost::serialization::make_nvp("PaillierPublicKey", pk_1);
+
+    ifstream file_i("test.txt");
+    boost::archive::text_iarchive ar_i(file_i);
+    PaillierPublicKey pk_2;
+    ar_i >> boost::serialization::make_nvp("PaillierPublicKey", pk_2);
+
+    ASSERT_EQ(pk_1, pk_2);
 }
