@@ -224,19 +224,31 @@ TEST(paillier, PaillierSerializationTest)
     PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
     pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
     PaillierPublicKey pk_1 = keypair_1.first;
+    PaillierSecretKey sk_1 = keypair_1.second;
 
-    ostringstream file_o;
-    boost::archive::text_oarchive ar_o(file_o);
-    cout << "1" << endl;
-    ar_o << boost::serialization::make_nvp("PaillierPublicKey", pk_1);
-    cout << "2" << endl;
+    ostringstream ss_1;
+    boost::archive::text_oarchive ar_1(ss_1);
+    ar_1 << boost::serialization::make_nvp("PaillierPublicKey", pk_1);
 
-    istringstream file_i(file_o.str());
-    boost::archive::text_iarchive ar_i(file_i);
+    istringstream ss_2(ss_1.str());
+    boost::archive::text_iarchive ar_2(ss_2);
     PaillierPublicKey pk_2;
-    cout << "3" << endl;
-    ar_i >> boost::serialization::make_nvp("PaillierPublicKey", pk_2);
-    cout << "4" << endl;
+    ar_2 >> boost::serialization::make_nvp("PaillierPublicKey", pk_2);
 
     ASSERT_TRUE(pk_1 == pk_2);
+    ASSERT_EQ(pk_1.n2, pk_2.n2);
+    ASSERT_EQ(pk_1.max_val, pk_2.max_val);
+
+    PaillierCipherText ct_1 = pk_1.encrypt(42);
+
+    ostringstream ss_3;
+    boost::archive::text_oarchive ar_3(ss_3);
+    ar_3 << boost::serialization::make_nvp("PaillierCipherText", ct_1);
+
+    istringstream ss_4(ss_3.str());
+    boost::archive::text_iarchive ar_4(ss_4);
+    PaillierCipherText ct_2;
+    ar_4 >> boost::serialization::make_nvp("PaillierCipherText", ct_2);
+
+    ASSERT_EQ(sk_1.decrypt<int>(ct_2), 42);
 }

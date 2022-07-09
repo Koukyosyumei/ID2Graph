@@ -66,6 +66,11 @@ struct PaillierPublicKey
         precision = precision_;
     }
 
+    void init_distribution()
+    {
+        distr = boost::random::uniform_int_distribution<Bint>(1, n - 1);
+    }
+
     bool operator==(PaillierPublicKey pk2)
     {
         return (n == pk2.n) && (g == pk2.g);
