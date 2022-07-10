@@ -362,6 +362,14 @@ struct PaillierCipherText
         int new_exponent = exponent + encoding.exponent;
         return PaillierCipherText(pk, mul_with_encoded_pt, new_exponent);
     }
+
+    void self_bliding()
+    {
+        boost::random::random_device rng;
+        Bint r;
+        r = pk.distr(rng);
+        c = (c * modpow(r, pk.n, pk.n2)) % pk.n2;
+    }
 };
 
 inline Bint PaillierPublicKey::raw_encrypt(Bint m, Bint r)
