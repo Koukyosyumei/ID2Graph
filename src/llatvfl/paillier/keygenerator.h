@@ -15,10 +15,12 @@ using namespace std;
 struct PaillierKeyGenerator
 {
     int bit_size;
+    double precision;
 
-    PaillierKeyGenerator(int bit_size_ = 512)
+    PaillierKeyGenerator(int bit_size_ = 512, double precision_ = -1)
     {
         bit_size = bit_size_;
+        precision = precision_;
     }
 
     pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
@@ -49,8 +51,8 @@ struct PaillierKeyGenerator
 
         mu = boost::integer::mod_inverse(l_g2lam_mod_n2, n);
 
-        PaillierPublicKey pk = PaillierPublicKey(n, g, n2);
-        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n2, lam, mu);
+        PaillierPublicKey pk = PaillierPublicKey(n, g, n2, precision);
+        PaillierSecretKey sk = PaillierSecretKey(p, q, n, g, n2, lam, mu, precision);
 
         return make_pair(pk, sk);
     }
