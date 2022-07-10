@@ -1,9 +1,14 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "llatvfl/paillier/paillier.h"
 #include "llatvfl/paillier/keyring.h"
 #include "llatvfl/paillier/keygenerator.h"
+#include "llatvfl/paillier/serialization.h"
 #include "gtest/gtest.h"
 using namespace std;
 
@@ -191,7 +196,7 @@ TEST(paillier, PaillierDecodingTest)
     ASSERT_NEAR(-15.1, enc_6.decode(), 1e-6);
 
     double large_postive_double = 123456.123456;
-    EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double, 1e-10);
+    EncodedNumber<double> enc_7 = EncodedNumber<double>(pk_1, large_postive_double);
     ASSERT_NEAR(large_postive_double, enc_7.decode(), 1e-6);
 }
 
@@ -212,4 +217,38 @@ TEST(paillier, PaillierDecreaseExponentTest)
     enc_2.decrease_exponent(new_exponent_2);
     ASSERT_EQ(enc_2.exponent, new_exponent_2);
     ASSERT_NEAR(-3.14, enc_2.decode(), 1e-6);
+}
+
+TEST(paillier, PaillierSerializationTest)
+{
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+    PaillierSecretKey sk_1 = keypair_1.second;
+
+    ostringstream ss_1;
+    boost::archive::text_oarchive ar_1(ss_1);
+    ar_1 << boost::serialization::make_nvp("PaillierPublicKey", pk_1);
+
+    istringstream ss_2(ss_1.str());
+    boost::archive::text_iarchive ar_2(ss_2);
+    PaillierPublicKey pk_2;
+    ar_2 >> boost::serialization::make_nvp("PaillierPublicKey", pk_2);
+
+    ASSERT_TRUE(pk_1 == pk_2);
+    ASSERT_EQ(pk_1.n2, pk_2.n2);
+    ASSERT_EQ(pk_1.max_val, pk_2.max_val);
+
+    PaillierCipherText ct_1 = pk_1.encrypt(42);
+
+    ostringstream ss_3;
+    boost::archive::text_oarchive ar_3(ss_3);
+    ar_3 << boost::serialization::make_nvp("PaillierCipherText", ct_1);
+
+    istringstream ss_4(ss_3.str());
+    boost::archive::text_iarchive ar_4(ss_4);
+    PaillierCipherText ct_2;
+    ar_4 >> boost::serialization::make_nvp("PaillierCipherText", ct_2);
+
+    ASSERT_EQ(sk_1.decrypt<int>(ct_2), 42);
 }

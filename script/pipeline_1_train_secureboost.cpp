@@ -10,34 +10,41 @@
 #include <chrono>
 #include <unistd.h>
 #include "llatvfl/attack/attack.h"
+#include "llatvfl/paillier/keygenerator.h"
 #include "llatvfl/lpmst/lpmst.h"
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
 const int min_leaf = 1;
+const int max_bin = 32;
+const float lam = 0.0;
+const float const_gamma = 0.0;
+const float eps = 1.0;
+const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const float max_samples_ratio = 0.8;
 const int max_timeout_num_patience = 5;
 const int M_LPMST = 1;
 
 string folderpath;
 string fileprefix;
-int num_trees = 20;
+int boosting_rounds = 20;
+int completely_secure_round = 0;
 int depth = 3;
 int n_job = 1;
-int skip_round = 0;
+float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
+bool use_missing_value = false;
 bool is_weighted_graph = false;
 bool save_adj_mat = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:wg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:mwg")) != -1)
     {
         switch (opt)
         {
@@ -48,19 +55,22 @@ void parse_args(int argc, char *argv[])
             fileprefix = string(optarg);
             break;
         case 'r':
-            num_trees = stoi(string(optarg));
+            boosting_rounds = stoi(string(optarg));
+            break;
+        case 'c':
+            completely_secure_round = stoi(string(optarg));
+            break;
+        case 'a':
+            learning_rate = stof(string(optarg));
+            break;
+        case 'e':
+            eta = stof(string(optarg));
             break;
         case 'h':
             depth = stoi(string(optarg));
             break;
         case 'j':
             n_job = stoi(string(optarg));
-            break;
-        case 'c':
-            skip_round = stoi(string(optarg));
-            break;
-        case 'e':
-            eta = stof(string(optarg));
             break;
         case 'l':
             epsilon_random_unfolding = stof(string(optarg));
@@ -71,6 +81,9 @@ void parse_args(int argc, char *argv[])
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
             break;
+        case 'm':
+            use_missing_value = true;
+            break;
         case 'w':
             is_weighted_graph = true;
             break;
@@ -79,7 +92,7 @@ void parse_args(int argc, char *argv[])
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-c] [-e] [-w] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-c] [-j] [-m] [-w] ...\n", argv[0]);
             break;
         }
     }
@@ -91,6 +104,7 @@ int main(int argc, char *argv[])
 
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
+    int num_nan_cell = 0;
     if (scanf("%d %d %d", &num_row_train, &num_col, &num_party) != 3)
     {
         try
@@ -104,7 +118,7 @@ int main(int argc, char *argv[])
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
-    vector<RandomForestParty> parties(num_party);
+    vector<SecureBoostParty> parties(num_party);
 
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
@@ -139,11 +153,16 @@ int main(int argc, char *argv[])
                         cerr << e.what() << "\n";
                     }
                 }
+                if (use_missing_value && x[k][j] == -1)
+                {
+                    x[k][j] = nan("");
+                    num_nan_cell += 1;
+                }
                 X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
         }
-        RandomForestParty party(x, feature_idxs, i, min_leaf, subsample_cols);
+        SecureBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -189,6 +208,10 @@ int main(int argc, char *argv[])
                     cerr << e.what() << "\n";
                 }
             }
+            if (use_missing_value && X_val[j][i] == -1)
+            {
+                X_val[j][i] = nan("");
+            }
         }
     }
     for (int j = 0; j < num_row_val; j++)
@@ -206,6 +229,17 @@ int main(int argc, char *argv[])
         }
     }
 
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
+    PaillierPublicKey pk = keypair.first;
+    PaillierSecretKey sk = keypair.second;
+
+    for (int i = 0; i < num_party; i++)
+    {
+        parties[i].set_publickey(pk);
+    }
+    parties[0].set_secretkey(sk);
+
     std::ofstream result_file;
     string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
     result_file.open(result_filepath, std::ios::out);
@@ -213,11 +247,18 @@ int main(int argc, char *argv[])
     result_file << "val size," << num_row_val << "\n";
     result_file << "column size," << num_col << "\n";
     result_file << "party size," << num_party << "\n";
+    result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
-                                                        max_samples_ratio, num_trees,
-                                                        0, n_job, 0);
+    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
+                                                      min_child_weight,
+                                                      depth, min_leaf,
+                                                      learning_rate,
+                                                      boosting_rounds,
+                                                      lam, const_gamma, eps,
+                                                      0, completely_secure_round,
+                                                      0.5, n_job, true);
+
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
@@ -232,11 +273,12 @@ int main(int argc, char *argv[])
     }
     end = chrono::system_clock::now();
     float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    result_file << "training time," << elapsed << "\n";
     printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
-    for (int i = 0; i < clf.estimators.size(); i++)
+    for (int i = 0; i < clf.logging_loss.size(); i++)
     {
-        result_file << "round " << i + 1 << ": " << 0 << "\n";
+        result_file << "round " << i + 1 << ": " << clf.logging_loss[i] << "\n";
     }
 
     for (int i = 0; i < clf.estimators.size(); i++)
@@ -255,7 +297,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, completely_secure_round, eta);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();

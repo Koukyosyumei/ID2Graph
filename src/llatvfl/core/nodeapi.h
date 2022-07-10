@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <tuple>
+#include <queue>
 using namespace std;
 
 template <typename NodeType>
@@ -200,5 +201,47 @@ struct NodeAPI
         }
 
         return make_pair(node_info, skip_flag);
+    }
+
+    float predict_row(NodeType *node, vector<float> &xi)
+    {
+        queue<NodeType *> que;
+        que.push(node);
+
+        NodeType *temp_node;
+        while (!que.empty())
+        {
+            temp_node = que.front();
+            que.pop();
+
+            if (temp_node->is_leaf())
+            {
+                return temp_node->val;
+            }
+            else
+            {
+                if (node->parties->at(temp_node->party_id).is_left(temp_node->record_id, xi))
+                {
+                    que.push(temp_node->left);
+                }
+                else
+                {
+                    que.push(temp_node->right);
+                }
+            }
+        }
+
+        return nan("");
+    }
+
+    vector<float> predict(NodeType *node, vector<vector<float>> &x_new)
+    {
+        int x_new_size = x_new.size();
+        vector<float> y_pred(x_new_size);
+        for (int i = 0; i < x_new_size; i++)
+        {
+            y_pred[i] = predict_row(node, x_new[i]);
+        }
+        return y_pred;
     }
 };

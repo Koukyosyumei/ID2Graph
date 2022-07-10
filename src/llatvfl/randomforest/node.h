@@ -19,7 +19,7 @@
 #include "../utils/utils.h"
 using namespace std;
 
-struct RandomForestNode : Node
+struct RandomForestNode : Node<RandomForestParty>
 {
     vector<RandomForestParty> *parties;
     RandomForestNode *left, *right;
@@ -235,47 +235,5 @@ struct RandomForestNode : Node
             }
         }
         return true;
-    }
-
-    vector<float> predict(vector<vector<float>> &x_new)
-    {
-        int x_new_size = x_new.size();
-        vector<float> y_pred(x_new_size);
-        for (int i = 0; i < x_new_size; i++)
-        {
-            y_pred[i] = predict_row(x_new[i]);
-        }
-        return y_pred;
-    }
-
-    float predict_row(vector<float> &xi)
-    {
-        queue<RandomForestNode *> que;
-        que.push(this);
-
-        RandomForestNode *temp_node;
-        while (!que.empty())
-        {
-            temp_node = que.front();
-            que.pop();
-
-            if (temp_node->is_leaf())
-            {
-                return temp_node->val;
-            }
-            else
-            {
-                if (parties->at(temp_node->party_id).is_left(temp_node->record_id, xi))
-                {
-                    que.push(temp_node->left);
-                }
-                else
-                {
-                    que.push(temp_node->right);
-                }
-            }
-        }
-
-        return nan("");
     }
 };

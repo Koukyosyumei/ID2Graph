@@ -9,8 +9,10 @@
 #include <tuple>
 using namespace std;
 
+template <typename PartyType>
 struct Node
 {
+    vector<PartyType> *parties;
     vector<float> y;
     vector<int> idxs;
 
@@ -40,5 +42,5 @@ struct Node
     virtual void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id) = 0;
     virtual bool is_leaf() = 0;
     virtual bool is_pure() = 0;
-    virtual vector<float> predict(vector<vector<float>> &x_new) = 0;
+    // virtual vector<float> predict(vector<vector<float>> &x_new) = 0;
 };

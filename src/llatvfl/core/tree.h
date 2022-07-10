@@ -21,7 +21,7 @@ struct Tree
 
     vector<float> predict(vector<vector<float>> &X)
     {
-        return dtree.predict(X);
+        return nodeapi.predict(&dtree, X);
     }
 
     vector<pair<vector<int>, vector<float>>> extract_train_prediction_from_node(NodeType &node)
