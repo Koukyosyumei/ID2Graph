@@ -221,6 +221,11 @@ TEST(paillier, PaillierDecreaseExponentTest)
 
 TEST(paillier, PaillierSelfBlindingTest)
 {
+    PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+    pair<PaillierPublicKey, PaillierSecretKey> keypair_1 = keygenerator.generate_keypair();
+    PaillierPublicKey pk_1 = keypair_1.first;
+    PaillierSecretKey sk_1 = keypair_1.second;
+
     PaillierCipherText ct_1 = pk_1.encrypt(0.005743);
     PaillierCipherText ct_2 = ct_1 * 0;
     ASSERT_EQ(ct_2.c, 1);
