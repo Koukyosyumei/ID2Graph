@@ -74,47 +74,35 @@ void parse_args(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    parse_args(argc, argv);
-
-    boost::mpi::environment();
+    boost::mpi::environment env(true);
     boost::mpi::communicator world;
 
     int my_rank = world.rank();
+    cout << "Start rank=" << my_rank << endl;
+
+    parse_args(argc, argv);
+
+    string input_filepath = folderpath + "/" + fileprefix + "_" +
+                            to_string(my_rank) + "_data.in";
+    std::ifstream input_file(input_filepath);
 
     // --- Load Data --- //
     int num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
-    if (scanf("%d %d %d", &num_row_train, &num_col, &num_party) != 3)
-    {
-        try
-        {
-            throw runtime_error("bad input");
-        }
-        catch (std::runtime_error e)
-        {
-            cerr << e.what() << "\n";
-        }
-    }
+    input_file >> num_row_train >> num_col >> num_party;
+
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
 
     MPISecureBoostParty my_party;
 
     int temp_count_feature = 0;
+    cout << "Load training data rank=" << my_rank << endl;
     for (int i = 0; i < num_party; i++)
     {
         int num_col = 0;
-        if (scanf("%d", &num_col) != 1)
-        {
-            try
-            {
-                throw runtime_error("bad input");
-            }
-            catch (std::runtime_error e)
-            {
-                cerr << e.what() << "\n";
-            }
-        }
+        input_file >> num_col;
+
         vector<int> feature_idxs(num_col);
         vector<vector<float>> x(num_row_train, vector<float>(num_col));
         for (int j = 0; j < num_col; j++)
@@ -122,17 +110,7 @@ int main(int argc, char *argv[])
             feature_idxs[j] = temp_count_feature;
             for (int k = 0; k < num_row_train; k++)
             {
-                if (scanf("%f", &x[k][j]) != 1)
-                {
-                    try
-                    {
-                        throw runtime_error("bad input");
-                    }
-                    catch (std::runtime_error e)
-                    {
-                        cerr << e.what() << "\n";
-                    }
-                }
+                input_file >> x[k][j];
                 if (use_missing_value && x[k][j] == -1)
                 {
                     x[k][j] = nan("");
@@ -145,9 +123,11 @@ int main(int argc, char *argv[])
 
         if (i == my_rank)
         {
+            cout << "Setup party rank=" << my_rank << endl;
             my_party = MPISecureBoostParty(world, x, feature_idxs, my_rank, depth,
                                            boosting_rounds, min_leaf, subsample_cols,
                                            const_gamma, lam, max_bin, use_missing_value);
+            break;
         }
     }
 
@@ -155,69 +135,39 @@ int main(int argc, char *argv[])
 
     if (my_rank == 0)
     {
+        cout << "Load training labels rank=" << my_rank << endl;
+
         for (int j = 0; j < num_row_train; j++)
         {
-            if (scanf("%f", &y_train[j]) != 1)
-            {
-                try
-                {
-                    throw runtime_error("bad input");
-                }
-                catch (std::runtime_error e)
-                {
-                    cerr << e.what() << "\n";
-                }
-            }
+            input_file >> y_train[j];
         }
 
-        if (scanf("%d", &num_row_val) != 1)
-        {
-            try
-            {
-                throw runtime_error("bad input");
-            }
-            catch (std::runtime_error e)
-            {
-                cerr << e.what() << "\n";
-            }
-        }
+        input_file >> num_row_val;
+
+        cout << "Load validation data rank=" << my_rank << endl;
         vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
         vector<float> y_val(num_row_val);
         for (int i = 0; i < num_col; i++)
         {
             for (int j = 0; j < num_row_val; j++)
             {
-                if (scanf("%f", &X_val[j][i]) != 1)
-                {
-                    try
-                    {
-                        throw runtime_error("bad input");
-                    }
-                    catch (std::runtime_error e)
-                    {
-                        cerr << e.what() << "\n";
-                    }
-                }
+                input_file >> X_val[j][i];
                 if (use_missing_value && X_val[j][i] == -1)
                 {
                     X_val[j][i] = nan("");
                 }
             }
         }
+
+        cout << "Load validation label rank=" << my_rank << endl;
         for (int j = 0; j < num_row_val; j++)
         {
-            if (scanf("%f", &y_val[j]) != 1)
-            {
-                try
-                {
-                    throw runtime_error("bad input");
-                }
-                catch (std::runtime_error e)
-                {
-                    cerr << e.what() << "\n";
-                }
-            }
+            input_file >> y_val[j];
         }
+
+        input_file.close();
+
+        cout << "Generate keypair rank=" << my_rank << endl;
 
         PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
         pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
@@ -226,6 +176,17 @@ int main(int argc, char *argv[])
 
         my_party.set_publickey(pk);
         my_party.set_secretkey(sk);
+
+        PaillierCipherText demo_ct = my_party.pk.encrypt(13);
+        cout << my_party.sk.decrypt<int>(demo_ct) << endl;
+
+        for (int j = 1; j < num_party; j++)
+        {
+            cout << "Send public key to rank=" << j << endl;
+            world.send(j, TAG_PUBLICKEY, pk);
+        }
+
+        my_party.y = y_train;
 
         std::ofstream result_file;
         string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
@@ -274,6 +235,15 @@ int main(int argc, char *argv[])
     }
     else
     {
+        input_file.close();
+        PaillierPublicKey pk;
+        world.recv(0, TAG_PUBLICKEY, pk);
+        cout << "Recv public key rank=" << my_rank << endl;
+        my_party.set_publickey(pk);
+        my_party.pk.init_distribution();
+        cout << my_party.pk.encrypt(123).c << endl;
+
+        cout << "Run rank=" << my_rank << endl;
         my_party.run_as_passive();
     }
 }

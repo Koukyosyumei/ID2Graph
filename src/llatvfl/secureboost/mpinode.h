@@ -18,7 +18,9 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                        float gamma_, float eps_, int depth_, int active_party_id_ = 0,
                        bool use_only_active_party_ = false)
     {
+        cout << "111" << endl;
         active_party = active_party_;
+        cout << "222" << endl;
         parties_num = parties_num_;
         idxs = idxs_;
         max_depth = max_depth_;
@@ -31,9 +33,11 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         use_only_active_party = use_only_active_party_;
 
         row_count = idxs.size();
-        num_parties = parties->size();
+        num_parties = parties_num;
 
+        cout << "compute weight" << endl;
         val = compute_weight();
+        cout << "searc split" << endl;
         tuple<int, int, int> best_split = find_split();
 
         if (is_leaf())
@@ -48,7 +52,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         if (is_leaf_flag == 0)
         {
             party_id = get<0>(best_split);
-            record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
+            cout << "make children nodes" << endl;
             make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
         }
     }
@@ -109,6 +113,33 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             active_party.set_instance_space(idxs);
             active_party.calc_sum_grad_and_hess();
             search_results = active_party.greedy_search_split();
+
+            for (int j = 0; j < search_results.size(); j++)
+            {
+                float temp_score;
+                float temp_left_grad = 0;
+                float temp_left_hess = 0;
+                for (int k = 0; k < search_results[j].size(); k++)
+                {
+                    temp_left_grad += search_results[j][k].first;
+                    temp_left_hess += search_results[j][k].second;
+
+                    if (temp_left_hess < min_child_weight ||
+                        active_party.sum_hess - temp_left_hess < min_child_weight)
+                        continue;
+
+                    temp_score = active_party.compute_gain(temp_left_grad, active_party.sum_grad - temp_left_grad,
+                                                           temp_left_hess, active_party.sum_hess - temp_left_hess);
+
+                    if (temp_score > best_score)
+                    {
+                        best_score = temp_score;
+                        best_party_id = party_id;
+                        best_col_id = j;
+                        best_threshold_id = k;
+                    }
+                }
+            }
         }
         else
         {
@@ -119,20 +150,28 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                     active_party.set_instance_space(idxs);
                     active_party.calc_sum_grad_and_hess();
                     search_results = active_party.greedy_search_split();
+                    cout << "search end" << endl;
+                    cout << "search results " << search_results.size() << endl;
                 }
                 else
                 {
+                    cout << "send depth = " << depth << endl;
                     active_party.world.send(i, TAG_DEPTH, depth);
+
                     if (max_depth == depth)
                     {
+                        cout << "send grad and hess" << endl;
                         active_party.world.send(i, TAG_VEC_ENCRYPTED_GRAD, active_party.gradient);
                         active_party.world.send(i, TAG_VEC_ENCRYPTED_HESS, active_party.hessian);
                     }
 
+                    cout << "send instance space" << endl;
                     active_party.world.send(i, TAG_INSTANCE_SPACE, idxs);
                     active_party.world.recv(i, TAG_SEARCH_RESULTS, encrypted_search_result);
+                    cout << "recv enc result" << endl;
 
                     int temp_result_size = encrypted_search_result.size();
+                    cout << temp_result_size << endl;
                     search_results.resize(temp_result_size);
                     int temp_vec_size;
                     for (int j = 0; j < temp_result_size; j++)
@@ -141,56 +180,56 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                         search_results[j].resize(temp_vec_size);
                         for (int k = 0; k < temp_vec_size; k++)
                         {
-                            search_results[j][k] = make_pair(parties->at(active_party_id)
-                                                                 .sk.decrypt<float>(
-                                                                     encrypted_search_result[j][k].first),
-                                                             parties->at(active_party_id)
-                                                                 .sk.decrypt<float>(
-                                                                     encrypted_search_result[j][k].second));
+                            search_results[j][k] = make_pair(active_party.sk.decrypt<float>(
+                                                                 encrypted_search_result[j][k].first),
+                                                             active_party.sk.decrypt<float>(
+                                                                 encrypted_search_result[j][k].second));
                         }
                     }
+                }
 
-                    for (int j = 0; j < search_results.size(); j++)
+                for (int j = 0; j < search_results.size(); j++)
+                {
+                    float temp_score;
+                    float temp_left_grad = 0;
+                    float temp_left_hess = 0;
+                    for (int k = 0; k < search_results[j].size(); k++)
                     {
-                        float temp_score;
-                        float temp_left_grad = 0;
-                        float temp_left_hess = 0;
-                        for (int k = 0; k < search_results[j].size(); k++)
+                        temp_left_grad += search_results[j][k].first;
+                        temp_left_hess += search_results[j][k].second;
+
+                        if (temp_left_hess < min_child_weight ||
+                            active_party.sum_hess - temp_left_hess < min_child_weight)
+                            continue;
+
+                        temp_score = active_party.compute_gain(temp_left_grad, active_party.sum_grad - temp_left_grad,
+                                                               temp_left_hess, active_party.sum_hess - temp_left_hess);
+
+                        if (temp_score > best_score)
                         {
-                            temp_left_grad += search_results[j][k].first;
-                            temp_left_hess += search_results[j][k].second;
-
-                            if (temp_left_hess < min_child_weight ||
-                                active_party.sum_hess - temp_left_hess < min_child_weight)
-                                continue;
-
-                            temp_score = active_party.compute_gain(temp_left_grad, active_party.sum_grad - temp_left_grad,
-                                                                   temp_left_hess, active_party.sum_hess - temp_left_hess);
-
-                            if (temp_score > best_score)
-                            {
-                                best_score = temp_score;
-                                best_party_id = party_id;
-                                best_col_id = j;
-                                best_threshold_id = k;
-                            }
+                            best_score = temp_score;
+                            best_party_id = party_id;
+                            best_col_id = j;
+                            best_threshold_id = k;
                         }
                     }
                 }
             }
         }
 
+        cout << "end seaarch " << endl;
         score = best_score;
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
 
     void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id)
     {
+        cout << "start mk node party=" << best_party_id << endl;
         for (int i = 0; i < parties_num; i++)
         {
             if (i != active_party_id)
             {
-                active_party.world.send(i, TAG_BEST_PARTY_ID, i);
+                active_party.world.send(i, TAG_BEST_PARTY_ID, best_party_id);
             }
         }
 
@@ -198,14 +237,18 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         vector<int> left_idxs;
         if (best_party_id == active_party_id)
         {
+            record_id = active_party.insert_lookup_table(best_col_id, best_threshold_id);
             left_idxs = active_party.split_rows(idxs, best_col_id, best_threshold_id);
         }
         else
         {
             active_party.world.send(best_party_id, TAG_BEST_SPLIT_COL_ID, best_col_id);
             active_party.world.send(best_party_id, TAG_BEST_SPLIT_THRESHOLD_ID, best_threshold_id);
+            active_party.world.recv(best_party_id, TAG_RECORDID, record_id);
             active_party.world.recv(best_party_id, TAG_BEST_INSTANCE_SPACE, left_idxs);
         }
+
+        cout << "777" << endl;
 
         vector<int> right_idxs;
         for (int i = 0; i < row_count; i++)
@@ -244,9 +287,12 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
     bool is_pure()
     {
         set<float> s{};
+        cout << "size of fff yyy is " << active_party.y.size() << endl;
+        cout << row_count << endl;
+        cout << idxs.size() << endl;
         for (int i = 0; i < row_count; i++)
         {
-            if (s.insert(y[idxs[i]]).second)
+            if (s.insert(active_party.y[idxs[i]]).second)
             {
                 if (s.size() == 2)
                     return false;

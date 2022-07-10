@@ -85,7 +85,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
         }
     }
 
-    void fit(MPISecureBoostParty active_party, int parties_num, vector<float> &y)
+    void fit(MPISecureBoostParty &active_party, int parties_num, vector<float> &y)
     {
         try
         {
@@ -126,11 +126,14 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
             vector<float> plain_hess = get_hess(base_pred, y);
             active_party.set_plain_gradients_and_hessians(plain_grad, plain_hess);
 
+            cout << "start encryption" << endl;
+            cout << active_party.sk.decrypt<int>(active_party.pk.encrypt(13)) << endl;
             for (int j = 0; j < row_count; j++)
             {
                 active_party.gradient[j] = active_party.pk.encrypt<float>(active_party.plain_gradient[j]);
                 active_party.hessian[j] = active_party.pk.encrypt<float>(active_party.plain_hessian[j]);
             }
+            cout << "End of encryption" << endl;
 
             MPISecureBoostTree boosting_tree = MPISecureBoostTree();
             boosting_tree.fit(active_party, parties_num, y, min_child_weight, lam,

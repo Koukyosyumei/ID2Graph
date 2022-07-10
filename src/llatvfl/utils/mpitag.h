@@ -12,3 +12,5 @@ const int TAG_BEST_SPLIT_THRESHOLD_ID = 7;
 const int TAG_BEST_INSTANCE_SPACE = 8;
 const int TAG_BEST_PARTY_ID = 9;
 const int TAG_DEPTH = 10;
+const int TAG_PUBLICKEY = 11;
+const int TAG_RECORDID = 12;
