@@ -8,8 +8,8 @@
 #include <cassert>
 #include <cfloat>
 #include <limits>
-#include <boost/integer/mod_inverse.hpp>
 #include <boost/math/special_functions/round.hpp>
+#include "../utils/mod_inverse.h"
 #include "../utils/prime.h"
 using namespace std;
 
