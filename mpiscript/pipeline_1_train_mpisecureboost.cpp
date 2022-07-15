@@ -126,7 +126,6 @@ int main(int argc, char *argv[])
             my_party = MPISecureBoostParty(world, x, feature_idxs, my_rank, depth,
                                            boosting_rounds, min_leaf, subsample_cols,
                                            const_gamma, lam, max_bin, use_missing_value);
-            break;
         }
     }
 
@@ -138,38 +137,42 @@ int main(int argc, char *argv[])
                                                             0, completely_secure_round,
                                                             0.5, true);
 
+    for (int j = 0; j < num_row_train; j++)
+    {
+        input_file >> y_train[j];
+    }
+
+    if (my_rank == 0)
+    {
+        my_party.y = y_train;
+    }
+
+    input_file >> num_row_val;
+
+    X_val.resize(num_row_val, vector<float>(num_col));
+    y_val.resize(num_row_val);
+    for (int i = 0; i < num_col; i++)
+    {
+        for (int j = 0; j < num_row_val; j++)
+        {
+            input_file >> X_val[j][i];
+            if (use_missing_value && X_val[j][i] == -1)
+            {
+                X_val[j][i] = nan("");
+            }
+        }
+    }
+
+    for (int j = 0; j < num_row_val; j++)
+    {
+        input_file >> y_val[j];
+    }
+    input_file.close();
+
     world.barrier();
 
     if (my_rank == 0)
     {
-        for (int j = 0; j < num_row_train; j++)
-        {
-            input_file >> y_train[j];
-        }
-        my_party.y = y_train;
-
-        input_file >> num_row_val;
-
-        X_val.resize(num_row_val, vector<float>(num_col));
-        y_val.resize(num_row_val);
-        for (int i = 0; i < num_col; i++)
-        {
-            for (int j = 0; j < num_row_val; j++)
-            {
-                input_file >> X_val[j][i];
-                if (use_missing_value && X_val[j][i] == -1)
-                {
-                    X_val[j][i] = nan("");
-                }
-            }
-        }
-
-        for (int j = 0; j < num_row_val; j++)
-        {
-            input_file >> y_val[j];
-        }
-        input_file.close();
-
         PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
         pair<PaillierPublicKey, PaillierSecretKey> keypair = keygenerator.generate_keypair();
         PaillierPublicKey pk = keypair.first;
@@ -212,7 +215,6 @@ int main(int argc, char *argv[])
     }
 
     world.barrier();
-    cout << "Start training .... " << endl;
     clf.fit(my_party, num_party);
 
     if (my_rank == 0)
@@ -232,11 +234,18 @@ int main(int argc, char *argv[])
             result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
             // result_file << clf.estimators[i].print(true, true).c_str() << "\n";
         }
+    }
 
-        vector<float> predict_proba_train = clf.predict_proba(X_train);
+    world.barrier();
+    vector<float> predict_proba_train = clf.predict_proba(X_train);
+    world.barrier();
+    vector<float> predict_proba_val = clf.predict_proba(X_val);
+    world.barrier();
+
+    if (my_rank == 0)
+    {
         vector<int> y_true_train(y_train.begin(), y_train.end());
         result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
-        vector<float> predict_proba_val = clf.predict_proba(X_val);
         vector<int> y_true_val(y_val.begin(), y_val.end());
         result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
         result_file.close();

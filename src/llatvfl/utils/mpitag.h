@@ -15,3 +15,6 @@ const int TAG_DEPTH = 10;
 const int TAG_PUBLICKEY = 11;
 const int TAG_RECORDID = 12;
 const int TAG_ISLEAF = 13;
+const int TAG_ISLEFT = 14;
+const int TAG_NODE_PARTY_ID = 15;
+const int TAG_RECORD_ID = 16;

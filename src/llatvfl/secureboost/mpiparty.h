@@ -25,7 +25,7 @@ struct MPISecureBoostParty : SecureBoostParty
     float sum_grad, sum_hess;
 
     MPISecureBoostParty() {}
-    MPISecureBoostParty(boost::mpi::communicator &world_, vector<vector<float>> &x_,
+    MPISecureBoostParty(boost::mpi::communicator &world_, vector<vector<float>> x_,
                         vector<int> &feature_id_, int party_id_,
                         int max_depth_, int num_estimators_, int min_leaf_, float subsample_cols_,
                         float gam_, float lam_, int num_precentile_bin_ = 256,

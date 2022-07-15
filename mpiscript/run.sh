@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # constant values
-NUM_TRIAL=5
+NUM_TRIAL=1
 
 # default values
 VALUE_D="breastcancer"

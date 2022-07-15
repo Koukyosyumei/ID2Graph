@@ -29,6 +29,9 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
     vector<MPISecureBoostTree> estimators;
     vector<float> logging_loss;
 
+    MPISecureBoostParty party_for_training;
+    int parties_num_for_training;
+
     MPISecureBoostBase(float subsample_cols_ = 0.8,
                        float min_child_weight_ = -1 * numeric_limits<float>::infinity(),
                        int depth_ = 5, int min_leaf_ = 5,
@@ -87,6 +90,9 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
 
     void fit(MPISecureBoostParty &party, int parties_num)
     {
+        party_for_training = party;
+        parties_num_for_training = parties_num;
+
         int row_count;
         vector<float> base_pred;
         if (party.party_id == active_party_id)
@@ -172,15 +178,108 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
     vector<float> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
-        vector<float> y_pred;
-        copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
-        int estimators_num = estimators.size();
-        for (int i = 0; i < estimators_num; i++)
+        // int estimators_num = estimators.size();
+        vector<float> y_pred(row_count, init_value);
+        int is_leaf_flag;
+        int temp_node_party_id = 0;
+        int temp_record_id = 0;
+        bool temp_is_left;
+
+        for (int i = 0; i < boosting_rounds; i++)
         {
-            vector<float> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
-                y_pred[j] += learning_rate * y_pred_temp[j];
+            {
+
+                if (party_for_training.party_id == active_party_id)
+                {
+                    queue<MPISecureBoostNode *> que;
+                    que.push(&estimators[i].dtree);
+
+                    MPISecureBoostNode *temp_node;
+                    while (!que.empty())
+                    {
+                        temp_node = que.front();
+                        que.pop();
+
+                        if (temp_node->is_leaf())
+                        {
+                            is_leaf_flag = 1;
+                        }
+                        else
+                        {
+                            is_leaf_flag = 0;
+                        }
+
+                        for (int p = 0; p < parties_num_for_training; p++)
+                        {
+                            if (p != active_party_id)
+                            {
+                                party_for_training.world.send(p, TAG_ISLEAF, is_leaf_flag);
+                            }
+                        }
+
+                        if (is_leaf_flag == 1)
+                        {
+                            y_pred[j] = learning_rate * temp_node->val;
+                            break;
+                        }
+                        else
+                        {
+
+                            for (int p = 0; p < parties_num_for_training; p++)
+                            {
+                                if (p != active_party_id)
+                                {
+                                    party_for_training.world.send(p, TAG_NODE_PARTY_ID, temp_node->party_id);
+                                }
+                            }
+
+                            if (temp_node->party_id == active_party_id)
+                            {
+                                temp_is_left = party_for_training.is_left(temp_node->record_id, X[j]);
+                            }
+                            else
+                            {
+                                party_for_training.world.send(temp_node->party_id, TAG_RECORD_ID, temp_node->record_id);
+                                party_for_training.world.recv(temp_node->party_id, TAG_ISLEFT, temp_is_left);
+                            }
+
+                            if (temp_is_left)
+                            {
+                                que.push(temp_node->left);
+                            }
+                            else
+                            {
+                                que.push(temp_node->right);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    while (true)
+                    {
+                        party_for_training.world.recv(active_party_id, TAG_ISLEAF, is_leaf_flag);
+                        if (is_leaf_flag == 1)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            party_for_training.world.recv(active_party_id, TAG_NODE_PARTY_ID, temp_node_party_id);
+                            if (temp_node_party_id == party_for_training.party_id)
+                            {
+                                party_for_training.world.recv(active_party_id, TAG_RECORD_ID, temp_record_id);
+                                temp_is_left = party_for_training.is_left(temp_record_id, X[j]);
+                                party_for_training.world.send(active_party_id, TAG_ISLEFT, temp_is_left);
+                            }
+                        }
+                    }
+                }
+                party_for_training.world.barrier();
+            }
         }
+        party_for_training.world.barrier();
 
         return y_pred;
     }
@@ -237,11 +336,17 @@ struct MPISecureBoostClassifier : public MPISecureBoostBase
 
     vector<float> predict_proba(vector<vector<float>> &x)
     {
+        vector<float> predicted_probas;
         vector<float> raw_score = predict_raw(x);
-        int row_count = x.size();
-        vector<float> predicted_probas(row_count);
-        for (int i = 0; i < row_count; i++)
-            predicted_probas[i] = sigmoid(raw_score[i]);
+
+        if (party_for_training.party_id == active_party_id)
+        {
+            int row_count = x.size();
+            predicted_probas.resize(row_count);
+            for (int i = 0; i < row_count; i++)
+                predicted_probas[i] = sigmoid(raw_score[i]);
+        }
+
         return predicted_probas;
     }
 };
