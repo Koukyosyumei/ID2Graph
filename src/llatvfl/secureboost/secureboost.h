@@ -143,8 +143,8 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty>
     vector<float> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
-        vector<float> y_pred;
-        copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
+        vector<float> y_pred(row_count, init_value);
+        // copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {
