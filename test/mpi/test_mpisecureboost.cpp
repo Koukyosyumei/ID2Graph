@@ -14,38 +14,39 @@
 #include "llatvfl/secureboost/mpisecureboost.h"
 #include "llatvfl/paillier/keygenerator.h"
 #include "llatvfl/utils/metric.h"
+#include "gtest/gtest.h"
 using namespace std;
 
-const int min_leaf = 1;
-const int depth = 3;
-const float learning_rate = 0.4;
-const int boosting_rounds = 2;
-const float lam = 1.0;
-const float const_gamma = 0.0;
-const float eps = 1.0;
-const float min_child_weight = -1 * numeric_limits<float>::infinity();
-const float subsample_cols = 1.0;
-const int key_bitsize = 512;
-const int active_party_id = 0;
-
-// --- Load Data --- //
-int num_row = 8;
-int num_col = 2;
-int num_party = 2;
-
-vector<float> y = {1, 0, 1, 0, 1, 1, 0, 1};
-vector<vector<float>> X = {{12, 1},
-                           {32, 1},
-                           {15, 0},
-                           {24, 0},
-                           {20, 1},
-                           {25, 1},
-                           {17, 0},
-                           {16, 1}};
-vector<vector<int>> feature_idxs = {{0}, {1}};
-
-int main()
+TEST(MPISecureBoost, MPISecureBoostClassifierTest)
 {
+    const int min_leaf = 1;
+    const int depth = 3;
+    const float learning_rate = 0.4;
+    const int boosting_rounds = 2;
+    const float lam = 1.0;
+    const float const_gamma = 0.0;
+    const float eps = 1.0;
+    const float min_child_weight = -1 * numeric_limits<float>::infinity();
+    const float subsample_cols = 1.0;
+    const int key_bitsize = 512;
+    const int active_party_id = 0;
+
+    // --- Load Data --- //
+    int num_row = 8;
+    int num_col = 2;
+    int num_party = 2;
+
+    vector<float> y = {1, 0, 1, 0, 1, 1, 0, 1};
+    vector<vector<float>> X = {{12, 1},
+                               {32, 1},
+                               {15, 0},
+                               {24, 0},
+                               {20, 1},
+                               {25, 1},
+                               {17, 0},
+                               {16, 1}};
+    vector<vector<int>> feature_idxs = {{0}, {1}};
+
     boost::mpi::environment env(true);
     boost::mpi::communicator world;
     int my_rank = world.rank();
@@ -154,8 +155,6 @@ int main()
         {
             assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
         }
-
-        cout << "TEST FOR MPI_SECUREBOOST: ALL PASSED!" << endl;
     }
     else
     {
