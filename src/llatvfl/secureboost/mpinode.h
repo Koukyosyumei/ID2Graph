@@ -154,8 +154,6 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                 if (i == active_party_id)
                 {
                     active_party->calc_sum_grad_and_hess();
-
-                    search_results = active_party->greedy_search_split();
                 }
                 else
                 {
@@ -166,6 +164,17 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                     }
 
                     active_party->world.send(i, TAG_INSTANCE_SPACE, idxs);
+                }
+            }
+
+            for (int i = 0; i < parties_num; i++)
+            {
+                if (i == active_party_id)
+                {
+                    search_results = active_party->greedy_search_split();
+                }
+                else
+                {
                     active_party->world.recv(i, TAG_SEARCH_RESULTS, encrypted_search_result);
 
                     int temp_result_size = encrypted_search_result.size();

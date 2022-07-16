@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # constant values
-NUM_TRIAL=1
+NUM_TRIAL=5
 
 # default values
 VALUE_D="breastcancer"
@@ -126,7 +126,6 @@ done
 script/run_extract_result.sh -o ${TEMPD}
 
 mv ${TEMPD}/*.ans ${RESUD}/
-mv ${TEMPD}/loss_lp.csv ${RESUD}/
 
 wait
 rm -rf ${TEMPD}
