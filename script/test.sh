@@ -9,5 +9,8 @@ cd build
 ctest -V
 cd ..
 
+# test for mpi
+./mpiscript/test.sh
+
 # test for python
 python3 -m pytest test/.

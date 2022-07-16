@@ -18,7 +18,7 @@ using namespace std;
 
 const int min_leaf = 1;
 const int max_bin = 32;
-const float lam = 0.0;
+const float lam = 1.0;
 const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
