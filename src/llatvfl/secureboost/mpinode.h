@@ -231,7 +231,6 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         vector<int> left_idxs;
         if (best_party_id == active_party_id)
         {
-            cout << "insert active" << endl;
             record_id = active_party->insert_lookup_table(best_col_id, best_threshold_id);
             left_idxs = active_party->split_rows(idxs, best_col_id, best_threshold_id);
         }

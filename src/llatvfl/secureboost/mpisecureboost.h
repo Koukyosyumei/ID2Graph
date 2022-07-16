@@ -29,7 +29,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
     vector<MPISecureBoostTree> estimators;
     vector<float> logging_loss;
 
-    MPISecureBoostParty party_for_training;
+    MPISecureBoostParty *party_for_training;
     int parties_num_for_training;
 
     MPISecureBoostBase(float subsample_cols_ = 0.8,
@@ -90,7 +90,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
 
     void fit(MPISecureBoostParty &party, int parties_num)
     {
-        party_for_training = party;
+        party_for_training = &party;
         parties_num_for_training = parties_num;
 
         int row_count;
@@ -160,10 +160,8 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                 vector<float> pred_temp = boosting_tree.get_train_prediction();
                 for (int j = 0; j < row_count; j++)
                 {
-                    cout << pred_temp[j] << " ";
                     base_pred[j] += learning_rate * pred_temp[j];
                 }
-                cout << endl;
 
                 estimators.push_back(boosting_tree);
 
@@ -181,9 +179,9 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
         }
     }
 
-    vector<float> predict_raw(vector<vector<float>> &X)
+    vector<float> predict_raw(vector<vector<float>> &X_new)
     {
-        int row_count = X.size();
+        int row_count = X_new.size();
         // int estimators_num = estimators.size();
         vector<float> y_pred(row_count, init_value);
         int is_leaf_flag;
@@ -196,7 +194,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
             for (int j = 0; j < row_count; j++)
             {
 
-                if (party_for_training.party_id == active_party_id)
+                if (party_for_training->party_id == active_party_id)
                 {
                     queue<MPISecureBoostNode *> que;
                     que.push(&estimators[i].dtree);
@@ -220,14 +218,13 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                         {
                             if (p != active_party_id)
                             {
-                                party_for_training.world.send(p, TAG_ISLEAF, is_leaf_flag);
+                                party_for_training->world.send(p, TAG_ISLEAF, is_leaf_flag);
                             }
                         }
 
                         if (is_leaf_flag == 1)
                         {
-                            cout << temp_node->val << endl;
-                            y_pred[j] = learning_rate * temp_node->val;
+                            y_pred[j] += learning_rate * temp_node->val;
                             break;
                         }
                         else
@@ -237,18 +234,18 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                             {
                                 if (p != active_party_id)
                                 {
-                                    party_for_training.world.send(p, TAG_NODE_PARTY_ID, temp_node->party_id);
+                                    party_for_training->world.send(p, TAG_NODE_PARTY_ID, temp_node->party_id);
                                 }
                             }
 
                             if (temp_node->party_id == active_party_id)
                             {
-                                temp_is_left = party_for_training.is_left(temp_node->record_id, X[j]);
+                                temp_is_left = party_for_training->is_left(temp_node->record_id, X_new[j]);
                             }
                             else
                             {
-                                party_for_training.world.send(temp_node->party_id, TAG_RECORD_ID, temp_node->record_id);
-                                party_for_training.world.recv(temp_node->party_id, TAG_ISLEFT, temp_is_left);
+                                party_for_training->world.send(temp_node->party_id, TAG_RECORD_ID, temp_node->record_id);
+                                party_for_training->world.recv(temp_node->party_id, TAG_ISLEFT, temp_is_left);
                             }
 
                             if (temp_is_left)
@@ -266,27 +263,28 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                 {
                     while (true)
                     {
-                        party_for_training.world.recv(active_party_id, TAG_ISLEAF, is_leaf_flag);
+                        party_for_training->world.recv(active_party_id, TAG_ISLEAF, is_leaf_flag);
                         if (is_leaf_flag == 1)
                         {
                             break;
                         }
                         else
                         {
-                            party_for_training.world.recv(active_party_id, TAG_NODE_PARTY_ID, temp_node_party_id);
-                            if (temp_node_party_id == party_for_training.party_id)
+                            party_for_training->world.recv(active_party_id, TAG_NODE_PARTY_ID, temp_node_party_id);
+                            if (temp_node_party_id == party_for_training->party_id)
                             {
-                                party_for_training.world.recv(active_party_id, TAG_RECORD_ID, temp_record_id);
-                                temp_is_left = party_for_training.is_left(temp_record_id, X[j]);
-                                party_for_training.world.send(active_party_id, TAG_ISLEFT, temp_is_left);
+                                party_for_training->world.recv(active_party_id, TAG_RECORD_ID, temp_record_id);
+                                temp_is_left = party_for_training->is_left(temp_record_id, X_new[j]);
+                                party_for_training->world.send(active_party_id, TAG_ISLEFT, temp_is_left);
                             }
                         }
                     }
                 }
-                party_for_training.world.barrier();
+                party_for_training->world.barrier();
             }
+            party_for_training->world.barrier();
         }
-        party_for_training.world.barrier();
+        party_for_training->world.barrier();
 
         return y_pred;
     }
@@ -346,7 +344,7 @@ struct MPISecureBoostClassifier : public MPISecureBoostBase
         vector<float> predicted_probas;
         vector<float> raw_score = predict_raw(x);
 
-        if (party_for_training.party_id == active_party_id)
+        if (party_for_training->party_id == active_party_id)
         {
             int row_count = x.size();
             predicted_probas.resize(row_count);
