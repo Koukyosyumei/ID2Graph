@@ -56,7 +56,7 @@ struct XGBoostNode : Node<XGBoostParty>
         }
         catch (std::exception &e)
         {
-            std::cout << e.what() << std::endl;
+            std::cerr << e.what() << std::endl;
         }
 
         row_count = idxs.size();
@@ -77,8 +77,15 @@ struct XGBoostNode : Node<XGBoostParty>
         {
             tuple<int, int, int> best_split = find_split();
             party_id = get<0>(best_split);
-            record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
-            make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            if (party_id != -1)
+            {
+                record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
+                make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            }
+            else
+            {
+                is_leaf_flag = 1;
+            }
         }
     }
 
@@ -145,16 +152,17 @@ struct XGBoostNode : Node<XGBoostParty>
 
     void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
     {
-        for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
+        for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
             vector<vector<pair<float, float>>> search_results =
-                parties->at(party_id).greedy_search_split(gradient, hessian, idxs);
+                parties->at(temp_party_id).greedy_search_split(gradient, hessian, idxs);
 
             for (int j = 0; j < search_results.size(); j++)
             {
                 float temp_score;
                 float temp_left_grad = 0;
                 float temp_left_hess = 0;
+
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
                     temp_left_grad += search_results[j][k].first;
@@ -170,7 +178,7 @@ struct XGBoostNode : Node<XGBoostParty>
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
-                        best_party_id = party_id;
+                        best_party_id = temp_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
                     }

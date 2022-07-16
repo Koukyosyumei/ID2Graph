@@ -58,8 +58,15 @@ struct SecureBoostNode : Node<SecureBoostParty>
         {
             tuple<int, int, int> best_split = find_split();
             party_id = get<0>(best_split);
-            record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
-            make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            if (party_id != -1)
+            {
+                record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
+                make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            }
+            else
+            {
+                is_leaf_flag = 1;
+            }
         }
     }
 
@@ -126,18 +133,18 @@ struct SecureBoostNode : Node<SecureBoostParty>
 
     void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
     {
-        for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
+        for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
 
             vector<vector<pair<float, float>>> search_results;
-            if (party_id == active_party_id)
+            if (temp_party_id == active_party_id)
             {
-                search_results = parties->at(party_id).greedy_search_split(vanila_gradient, vanila_hessian, idxs);
+                search_results = parties->at(temp_party_id).greedy_search_split(vanila_gradient, vanila_hessian, idxs);
             }
             else
             {
                 vector<vector<pair<PaillierCipherText, PaillierCipherText>>> encrypted_search_result =
-                    parties->at(party_id).greedy_search_split_encrypt(gradient, hessian, idxs);
+                    parties->at(temp_party_id).greedy_search_split_encrypt(gradient, hessian, idxs);
                 int temp_result_size = encrypted_search_result.size();
                 search_results.resize(temp_result_size);
                 int temp_vec_size;
@@ -177,7 +184,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
-                        best_party_id = party_id;
+                        best_party_id = temp_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
                     }

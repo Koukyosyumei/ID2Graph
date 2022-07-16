@@ -57,8 +57,15 @@ struct RandomForestNode : Node<RandomForestParty>
         if (is_leaf_flag == 0)
         {
             party_id = get<0>(best_split);
-            record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
-            make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            if (party_id != -1)
+            {
+                record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
+                make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            }
+            else
+            {
+                is_leaf_flag = 1;
+            }
         }
     }
 
@@ -129,9 +136,9 @@ struct RandomForestNode : Node<RandomForestParty>
 
     void find_split_per_party(int party_id_start, int temp_num_parties)
     {
-        for (int party_id = party_id_start; party_id < party_id_start + temp_num_parties; party_id++)
+        for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<float>> search_results = parties->at(party_id).greedy_search_split(idxs, y);
+            vector<vector<float>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
@@ -147,7 +154,7 @@ struct RandomForestNode : Node<RandomForestParty>
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
-                        best_party_id = party_id;
+                        best_party_id = temp_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
                     }
