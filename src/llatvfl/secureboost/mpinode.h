@@ -60,7 +60,14 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         {
             tuple<int, int, int> best_split = find_split();
             party_id = get<0>(best_split);
-            make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            if (party_id != -1)
+            {
+                make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
+            }
+            else
+            {
+                is_leaf_flag = 1;
+            }
         }
     }
 
