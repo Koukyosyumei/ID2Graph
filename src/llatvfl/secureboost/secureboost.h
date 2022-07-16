@@ -128,8 +128,11 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty>
             boosting_tree.fit(&parties, y, grad, hess, vanila_grad, vanila_hess, min_child_weight,
                               lam, gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i), n_job);
             vector<float> pred_temp = boosting_tree.get_train_prediction();
+
             for (int j = 0; j < row_count; j++)
+            {
                 base_pred[j] += learning_rate * pred_temp[j];
+            }
 
             estimators.push_back(boosting_tree);
 
@@ -143,8 +146,8 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty>
     vector<float> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
-        vector<float> y_pred;
-        copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
+        vector<float> y_pred(row_count, init_value);
+        // copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {

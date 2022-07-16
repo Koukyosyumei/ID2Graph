@@ -43,7 +43,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
         num_parties = parties->size();
 
         val = compute_weight();
-        tuple<int, int, int> best_split = find_split();
+        // tuple<int, int, int> best_split = find_split();
 
         if (is_leaf())
         {
@@ -56,6 +56,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
 
         if (is_leaf_flag == 0)
         {
+            tuple<int, int, int> best_split = find_split();
             party_id = get<0>(best_split);
             record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
             make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));

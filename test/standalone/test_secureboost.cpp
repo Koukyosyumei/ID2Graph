@@ -96,7 +96,6 @@ TEST(SecureBoost, SecureBoostClassifierTest)
 
     // --- Check Training --- //
     clf.fit(parties, y);
-    cout << "end fitting" << endl;
 
     ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
     ASSERT_EQ(parties[1].get_lookup_table().size(), 2);

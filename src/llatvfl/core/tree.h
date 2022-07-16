@@ -50,8 +50,12 @@ struct Tree
         vector<pair<vector<int>, vector<float>>> result = extract_train_prediction_from_node(dtree);
         vector<float> y_train_pred(dtree.y.size());
         for (int i = 0; i < result.size(); i++)
+        {
             for (int j = 0; j < result[i].first.size(); j++)
+            {
                 y_train_pred[result[i].first[j]] = result[i].second[j];
+            }
+        }
 
         return y_train_pred;
     }

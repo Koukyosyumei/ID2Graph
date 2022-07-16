@@ -4,6 +4,10 @@
 ./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 300
 ```
 
+```
+./mpiscript/run.sh -d givemesomecredit -m s -r 2 -c 0 -h 3 -i 1 -e 1 -n 5000 -f 0.5 -p 1 -z 300
+```
+
 ## Usage
 
 ```
