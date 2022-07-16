@@ -125,7 +125,9 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                 {
                     vector<float> pred_temp = estimators[i].get_train_prediction();
                     for (int j = 0; j < row_count; j++)
+                    {
                         base_pred[j] += learning_rate * pred_temp[j];
+                    }
                 }
             }
         }
@@ -145,7 +147,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                 }
 
                 MPISecureBoostTree boosting_tree = MPISecureBoostTree();
-                boosting_tree.fit(party, parties_num, party.y, min_child_weight, lam,
+                boosting_tree.fit(&party, parties_num, party.y, min_child_weight, lam,
                                   gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i));
                 for (int p = 0; p < parties_num; p++)
                 {
@@ -157,7 +159,11 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
 
                 vector<float> pred_temp = boosting_tree.get_train_prediction();
                 for (int j = 0; j < row_count; j++)
+                {
+                    cout << pred_temp[j] << " ";
                     base_pred[j] += learning_rate * pred_temp[j];
+                }
+                cout << endl;
 
                 estimators.push_back(boosting_tree);
 
@@ -220,6 +226,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
 
                         if (is_leaf_flag == 1)
                         {
+                            cout << temp_node->val << endl;
                             y_pred[j] = learning_rate * temp_node->val;
                             break;
                         }

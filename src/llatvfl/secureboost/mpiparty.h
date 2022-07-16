@@ -337,8 +337,8 @@ struct MPISecureBoostParty : SecureBoostParty
 
     float compute_weight()
     {
-        float sum_grad = 0;
-        float sum_hess = 0;
+        sum_grad = 0;
+        sum_hess = 0;
         for (int i = 0; i < row_count; i++)
         {
             sum_grad += plain_gradient[idxs[i]];
@@ -359,8 +359,8 @@ struct MPISecureBoostParty : SecureBoostParty
 
     void calc_sum_grad_and_hess()
     {
-        float sum_grad = 0;
-        float sum_hess = 0;
+        sum_grad = 0;
+        sum_hess = 0;
         for (int i = 0; i < row_count; i++)
         {
             sum_grad += plain_gradient[idxs[i]];

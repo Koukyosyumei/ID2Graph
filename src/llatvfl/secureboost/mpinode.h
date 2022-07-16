@@ -6,14 +6,14 @@ using namespace std;
 
 struct MPISecureBoostNode : Node<MPISecureBoostParty>
 {
-    MPISecureBoostParty active_party;
+    MPISecureBoostParty *active_party;
     int parties_num, max_depth;
     float min_child_weight, lam, gamma, eps;
     bool use_only_active_party;
     MPISecureBoostNode *left, *right;
 
     MPISecureBoostNode() {}
-    MPISecureBoostNode(MPISecureBoostParty &active_party_, int parties_num_,
+    MPISecureBoostNode(MPISecureBoostParty *active_party_, int parties_num_,
                        vector<int> &idxs_, int max_depth_, float min_child_weight_, float lam_,
                        float gamma_, float eps_, int depth_, int active_party_id_ = 0,
                        bool use_only_active_party_ = false)
@@ -30,11 +30,12 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
 
-        y = active_party.y;
+        y = active_party->y;
 
         row_count = idxs.size();
         num_parties = parties_num;
 
+        active_party->set_instance_space(idxs);
         val = compute_weight();
 
         if (is_leaf())
@@ -50,8 +51,8 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         {
             if (i != active_party_id)
             {
-                active_party.world.send(i, TAG_DEPTH, depth);
-                active_party.world.send(i, TAG_ISLEAF, is_leaf_flag);
+                active_party->world.send(i, TAG_DEPTH, depth);
+                active_party->world.send(i, TAG_ISLEAF, is_leaf_flag);
             }
         }
 
@@ -105,7 +106,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
 
     float compute_weight()
     {
-        return active_party.compute_weight();
+        return active_party->compute_weight();
     }
 
     tuple<int, int, int> find_split()
@@ -116,9 +117,8 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
 
         if (use_only_active_party)
         {
-            active_party.set_instance_space(idxs);
-            active_party.calc_sum_grad_and_hess();
-            search_results = active_party.greedy_search_split();
+            active_party->calc_sum_grad_and_hess();
+            search_results = active_party->greedy_search_split();
 
             for (int j = 0; j < search_results.size(); j++)
             {
@@ -131,11 +131,11 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                     temp_left_hess += search_results[j][k].second;
 
                     if (temp_left_hess < min_child_weight ||
-                        active_party.sum_hess - temp_left_hess < min_child_weight)
+                        active_party->sum_hess - temp_left_hess < min_child_weight)
                         continue;
 
-                    temp_score = active_party.compute_gain(temp_left_grad, active_party.sum_grad - temp_left_grad,
-                                                           temp_left_hess, active_party.sum_hess - temp_left_hess);
+                    temp_score = active_party->compute_gain(temp_left_grad, active_party->sum_grad - temp_left_grad,
+                                                            temp_left_hess, active_party->sum_hess - temp_left_hess);
 
                     if (temp_score > best_score)
                     {
@@ -153,20 +153,20 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             {
                 if (i == active_party_id)
                 {
-                    active_party.set_instance_space(idxs);
-                    active_party.calc_sum_grad_and_hess();
-                    search_results = active_party.greedy_search_split();
+                    active_party->calc_sum_grad_and_hess();
+
+                    search_results = active_party->greedy_search_split();
                 }
                 else
                 {
                     if (max_depth == depth)
                     {
-                        active_party.world.send(i, TAG_VEC_ENCRYPTED_GRAD, active_party.gradient);
-                        active_party.world.send(i, TAG_VEC_ENCRYPTED_HESS, active_party.hessian);
+                        active_party->world.send(i, TAG_VEC_ENCRYPTED_GRAD, active_party->gradient);
+                        active_party->world.send(i, TAG_VEC_ENCRYPTED_HESS, active_party->hessian);
                     }
 
-                    active_party.world.send(i, TAG_INSTANCE_SPACE, idxs);
-                    active_party.world.recv(i, TAG_SEARCH_RESULTS, encrypted_search_result);
+                    active_party->world.send(i, TAG_INSTANCE_SPACE, idxs);
+                    active_party->world.recv(i, TAG_SEARCH_RESULTS, encrypted_search_result);
 
                     int temp_result_size = encrypted_search_result.size();
                     search_results.resize(temp_result_size);
@@ -177,9 +177,9 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                         search_results[j].resize(temp_vec_size);
                         for (int k = 0; k < temp_vec_size; k++)
                         {
-                            search_results[j][k] = make_pair(active_party.sk.decrypt<float>(
+                            search_results[j][k] = make_pair(active_party->sk.decrypt<float>(
                                                                  encrypted_search_result[j][k].first),
-                                                             active_party.sk.decrypt<float>(
+                                                             active_party->sk.decrypt<float>(
                                                                  encrypted_search_result[j][k].second));
                         }
                     }
@@ -196,11 +196,11 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                         temp_left_hess += search_results[j][k].second;
 
                         if (temp_left_hess < min_child_weight ||
-                            active_party.sum_hess - temp_left_hess < min_child_weight)
+                            active_party->sum_hess - temp_left_hess < min_child_weight)
                             continue;
 
-                        temp_score = active_party.compute_gain(temp_left_grad, active_party.sum_grad - temp_left_grad,
-                                                               temp_left_hess, active_party.sum_hess - temp_left_hess);
+                        temp_score = active_party->compute_gain(temp_left_grad, active_party->sum_grad - temp_left_grad,
+                                                                temp_left_hess, active_party->sum_hess - temp_left_hess);
 
                         if (temp_score > best_score)
                         {
@@ -213,7 +213,6 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                 }
             }
         }
-
         score = best_score;
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
@@ -224,7 +223,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         {
             if (i != active_party_id)
             {
-                active_party.world.send(i, TAG_BEST_PARTY_ID, best_party_id);
+                active_party->world.send(i, TAG_BEST_PARTY_ID, best_party_id);
             }
         }
 
@@ -232,15 +231,16 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         vector<int> left_idxs;
         if (best_party_id == active_party_id)
         {
-            record_id = active_party.insert_lookup_table(best_col_id, best_threshold_id);
-            left_idxs = active_party.split_rows(idxs, best_col_id, best_threshold_id);
+            cout << "insert active" << endl;
+            record_id = active_party->insert_lookup_table(best_col_id, best_threshold_id);
+            left_idxs = active_party->split_rows(idxs, best_col_id, best_threshold_id);
         }
         else
         {
-            active_party.world.send(best_party_id, TAG_BEST_SPLIT_COL_ID, best_col_id);
-            active_party.world.send(best_party_id, TAG_BEST_SPLIT_THRESHOLD_ID, best_threshold_id);
-            active_party.world.recv(best_party_id, TAG_RECORDID, record_id);
-            active_party.world.recv(best_party_id, TAG_BEST_INSTANCE_SPACE, left_idxs);
+            active_party->world.send(best_party_id, TAG_BEST_SPLIT_COL_ID, best_col_id);
+            active_party->world.send(best_party_id, TAG_BEST_SPLIT_THRESHOLD_ID, best_threshold_id);
+            active_party->world.recv(best_party_id, TAG_RECORDID, record_id);
+            active_party->world.recv(best_party_id, TAG_BEST_INSTANCE_SPACE, left_idxs);
         }
 
         vector<int> right_idxs;
@@ -282,7 +282,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         set<float> s{};
         for (int i = 0; i < row_count; i++)
         {
-            if (s.insert(active_party.y[idxs[i]]).second)
+            if (s.insert(active_party->y[idxs[i]]).second)
             {
                 if (s.size() == 2)
                     return false;

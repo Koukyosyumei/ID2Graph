@@ -128,8 +128,19 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty>
             boosting_tree.fit(&parties, y, grad, hess, vanila_grad, vanila_hess, min_child_weight,
                               lam, gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i), n_job);
             vector<float> pred_temp = boosting_tree.get_train_prediction();
+
+            cout << "pred " << endl;
+            for (int j = 0; j < row_count; j++)
+            {
+                cout << pred_temp[j] << " ";
+                base_pred[j] += learning_rate * pred_temp[j];
+            }
+            cout << endl;
+
+            /*
             for (int j = 0; j < row_count; j++)
                 base_pred[j] += learning_rate * pred_temp[j];
+            */
 
             estimators.push_back(boosting_tree);
 

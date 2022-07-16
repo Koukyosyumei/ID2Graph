@@ -216,6 +216,7 @@ struct NodeAPI
 
             if (temp_node->is_leaf())
             {
+                cout << temp_node->val << endl;
                 return temp_node->val;
             }
             else
