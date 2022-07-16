@@ -39,5 +39,5 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Test for MPI
-      ${{github.workspace}}/mpiscript/test.sh
+      run: ${{github.workspace}}/mpiscript/test.sh
       
