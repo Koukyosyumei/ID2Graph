@@ -132,8 +132,7 @@ int main()
             assert(idxs_left[i] == test_idxs_left[i]);
         assert(clf.estimators[0].dtree.left->is_pure());
         assert(clf.estimators[0].dtree.left->is_leaf());
-        cout << clf.estimators[0].dtree.left->val << endl;
-        assert(abs(clf.estimators[0].dtree.left->val - 0.1074890528001861) < 1e-6);
+        assert(abs(clf.estimators[0].dtree.left->val - 0.5074890528001861) < 1e-6);
 
         assert(clf.estimators[0].dtree.right->right->left->is_leaf());
         assert(clf.estimators[0].dtree.right->right->right->is_leaf());
