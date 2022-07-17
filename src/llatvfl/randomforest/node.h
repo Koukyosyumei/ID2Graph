@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <stdexcept>
 #include "party.h"
+#include "gini.h"
 #include "../core/node.h"
 #include "../utils/utils.h"
 using namespace std;
@@ -134,22 +135,33 @@ struct RandomForestNode : Node<RandomForestParty>
         return pos_ratio / float(row_count);
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties)
+    void find_split_per_party(int party_id_start, int temp_num_parties, float tot_cnt, float pos_cnt)
     {
+        float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
+        float temp_score, temp_giniimp, temp_left_giniimp, temp_right_giniimp;
+        float neg_cnt = tot_cnt - pos_cnt;
+
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<float>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, float>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
             {
-                float temp_score;
-                float temp_giniimp;
                 temp_num_search_results_j = search_results[j].size();
                 for (int k = 0; k < temp_num_search_results_j; k++)
                 {
-                    temp_giniimp = search_results[j][k];
+                    temp_left_size = search_results[j][k].first;
+                    temp_left_poscnt = search_results[j][k].second;
+                    temp_right_size = tot_cnt - temp_left_size;
+                    temp_right_poscnt = pos_cnt - temp_left_poscnt;
+
+                    temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_poscnt);
+                    temp_right_giniimp = calc_giniimp(temp_right_size, temp_right_poscnt);
+                    temp_giniimp = temp_left_giniimp * (temp_left_size / tot_cnt) +
+                                   temp_right_giniimp * (temp_right_size / tot_cnt);
+
                     temp_score = giniimp - temp_giniimp;
                     if (temp_score > best_score)
                     {
@@ -165,11 +177,18 @@ struct RandomForestNode : Node<RandomForestParty>
 
     tuple<int, int, int> find_split()
     {
-        float temp_score, temp_left_grad, temp_left_hess;
+        float temp_score;
+        float pos_cnt = 0;
+        float tot_cnt = row_count;
+
+        for (int i = 0; i < row_count; i++)
+        {
+            pos_cnt += float(y[idxs[i]]);
+        }
 
         if (n_job == 1)
         {
-            find_split_per_party(0, num_parties);
+            find_split_per_party(0, num_parties, tot_cnt, pos_cnt);
         }
         else
         {
@@ -180,8 +199,8 @@ struct RandomForestNode : Node<RandomForestParty>
             for (int i = 0; i < n_job; i++)
             {
                 int local_num_parties = num_parties_per_thread[i];
-                thread temp_th([this, cnt_parties, local_num_parties]
-                               { this->find_split_per_party(cnt_parties, local_num_parties); });
+                thread temp_th([this, cnt_parties, local_num_parties, tot_cnt, pos_cnt]
+                               { this->find_split_per_party(cnt_parties, local_num_parties, tot_cnt, pos_cnt); });
                 threads_parties.push_back(move(temp_th));
                 cnt_parties += num_parties_per_thread[i];
             }

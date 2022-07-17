@@ -22,12 +22,12 @@ struct RandomForestParty : Party
         return threshold_candidates;
     }
 
-    vector<vector<float>> greedy_search_split(vector<int> &idxs, vector<float> &y)
+    vector<vector<pair<float, float>>> greedy_search_split(vector<int> &idxs, vector<float> &y)
     {
         // feature_id -> [(grad hess)]
-        // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
+        // the threshold of split_cancidates_leftsize_leftposcnt[i][j] = temp_thresholds[i][j]
         int num_thresholds = subsample_col_count;
-        vector<vector<float>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<pair<float, float>>> split_cancidates_leftsize_leftposcnt(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
@@ -77,7 +77,7 @@ struct RandomForestParty : Party
             int current_min_idx = 0;
             int cumulative_left_size = 0;
             int cumulative_left_y_pos_cnt = 0;
-            int cumulative_left_y_neg_cnt = 0;
+            // int cumulative_left_y_neg_cnt = 0;
             int num_threshold_candidates = threshold_candidates.size();
             for (int p = 0; p < num_threshold_candidates; p++)
             {
@@ -86,7 +86,7 @@ struct RandomForestParty : Party
                     if (x_col[r] <= threshold_candidates[p])
                     {
                         cumulative_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
-                        cumulative_left_y_neg_cnt += 1.0 - y[idxs[x_col_idxs[r]]];
+                        // cumulative_left_y_neg_cnt += 1.0 - y[idxs[x_col_idxs[r]]];
                         cumulative_left_size += 1;
                     }
                     else
@@ -97,9 +97,11 @@ struct RandomForestParty : Party
                 }
 
                 float temp_left_size = float(cumulative_left_size);
-                float temp_right_size = float(row_count) - float(cumulative_left_size);
+                // float temp_right_size = float(row_count) - float(cumulative_left_size);
                 float temp_left_y_pos_cnt = float(cumulative_left_y_pos_cnt);
-                float temp_left_y_neg_cnt = float(cumulative_left_y_neg_cnt);
+                // float temp_left_y_neg_cnt = float(cumulative_left_y_neg_cnt);
+
+                /*
                 float temp_right_y_pos_cnt = float(y_pos_cnt) - temp_left_y_pos_cnt;
                 float temp_right_y_neg_cnt = float(y_neg_cnt) - temp_left_y_neg_cnt;
 
@@ -126,16 +128,16 @@ struct RandomForestParty : Party
                 float temp_giniimp = (temp_left_giniimp * (float(temp_left_size) / float(not_missing_values_count))) +
                                      (temp_right_giniimp * (float(temp_right_size) / float(not_missing_values_count)));
                 // TODO: support multi-class
-
+                */
                 if (cumulative_left_size >= min_leaf &&
                     row_count - cumulative_left_size >= min_leaf)
                 {
-                    split_candidates_grad_hess[i].push_back(temp_giniimp);
+                    split_cancidates_leftsize_leftposcnt[i].push_back(make_pair(temp_left_size, temp_left_y_pos_cnt));
                     temp_thresholds[i].push_back(threshold_candidates[p]);
                 }
             }
         }
 
-        return split_candidates_grad_hess;
+        return split_cancidates_leftsize_leftposcnt;
     }
 };
