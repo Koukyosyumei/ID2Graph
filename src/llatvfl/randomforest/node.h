@@ -143,17 +143,20 @@ struct RandomForestNode : Node<RandomForestParty>
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, float>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, float> > > search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
             {
+                temp_left_size = 0;
+                temp_left_poscnt = 0;
+
                 temp_num_search_results_j = search_results[j].size();
                 for (int k = 0; k < temp_num_search_results_j; k++)
                 {
-                    temp_left_size = search_results[j][k].first;
-                    temp_left_poscnt = search_results[j][k].second;
+                    temp_left_size += search_results[j][k].first;
+                    temp_left_poscnt += search_results[j][k].second;
                     temp_right_size = tot_cnt - temp_left_size;
                     temp_right_poscnt = pos_cnt - temp_left_poscnt;
 
