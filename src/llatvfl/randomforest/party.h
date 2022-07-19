@@ -76,7 +76,6 @@ struct RandomForestParty : Party
             // enumerate all threshold value (missing value goto right)
             int current_min_idx = 0;
             int cumulative_left_size = 0;
-            // int cumulative_left_y_neg_cnt = 0;
             int num_threshold_candidates = threshold_candidates.size();
             for (int p = 0; p < num_threshold_candidates; p++)
             {

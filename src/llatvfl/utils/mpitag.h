@@ -18,3 +18,4 @@ const int TAG_ISLEAF = 13;
 const int TAG_ISLEFT = 14;
 const int TAG_NODE_PARTY_ID = 15;
 const int TAG_RECORD_ID = 16;
+const int TAG_ENCRYPTED_Y = 17;
