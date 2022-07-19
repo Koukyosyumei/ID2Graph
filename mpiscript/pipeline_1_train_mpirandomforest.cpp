@@ -9,7 +9,10 @@
 #include <utility>
 #include <chrono>
 #include <unistd.h>
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
 #include "llatvfl/randomforest/mpirandomforest.h"
+#include "llatvfl/paillier/keygenerator.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
@@ -219,11 +222,6 @@ int main(int argc, char *argv[])
         float elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
         result_file << "training time," << elapsed << "\n";
         printf("Training is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
-
-        for (int i = 0; i < clf.logging_loss.size(); i++)
-        {
-            result_file << "round " << i + 1 << ": " << clf.logging_loss[i] << "\n";
-        }
 
         for (int i = 0; i < clf.estimators.size(); i++)
         {
