@@ -9,7 +9,7 @@
 #include <array>
 using namespace std;
 
-float trapz(vector<float> x, vector<float> y)
+float inline trapz(vector<float> x, vector<float> y)
 {
     float res = 0;
     int num_elements = x.size();
@@ -20,7 +20,7 @@ float trapz(vector<float> x, vector<float> y)
     return res;
 }
 
-vector<float> get_thresholds_idxs(vector<float> y_pred)
+vector<float> inline get_thresholds_idxs(vector<float> y_pred)
 {
     vector<float> thresholds_idxs;
     set<float> s{};
@@ -36,7 +36,7 @@ vector<float> get_thresholds_idxs(vector<float> y_pred)
     return thresholds_idxs;
 }
 
-float roc_auc_score(vector<float> y_pred, vector<int> y_true)
+float inline roc_auc_score(vector<float> y_pred, vector<int> y_true)
 {
     int num_elements = y_pred.size();
     vector<int> temp_idxs(num_elements);

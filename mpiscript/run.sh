@@ -115,6 +115,8 @@ echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh
 
 if [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
     cp build/mpiscript/train_mpisecureboost build/mpiscript/pipeline_1_training.out
+elif [ "${VALUE_M}" = "federatedforest" ] || [ "${VALUE_M}" = "f" ]; then
+    cp build/mpiscript/train_mpirandomforest build/mpiscript/pipeline_1_training.out
 else
     echo "m=${VALUE_M} is not supported"
 fi
