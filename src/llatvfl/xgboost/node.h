@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include "party.h"
 #include "../core/node.h"
+#include "../utils/metric.h"
 #include "../utils/utils.h"
 using namespace std;
 
@@ -23,7 +24,8 @@ struct XGBoostNode : Node<XGBoostParty>
 {
     vector<XGBoostParty> *parties;
     vector<float> gradient, hessian;
-    float min_child_weight, lam, gamma, eps;
+    float min_child_weight, lam, gamma, eps, weight_entropy;
+    float best_entropy;
     bool use_only_active_party;
     XGBoostNode *left, *right;
 
@@ -31,7 +33,7 @@ struct XGBoostNode : Node<XGBoostParty>
     XGBoostNode(vector<XGBoostParty> *parties_, vector<float> &y_, vector<float> &gradient_,
                 vector<float> &hessian_, vector<int> &idxs_,
                 float min_child_weight_, float lam_, float gamma_, float eps_,
-                int depth_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
+                int depth_, float weight_entropy_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -43,6 +45,7 @@ struct XGBoostNode : Node<XGBoostParty>
         gamma = gamma_;
         eps = eps_;
         depth = depth_;
+        weight_entropy = weight_entropy_;
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
@@ -150,23 +153,32 @@ struct XGBoostNode : Node<XGBoostParty>
                gamma;
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
+    void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess, float tot_cnt, float pos_cnt)
     {
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, float>>> search_results =
-                parties->at(temp_party_id).greedy_search_split(gradient, hessian, idxs);
+            vector<vector<tuple<float, float, float, float>>> search_results =
+                parties->at(temp_party_id).greedy_search_split(gradient, hessian, y, idxs);
 
             for (int j = 0; j < search_results.size(); j++)
             {
-                float temp_score;
+                float temp_score = 0;
+                float temp_entropy = 0;
                 float temp_left_grad = 0;
                 float temp_left_hess = 0;
+                float temp_left_size = 0;
+                float temp_left_poscnt = 0;
+                float temp_right_size = 0;
+                float temp_right_poscnt = 0;
 
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
-                    temp_left_grad += search_results[j][k].first;
-                    temp_left_hess += search_results[j][k].second;
+                    temp_left_grad += get<0>(search_results[j][k]);
+                    temp_left_hess += get<1>(search_results[j][k]);
+                    temp_left_size += get<2>(search_results[j][k]);
+                    temp_left_poscnt += get<3>(search_results[j][k]);
+                    temp_right_size = tot_cnt - temp_left_size;
+                    temp_right_poscnt = pos_cnt - temp_left_poscnt;
 
                     if (temp_left_hess < min_child_weight ||
                         sum_hess - temp_left_hess < min_child_weight)
@@ -174,10 +186,17 @@ struct XGBoostNode : Node<XGBoostParty>
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
                                               temp_left_hess, sum_hess - temp_left_hess);
+                    if (weight_entropy != 0)
+                    {
+                        temp_entropy = calc_entropy(temp_left_size, temp_left_poscnt) * (temp_left_size / tot_cnt) +
+                                       calc_entropy(temp_right_size, temp_right_poscnt) * (temp_right_size / tot_cnt);
+                        temp_score += weight_entropy * temp_entropy;
+                    }
 
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
+                        best_entropy = temp_entropy;
                         best_party_id = temp_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
@@ -197,17 +216,24 @@ struct XGBoostNode : Node<XGBoostParty>
             sum_hess += hessian[idxs[i]];
         }
 
+        float tot_cnt = row_count;
+        float pos_cnt = 0;
+        for (int i = 0; i < row_count; i++)
+        {
+            pos_cnt += float(y[idxs[i]]);
+        }
+
         float temp_score, temp_left_grad, temp_left_hess;
 
         if (use_only_active_party)
         {
-            find_split_per_party(active_party_id, 1, sum_grad, sum_hess);
+            find_split_per_party(active_party_id, 1, sum_grad, sum_hess, tot_cnt, pos_cnt);
         }
         else
         {
             if (n_job == 1)
             {
-                find_split_per_party(0, num_parties, sum_grad, sum_hess);
+                find_split_per_party(0, num_parties, sum_grad, sum_hess, tot_cnt, pos_cnt);
             }
             else
             {
@@ -218,8 +244,8 @@ struct XGBoostNode : Node<XGBoostParty>
                 for (int i = 0; i < n_job; i++)
                 {
                     int local_num_parties = num_parties_per_thread[i];
-                    thread temp_th([this, cnt_parties, local_num_parties, sum_grad, sum_hess]
-                                   { this->find_split_per_party(cnt_parties, local_num_parties, sum_grad, sum_hess); });
+                    thread temp_th([this, cnt_parties, local_num_parties, sum_grad, sum_hess, tot_cnt, pos_cnt]
+                                   { this->find_split_per_party(cnt_parties, local_num_parties, sum_grad, sum_hess, tot_cnt, pos_cnt); });
                     threads_parties.push_back(move(temp_th));
                     cnt_parties += num_parties_per_thread[i];
                 }
@@ -229,6 +255,7 @@ struct XGBoostNode : Node<XGBoostParty>
                 }
             }
         }
+
         score = best_score;
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
@@ -244,13 +271,13 @@ struct XGBoostNode : Node<XGBoostParty>
                 right_idxs.push_back(idxs[i]);
 
         left = new XGBoostNode(parties, y, gradient, hessian, left_idxs, min_child_weight,
-                               lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+                               lam, gamma, eps, depth - 1, weight_entropy, active_party_id, use_only_active_party);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new XGBoostNode(parties, y, gradient, hessian, right_idxs, min_child_weight,
-                                lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
+                                lam, gamma, eps, depth - 1, weight_entropy, active_party_id, use_only_active_party);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

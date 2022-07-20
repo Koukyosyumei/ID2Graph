@@ -12,7 +12,8 @@ struct XGBoostTree : Tree<XGBoostNode>
     void fit(vector<XGBoostParty> *parties, vector<float> &y,
              vector<float> &gradient, vector<float> &hessian,
              float min_child_weight, float lam, float gamma, float eps,
-             int min_leaf, int depth, int active_party_id = -1, bool use_only_active_party = false, int n_job = 1)
+             int min_leaf, int depth, float weight_entropy, int active_party_id = -1,
+             bool use_only_active_party = false, int n_job = 1)
     {
         vector<int> idxs(y.size());
         iota(idxs.begin(), idxs.end(), 0);
@@ -22,6 +23,6 @@ struct XGBoostTree : Tree<XGBoostNode>
         }
         dtree = XGBoostNode(parties, y, gradient, hessian, idxs,
                             min_child_weight, lam, gamma, eps, depth,
-                            active_party_id, use_only_active_party, n_job);
+                            weight_entropy, active_party_id, use_only_active_party, n_job);
     }
 };

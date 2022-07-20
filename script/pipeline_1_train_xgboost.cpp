@@ -33,6 +33,7 @@ int depth = 3;
 int n_job = 1;
 float learning_rate = 0.3;
 float eta = 0.3;
+float weight_entropy = 0.0;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
@@ -43,7 +44,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:y:mwg")) != -1)
     {
         switch (opt)
         {
@@ -79,6 +80,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
+            break;
+        case 'y':
+            weight_entropy = stof(string(optarg));
             break;
         case 'm':
             use_missing_value = true;
@@ -244,7 +248,8 @@ int main(int argc, char *argv[])
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
-                                              0, completely_secure_round,
+                                              weight_entropy, 0,
+                                              completely_secure_round,
                                               0.5, n_job, true);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
