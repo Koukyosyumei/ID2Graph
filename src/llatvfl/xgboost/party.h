@@ -1,4 +1,5 @@
 #pragma once
+#include <tuple>
 #include "../core/party.h"
 #include "../paillier/paillier.h"
 using namespace std;
@@ -38,9 +39,10 @@ struct XGBoostParty : Party
         }
     }
 
-    vector<vector<pair<float, float>>> greedy_search_split(vector<float> &gradient,
-                                                           vector<float> &hessian,
-                                                           vector<int> &idxs)
+    vector<vector<tuple<float, float, float, float>>> greedy_search_split(vector<float> &gradient,
+                                                                          vector<float> &hessian,
+                                                                          vector<float> &y,
+                                                                          vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -49,7 +51,7 @@ struct XGBoostParty : Party
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<float, float>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<tuple<float, float, float, float>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
@@ -94,7 +96,8 @@ struct XGBoostParty : Party
             {
                 float temp_grad = 0;
                 float temp_hess = 0;
-                int temp_left_size = 0;
+                float temp_left_size = 0;
+                float temp_left_y_pos_cnt = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
@@ -102,6 +105,8 @@ struct XGBoostParty : Party
                     {
                         temp_grad += gradient[idxs[x_col_idxs[r]]];
                         temp_hess += hessian[idxs[x_col_idxs[r]]];
+                        temp_left_size += 1.0;
+                        temp_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
                         cumulative_left_size += 1;
                     }
                     else
@@ -114,7 +119,7 @@ struct XGBoostParty : Party
                 if (cumulative_left_size >= min_leaf &&
                     row_count - cumulative_left_size >= min_leaf)
                 {
-                    split_candidates_grad_hess[i].push_back(make_pair(temp_grad, temp_hess));
+                    split_candidates_grad_hess[i].push_back(make_tuple(temp_grad, temp_hess, temp_left_size, temp_left_y_pos_cnt));
                     temp_thresholds[i].push_back(percentiles[p]);
                 }
             }
@@ -128,7 +133,8 @@ struct XGBoostParty : Party
                 {
                     float temp_grad = 0;
                     float temp_hess = 0;
-                    int temp_left_size = 0;
+                    float temp_left_size = 0;
+                    float temp_left_y_pos_cnt = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
@@ -136,6 +142,8 @@ struct XGBoostParty : Party
                         {
                             temp_grad += gradient[idxs[x_col_idxs[r]]];
                             temp_hess += hessian[idxs[x_col_idxs[r]]];
+                            temp_left_size += 1.0;
+                            temp_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
                             cumulative_right_size += 1;
                         }
                         else
@@ -148,8 +156,7 @@ struct XGBoostParty : Party
                     if (cumulative_right_size >= min_leaf &&
                         row_count - cumulative_right_size >= min_leaf)
                     {
-                        split_candidates_grad_hess[i + subsample_col_count].push_back(make_pair(temp_grad,
-                                                                                                temp_hess));
+                        split_candidates_grad_hess[i + subsample_col_count].push_back(make_tuple(temp_grad, temp_hess, temp_left_size, temp_left_y_pos_cnt));
                         temp_thresholds[i + subsample_col_count].push_back(percentiles[p]);
                     }
                 }

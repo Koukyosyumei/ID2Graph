@@ -55,7 +55,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
-                                              -1, 0, 1.0, 2);
+                                              0, -1, 0, 1.0, 2);
 
     vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<float> init_pred = clf.get_init_pred(y);

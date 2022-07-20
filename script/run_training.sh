@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:i:r:c:a:h:j:e:l:o:z:k:s:wg OPT; do
+while getopts d:m:p:n:f:i:r:c:a:h:y:j:e:l:o:z:k:s:wg OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -39,6 +39,10 @@ while getopts d:m:p:n:f:i:r:c:a:h:j:e:l:o:z:k:s:wg OPT; do
   "h")
     FLG_H="TRUE"
     VALUE_H="$OPTARG"
+    ;;
+  "y")
+    FLG_Y="TRUE"
+    VALUE_Y="$OPTARG"
     ;;
   "j")
     FLG_J="TRUE"
@@ -83,7 +87,7 @@ echo "random seed is ${VALUE_S}"
 python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${VALUE_S}
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
-RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z}"
+RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -y ${VALUE_Y} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z}"
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
@@ -100,7 +104,7 @@ if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
   echo "Start Clustering trial=${VALUE_S}"
 else
   echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=0.1."
-  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 0.1 -o ${VALUE_O} -z ${VALUE_Z}"
+  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -y ${VALUE_Y} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 0.1 -o ${VALUE_O} -z ${VALUE_Z}"
   if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
     RUNCMD+=" -a ${VALUE_A}"
   fi
@@ -118,7 +122,7 @@ if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
   echo "Start Clustering trial=${VALUE_S}"
 else
   echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=1.0."
-  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -o ${VALUE_O} -z ${VALUE_Z}"
+  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -y ${VALUE_Y} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -o ${VALUE_O} -z ${VALUE_Z}"
   if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
     RUNCMD+=" -a ${VALUE_A}"
   fi

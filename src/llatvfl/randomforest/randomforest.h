@@ -14,6 +14,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int depth;
     int min_leaf;
     float max_samples_ratio;
+    float weight_entropy;
     int num_trees;
     int active_party_id;
     int n_job;
@@ -22,7 +23,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     vector<RandomForestTree> estimators;
 
     RandomForestClassifier(float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
-                           float max_samples_ratio_ = 1.0, int num_trees_ = 5,
+                           float max_samples_ratio_ = 1.0, int num_trees_ = 5, float weight_entropy_ = 0.0,
                            int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
         subsample_cols = subsample_cols_;
@@ -33,6 +34,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         active_party_id = active_party_id_;
         n_job = n_job_;
         seed = seed_;
+        weight_entropy = weight_entropy_;
     }
 
     void load_estimators(vector<RandomForestTree> &_estimators)
@@ -57,14 +59,15 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, active_party_id, n_job, seed);
+            tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, weight_entropy,
+                     active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }
     }
 
     // retuen the average score of all trees (sklearn-style)
-    vector<float> predict_raw(vector<vector<float> > &X)
+    vector<float> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
         vector<float> y_pred(row_count, 0);
@@ -79,7 +82,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         return y_pred;
     }
 
-    vector<float> predict_proba(vector<vector<float> > &x)
+    vector<float> predict_proba(vector<vector<float>> &x)
     {
         vector<float> raw_score = predict_raw(x);
         int row_count = x.size();

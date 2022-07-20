@@ -17,6 +17,7 @@
     -c : (int) the number of completely secure rounds
     -a : (float) learning rate of XGBoost
     -h : (int) depth
+    -y : (float) weigt of entropy term
     -j : (int) the number of jobs
     -n : (int) the number of data records sampled for training
     -f : (float) the ratio of features owned by the active party

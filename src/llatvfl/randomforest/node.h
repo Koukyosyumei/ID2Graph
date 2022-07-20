@@ -15,8 +15,8 @@
 #include <unordered_map>
 #include <stdexcept>
 #include "party.h"
-#include "gini.h"
 #include "../core/node.h"
+#include "../utils/metric.h"
 #include "../utils/utils.h"
 using namespace std;
 
@@ -26,15 +26,18 @@ struct RandomForestNode : Node<RandomForestParty>
     RandomForestNode *left, *right;
 
     float giniimp;
+    float weight_entropy;
 
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_,
-                     vector<int> &idxs_, int depth_, int active_party_id_ = -1, int n_job_ = 1)
+                     vector<int> &idxs_, int depth_, float weight_entropy_ = 0.0,
+                     int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
         idxs = idxs_;
         depth = depth_;
+        weight_entropy = weight_entropy_;
         active_party_id = active_party_id_;
         n_job = n_job_;
 
@@ -143,7 +146,7 @@ struct RandomForestNode : Node<RandomForestParty>
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, float> > > search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, float>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
@@ -161,7 +164,15 @@ struct RandomForestNode : Node<RandomForestParty>
                     temp_right_poscnt = pos_cnt - temp_left_poscnt;
 
                     temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_poscnt);
+                    if (weight_entropy != 0)
+                    {
+                        temp_left_giniimp -= weight_entropy * calc_entropy(temp_left_size, temp_left_poscnt);
+                    }
                     temp_right_giniimp = calc_giniimp(temp_right_size, temp_right_poscnt);
+                    if (weight_entropy != 0)
+                    {
+                        temp_right_giniimp -= weight_entropy * calc_entropy(temp_right_size, temp_right_poscnt);
+                    }
                     temp_giniimp = temp_left_giniimp * (temp_left_size / tot_cnt) +
                                    temp_right_giniimp * (temp_right_size / tot_cnt);
 
@@ -227,13 +238,13 @@ struct RandomForestNode : Node<RandomForestParty>
                 right_idxs.push_back(idxs[i]);
 
         left = new RandomForestNode(parties, y, left_idxs,
-                                    depth - 1, active_party_id);
+                                    depth - 1, weight_entropy, active_party_id);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, right_idxs,
-                                     depth - 1, active_party_id);
+                                     depth - 1, weight_entropy, active_party_id);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
