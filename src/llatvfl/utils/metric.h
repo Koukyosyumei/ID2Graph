@@ -87,7 +87,16 @@ float inline calc_giniimp(float tot_cnt, float pos_cnt)
 float inline calc_entropy(float tot_cnt, float pos_cnt)
 {
     float neg_cnt = tot_cnt - pos_cnt;
-    float pos_ratio = pos_cnt / tot_cnt;
-    float neg_ratio = neg_cnt / tot_cnt;
-    return (-1 * pos_ratio * log2(pos_ratio)) + (-1 * neg_ratio * log2(neg_ratio));
+    float entropy = 0;
+    if (pos_cnt != 0)
+    {
+        float pos_ratio = pos_cnt / tot_cnt;
+        entropy -= pos_ratio * log2(pos_ratio);
+    }
+    if (neg_cnt != 0)
+    {
+        float neg_ratio = neg_cnt / tot_cnt;
+        entropy -= neg_ratio * log2(neg_ratio);
+    }
+    return entropy;
 }

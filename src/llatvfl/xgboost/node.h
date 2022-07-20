@@ -159,6 +159,7 @@ struct XGBoostNode : Node<XGBoostParty>
             vector<vector<tuple<float, float, float, float>>> search_results =
                 parties->at(temp_party_id).greedy_search_split(gradient, hessian, y, idxs);
 
+            cout << "---" << endl;
             for (int j = 0; j < search_results.size(); j++)
             {
                 float temp_score;
@@ -183,11 +184,13 @@ struct XGBoostNode : Node<XGBoostParty>
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
                                               temp_left_hess, sum_hess - temp_left_hess);
-
+                    cout << temp_score;
                     if (weight_entropy != 0)
                     {
-                        temp_score += weight_entropy * (calc_entropy(temp_left_size, temp_left_poscnt) * (temp_left_size / tot_cnt) +
-                                                        calc_entropy(temp_right_size, temp_right_poscnt) * (temp_right_size / tot_cnt));
+                        float entropy = (calc_entropy(temp_left_size, temp_left_poscnt) * (temp_left_size / tot_cnt) +
+                                         calc_entropy(temp_right_size, temp_right_poscnt) * (temp_right_size / tot_cnt));
+                        temp_score += weight_entropy * entropy;
+                        cout << " " << entropy << " " << weight_entropy * entropy << " " << temp_score << endl;
                     }
 
                     if (temp_score > best_score)
@@ -199,6 +202,7 @@ struct XGBoostNode : Node<XGBoostParty>
                     }
                 }
             }
+            cout << "---" << endl;
         }
     }
 
