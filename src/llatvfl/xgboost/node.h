@@ -25,6 +25,7 @@ struct XGBoostNode : Node<XGBoostParty>
     vector<XGBoostParty> *parties;
     vector<float> gradient, hessian;
     float min_child_weight, lam, gamma, eps, weight_entropy;
+    float best_entropy;
     bool use_only_active_party;
     XGBoostNode *left, *right;
 
@@ -159,15 +160,16 @@ struct XGBoostNode : Node<XGBoostParty>
             vector<vector<tuple<float, float, float, float>>> search_results =
                 parties->at(temp_party_id).greedy_search_split(gradient, hessian, y, idxs);
 
-            cout << "---" << endl;
             for (int j = 0; j < search_results.size(); j++)
             {
-                float temp_score;
+                float temp_score = 0;
+                float temp_entropy = 0;
                 float temp_left_grad = 0;
                 float temp_left_hess = 0;
                 float temp_left_size = 0;
                 float temp_left_poscnt = 0;
-                float temp_right_size, temp_right_poscnt;
+                float temp_right_size = 0;
+                float temp_right_poscnt = 0;
 
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
@@ -184,25 +186,23 @@ struct XGBoostNode : Node<XGBoostParty>
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
                                               temp_left_hess, sum_hess - temp_left_hess);
-                    cout << temp_score;
                     if (weight_entropy != 0)
                     {
-                        float entropy = (calc_entropy(temp_left_size, temp_left_poscnt) * (temp_left_size / tot_cnt) +
-                                         calc_entropy(temp_right_size, temp_right_poscnt) * (temp_right_size / tot_cnt));
-                        temp_score += weight_entropy * entropy;
-                        cout << " " << entropy << " " << weight_entropy * entropy << " " << temp_score << endl;
+                        temp_entropy = calc_entropy(temp_left_size, temp_left_poscnt) * (temp_left_size / tot_cnt) +
+                                       calc_entropy(temp_right_size, temp_right_poscnt) * (temp_right_size / tot_cnt);
+                        temp_score += weight_entropy * temp_entropy;
                     }
 
                     if (temp_score > best_score)
                     {
                         best_score = temp_score;
+                        best_entropy = temp_entropy;
                         best_party_id = temp_party_id;
                         best_col_id = j;
                         best_threshold_id = k;
                     }
                 }
             }
-            cout << "---" << endl;
         }
     }
 
@@ -255,6 +255,7 @@ struct XGBoostNode : Node<XGBoostParty>
                 }
             }
         }
+
         score = best_score;
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
