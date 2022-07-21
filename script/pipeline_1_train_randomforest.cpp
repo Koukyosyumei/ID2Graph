@@ -29,6 +29,7 @@ int n_job = 1;
 int skip_round = 0;
 float eta = 0.3;
 float weight_entropy = 0.0;
+float max_leaf_purity = 1.0;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
@@ -38,7 +39,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:y:wg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:y:q:wg")) != -1)
     {
         switch (opt)
         {
@@ -74,6 +75,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'y':
             weight_entropy = stof(string(optarg));
+            break;
+        case 'q':
+            max_leaf_purity = stof(string(optarg));
             break;
         case 'w':
             is_weighted_graph = true;
@@ -221,7 +225,7 @@ int main(int argc, char *argv[])
     // --- Check Initialization --- //
     RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
                                                         max_samples_ratio, num_trees,
-                                                        weight_entropy, 0, n_job, 0);
+                                                        weight_entropy, max_leaf_purity, 0, n_job, 0);
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();

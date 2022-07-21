@@ -12,6 +12,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 {
     float subsample_cols;
     float min_child_weight;
+    float max_leaf_purity;
     int depth;
     int min_leaf;
     float learning_rate;
@@ -35,12 +36,13 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
                 int depth_ = 5, int min_leaf_ = 5,
                 float learning_rate_ = 0.4, int boosting_rounds_ = 5,
                 float lam_ = 1.5, float gamma_ = 1, float eps_ = 0.1,
-                float weight_entropy_ = 0.0,
+                float weight_entropy_ = 0.0, float max_leaf_purity_ = 1.0,
                 int active_party_id_ = -1, int completelly_secure_round_ = 0,
                 float init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
+        max_leaf_purity = max_leaf_purity_;
         depth = depth_;
         min_leaf = min_leaf_;
         learning_rate = learning_rate_;
@@ -107,7 +109,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, grad, hess, min_child_weight,
-                              lam, gamma, eps, min_leaf, depth, weight_entropy,
+                              lam, gamma, eps, min_leaf, depth, weight_entropy, max_leaf_purity,
                               active_party_id, (completelly_secure_round > i), n_job);
             vector<float> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)

@@ -24,7 +24,7 @@ struct XGBoostNode : Node<XGBoostParty>
 {
     vector<XGBoostParty> *parties;
     vector<float> gradient, hessian;
-    float min_child_weight, lam, gamma, eps, weight_entropy;
+    float min_child_weight, lam, gamma, eps, weight_entropy, max_leaf_purity;
     float best_entropy;
     bool use_only_active_party;
     XGBoostNode *left, *right;
@@ -33,7 +33,8 @@ struct XGBoostNode : Node<XGBoostParty>
     XGBoostNode(vector<XGBoostParty> *parties_, vector<float> &y_, vector<float> &gradient_,
                 vector<float> &hessian_, vector<int> &idxs_,
                 float min_child_weight_, float lam_, float gamma_, float eps_,
-                int depth_, float weight_entropy_, int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
+                int depth_, float weight_entropy_, float max_leaf_purity_,
+                int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -41,6 +42,7 @@ struct XGBoostNode : Node<XGBoostParty>
         hessian = hessian_;
         idxs = idxs_;
         min_child_weight = min_child_weight_;
+        max_leaf_purity = max_leaf_purity_;
         lam = lam_;
         gamma = gamma_;
         eps = eps_;
@@ -160,16 +162,20 @@ struct XGBoostNode : Node<XGBoostParty>
             vector<vector<tuple<float, float, float, float>>> search_results =
                 parties->at(temp_party_id).greedy_search_split(gradient, hessian, y, idxs);
 
+            float temp_score, temp_entropy, temp_left_grad, temp_left_hess;
+            float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
+            float left_leaf_purity, right_leaf_purity;
+
             for (int j = 0; j < search_results.size(); j++)
             {
-                float temp_score = 0;
-                float temp_entropy = 0;
-                float temp_left_grad = 0;
-                float temp_left_hess = 0;
-                float temp_left_size = 0;
-                float temp_left_poscnt = 0;
-                float temp_right_size = 0;
-                float temp_right_poscnt = 0;
+                temp_score = 0;
+                temp_entropy = 0;
+                temp_left_grad = 0;
+                temp_left_hess = 0;
+                temp_left_size = 0;
+                temp_left_poscnt = 0;
+                temp_right_size = 0;
+                temp_right_poscnt = 0;
 
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
@@ -183,6 +189,14 @@ struct XGBoostNode : Node<XGBoostParty>
                     if (temp_left_hess < min_child_weight ||
                         sum_hess - temp_left_hess < min_child_weight)
                         continue;
+
+                    left_leaf_purity = max(temp_left_poscnt / temp_left_size, 1 - temp_left_poscnt / temp_left_size);
+                    right_leaf_purity = max(temp_right_poscnt / temp_right_size, 1 - temp_right_poscnt / temp_right_size);
+
+                    if (max(left_leaf_purity, right_leaf_purity) > max_leaf_purity)
+                    {
+                        continue;
+                    }
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
                                               temp_left_hess, sum_hess - temp_left_hess);
@@ -271,13 +285,13 @@ struct XGBoostNode : Node<XGBoostParty>
                 right_idxs.push_back(idxs[i]);
 
         left = new XGBoostNode(parties, y, gradient, hessian, left_idxs, min_child_weight,
-                               lam, gamma, eps, depth - 1, weight_entropy, active_party_id, use_only_active_party);
+                               lam, gamma, eps, depth - 1, weight_entropy, max_leaf_purity, active_party_id, use_only_active_party, n_job);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new XGBoostNode(parties, y, gradient, hessian, right_idxs, min_child_weight,
-                                lam, gamma, eps, depth - 1, weight_entropy, active_party_id, use_only_active_party);
+                                lam, gamma, eps, depth - 1, weight_entropy, max_leaf_purity, active_party_id, use_only_active_party, n_job);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
