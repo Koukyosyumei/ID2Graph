@@ -16,7 +16,7 @@ struct NodeAPI
 
     NodeAPI(){};
 
-    float get_leaf_purity(NodeType *node)
+    float get_leaf_purity(NodeType *node, int tot_cnt)
     {
         float leaf_purity = 0;
         if (node->is_leaf())
@@ -38,12 +38,12 @@ struct NodeAPI
                 }
                 leaf_purity = max(float(cnt_zero) / float(cnt_idxs),
                                   1 - float(cnt_zero) / float(cnt_idxs));
-                leaf_purity = leaf_purity * (float(cnt_idxs) / float(node->y.size()));
+                leaf_purity = leaf_purity * (float(cnt_idxs) / float(tot_cnt));
             }
         }
         else
         {
-            leaf_purity = get_leaf_purity(node->left) + get_leaf_purity(node->right);
+            leaf_purity = get_leaf_purity(node->left, tot_cnt) + get_leaf_purity(node->right, tot_cnt);
         }
         return leaf_purity;
     }
