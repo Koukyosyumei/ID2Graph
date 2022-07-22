@@ -14,6 +14,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int depth;
     int min_leaf;
     float max_samples_ratio;
+    float max_leaf_purity;
     float weight_entropy;
     int num_trees;
     int active_party_id;
@@ -24,7 +25,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 
     RandomForestClassifier(float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
                            float max_samples_ratio_ = 1.0, int num_trees_ = 5, float weight_entropy_ = 0.0,
-                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
+                           float max_leaf_purity_ = 1.0, int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
         subsample_cols = subsample_cols_;
         depth = depth_;
@@ -35,6 +36,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         n_job = n_job_;
         seed = seed_;
         weight_entropy = weight_entropy_;
+        max_leaf_purity = max_leaf_purity_;
     }
 
     void load_estimators(vector<RandomForestTree> &_estimators)
@@ -59,8 +61,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, weight_entropy,
-                     active_party_id, n_job, seed);
+            tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, weight_entropy, max_leaf_purity, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }

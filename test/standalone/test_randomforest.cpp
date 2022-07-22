@@ -47,7 +47,7 @@ TEST(RandomForest, RandomForestClassifierTest)
 
     // --- Check Initialization --- //
     RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
-                                                        max_samples_ratio, num_trees, 0.0, -1, 1);
+                                                        max_samples_ratio, num_trees, 0.0, 1.0, -1, 1);
 
     // --- Check Training --- //
     clf.fit(parties, y);

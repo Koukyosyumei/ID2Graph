@@ -26,18 +26,20 @@ struct RandomForestNode : Node<RandomForestParty>
     RandomForestNode *left, *right;
 
     float giniimp;
+    float max_leaf_purity;
     float weight_entropy;
 
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_,
                      vector<int> &idxs_, int depth_, float weight_entropy_ = 0.0,
-                     int active_party_id_ = -1, int n_job_ = 1)
+                     float max_leaf_purity_ = 1.0, int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
         idxs = idxs_;
         depth = depth_;
         weight_entropy = weight_entropy_;
+        max_leaf_purity = max_leaf_purity_;
         active_party_id = active_party_id_;
         n_job = n_job_;
 
@@ -142,6 +144,7 @@ struct RandomForestNode : Node<RandomForestParty>
     {
         float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
         float temp_score, temp_giniimp, temp_left_giniimp, temp_right_giniimp;
+        float left_leaf_purity, right_leaf_purity;
         float neg_cnt = tot_cnt - pos_cnt;
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
@@ -162,6 +165,14 @@ struct RandomForestNode : Node<RandomForestParty>
                     temp_left_poscnt += search_results[j][k].second;
                     temp_right_size = tot_cnt - temp_left_size;
                     temp_right_poscnt = pos_cnt - temp_left_poscnt;
+
+                    left_leaf_purity = max(temp_left_poscnt / temp_left_size, 1 - temp_left_poscnt / temp_left_size);
+                    right_leaf_purity = max(temp_right_poscnt / temp_right_size, 1 - temp_right_poscnt / temp_right_size);
+
+                    if (max(left_leaf_purity, right_leaf_purity) > max_leaf_purity)
+                    {
+                        continue;
+                    }
 
                     temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_poscnt);
                     if (weight_entropy != 0)
@@ -238,13 +249,13 @@ struct RandomForestNode : Node<RandomForestParty>
                 right_idxs.push_back(idxs[i]);
 
         left = new RandomForestNode(parties, y, left_idxs,
-                                    depth - 1, weight_entropy, active_party_id);
+                                    depth - 1, weight_entropy, max_leaf_purity, active_party_id);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, right_idxs,
-                                     depth - 1, weight_entropy, active_party_id);
+                                     depth - 1, weight_entropy, max_leaf_purity, active_party_id);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
