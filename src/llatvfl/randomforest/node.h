@@ -153,13 +153,11 @@ struct RandomForestNode : Node<RandomForestParty>
     {
         float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
         float temp_score, temp_giniimp, temp_left_giniimp, temp_right_giniimp;
-        float left_in_pos_ratio, left_out_pos_ratio, right_in_pos_ratio, right_out_pos_ratio;
-        float left_in_diff, left_out_diff, right_in_diff, right_out_diff;
         float neg_cnt = tot_cnt - pos_cnt;
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, float> > > search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, float>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
@@ -176,27 +174,12 @@ struct RandomForestNode : Node<RandomForestParty>
                     temp_right_size = tot_cnt - temp_left_size;
                     temp_right_poscnt = pos_cnt - temp_left_poscnt;
 
-                    if (mi_delta > 0)
+                    if (is_satisfied_with_mi_bound_cond(prior, mi_delta,
+                                                        temp_left_poscnt, temp_left_size,
+                                                        temp_right_poscnt, temp_right_size,
+                                                        entire_pos_cnt, entire_datasetsize))
                     {
-                        left_in_pos_ratio = temp_left_poscnt / temp_left_size;
-                        left_out_pos_ratio = (entire_pos_cnt - temp_left_poscnt) / (entire_datasetsize - temp_left_size);
-                        left_in_diff = max(abs(left_in_pos_ratio - prior[1]),
-                                           abs((1 - left_in_pos_ratio) - prior[0]));
-                        left_out_diff = max(abs(left_out_pos_ratio - prior[1]),
-                                            abs((1 - left_out_pos_ratio) - prior[0]));
-
-                        right_in_pos_ratio = temp_right_poscnt / temp_right_size;
-                        right_out_pos_ratio = (entire_pos_cnt - temp_right_poscnt) / (entire_datasetsize - temp_right_size);
-                        right_in_diff = max(abs(right_in_pos_ratio - prior[1]),
-                                            abs((1 - right_in_pos_ratio) - prior[0]));
-                        right_out_diff = max(abs(right_out_pos_ratio - prior[1]),
-                                             abs((1 - right_out_pos_ratio) - prior[0]));
-
-                        if ((left_in_diff > mi_delta) | (left_out_diff > mi_delta) |
-                            (right_in_diff > mi_delta) | (right_out_diff > mi_delta))
-                        {
-                            continue;
-                        }
+                        continue;
                     }
 
                     temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_poscnt);

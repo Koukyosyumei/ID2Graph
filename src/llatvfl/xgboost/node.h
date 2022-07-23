@@ -172,8 +172,6 @@ struct XGBoostNode : Node<XGBoostParty>
 
             float temp_score, temp_entropy, temp_left_grad, temp_left_hess;
             float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
-            float left_in_pos_ratio, left_out_pos_ratio, right_in_pos_ratio, right_out_pos_ratio;
-            float left_in_diff, left_out_diff, right_in_diff, right_out_diff;
 
             for (int j = 0; j < search_results.size(); j++)
             {
@@ -199,27 +197,12 @@ struct XGBoostNode : Node<XGBoostParty>
                         sum_hess - temp_left_hess < min_child_weight)
                         continue;
 
-                    if (mi_delta > 0)
+                    if (is_satisfied_with_mi_bound_cond(prior, mi_delta,
+                                                        temp_left_poscnt, temp_left_size,
+                                                        temp_right_poscnt, temp_right_size,
+                                                        entire_pos_cnt, entire_datasetsize))
                     {
-                        left_in_pos_ratio = temp_left_poscnt / temp_left_size;
-                        left_out_pos_ratio = (entire_pos_cnt - temp_left_poscnt) / (entire_datasetsize - temp_left_size);
-                        left_in_diff = max(abs(left_in_pos_ratio - prior[1]),
-                                           abs((1 - left_in_pos_ratio) - prior[0]));
-                        left_out_diff = max(abs(left_out_pos_ratio - prior[1]),
-                                            abs((1 - left_out_pos_ratio) - prior[0]));
-
-                        right_in_pos_ratio = temp_right_poscnt / temp_right_size;
-                        right_out_pos_ratio = (entire_pos_cnt - temp_right_poscnt) / (entire_datasetsize - temp_right_size);
-                        right_in_diff = max(abs(right_in_pos_ratio - prior[1]),
-                                            abs((1 - right_in_pos_ratio) - prior[0]));
-                        right_out_diff = max(abs(right_out_pos_ratio - prior[1]),
-                                             abs((1 - right_out_pos_ratio) - prior[0]));
-
-                        if ((left_in_diff > mi_delta) | (left_out_diff > mi_delta) |
-                            (right_in_diff > mi_delta) | (right_out_diff > mi_delta))
-                        {
-                            continue;
-                        }
+                        continue;
                     }
 
                     temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
