@@ -29,6 +29,9 @@ struct XGBoostNode : Node<XGBoostParty>
     bool use_only_active_party;
     XGBoostNode *left, *right;
 
+    float entire_datasetsize = 0;
+    float entire_pos_cnt = 0;
+
     XGBoostNode() {}
     XGBoostNode(vector<XGBoostParty> *parties_, vector<float> &y_, vector<float> &gradient_,
                 vector<float> &hessian_, vector<int> &idxs_, vector<float> &prior_,
@@ -50,6 +53,12 @@ struct XGBoostNode : Node<XGBoostParty>
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
+
+        entire_datasetsize = y.size();
+        for (int i = 0; i < entire_datasetsize; i++)
+        {
+            entire_pos_cnt += y[i];
+        }
 
         try
         {
@@ -163,7 +172,8 @@ struct XGBoostNode : Node<XGBoostParty>
 
             float temp_score, temp_entropy, temp_left_grad, temp_left_hess;
             float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
-            float left_max_diff, right_max_diff;
+            float left_in_pos_ratio, left_out_pos_ratio, right_in_pos_ratio, right_out_pos_ratio;
+            float left_in_diff, left_out_diff, right_in_diff, right_out_diff;
 
             for (int j = 0; j < search_results.size(); j++)
             {
@@ -191,11 +201,22 @@ struct XGBoostNode : Node<XGBoostParty>
 
                     if (mi_delta > 0)
                     {
-                        left_max_diff = max(abs(temp_left_poscnt / temp_left_size - prior[1]),
-                                            abs((1 - temp_left_poscnt / temp_left_size) - prior[0]));
-                        right_max_diff = max(abs(temp_right_poscnt / temp_right_size - prior[1]),
-                                             abs((1 - temp_right_poscnt / temp_right_size) - prior[0]));
-                        if ((left_max_diff >= mi_delta) | (right_max_diff >= mi_delta))
+                        left_in_pos_ratio = temp_left_poscnt / temp_left_size;
+                        left_out_pos_ratio = (entire_pos_cnt - temp_left_poscnt) / (entire_datasetsize - temp_left_size);
+                        left_in_diff = max(abs(left_in_pos_ratio - prior[1]),
+                                           abs((1 - left_in_pos_ratio) - prior[0]));
+                        left_out_diff = max(abs(left_out_pos_ratio - prior[1]),
+                                            abs((1 - left_out_pos_ratio) - prior[0]));
+
+                        right_in_pos_ratio = temp_right_poscnt / temp_right_size;
+                        right_out_pos_ratio = (entire_pos_cnt - temp_right_poscnt) / (entire_datasetsize - temp_right_size);
+                        right_in_diff = max(abs(right_in_pos_ratio - prior[1]),
+                                            abs((1 - right_in_pos_ratio) - prior[0]));
+                        right_out_diff = max(abs(right_out_pos_ratio - prior[1]),
+                                             abs((1 - right_out_pos_ratio) - prior[0]));
+
+                        if ((left_in_diff > mi_delta) | (left_out_diff > mi_delta) |
+                            (right_in_diff > mi_delta) | (right_out_diff > mi_delta))
                         {
                             continue;
                         }
