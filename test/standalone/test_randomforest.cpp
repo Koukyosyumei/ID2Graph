@@ -47,10 +47,13 @@ TEST(RandomForest, RandomForestClassifierTest)
 
     // --- Check Initialization --- //
     RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
-                                                        max_samples_ratio, num_trees, 0.0, 1.0, -1, 1);
+                                                        max_samples_ratio, num_trees,
+                                                        numeric_limits<float>::infinity(), -1, 1);
 
     // --- Check Training --- //
     clf.fit(parties, y);
+
+    ASSERT_EQ(clf.upsilon_Y, 0.375);
 
     ASSERT_NEAR(clf.estimators[0].dtree.giniimp, 0.46875, 1e-6);
     ASSERT_NEAR(clf.estimators[0].dtree.score, 0.16875, 1e-6);
