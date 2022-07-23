@@ -55,7 +55,8 @@ TEST(XGBoost, XGBoostClassifierTest)
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
-                                              0, 1.0, -1, 0, 1.0, 2);
+                                              numeric_limits<float>::infinity(),
+                                              -1, 0, 1.0, 2);
 
     vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<float> init_pred = clf.get_init_pred(y);
@@ -78,6 +79,8 @@ TEST(XGBoost, XGBoostClassifierTest)
 
     // --- Check Training --- //
     clf.fit(parties, y);
+
+    ASSERT_EQ(clf.upsilon_Y, 0.375);
 
     ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
     ASSERT_EQ(parties[1].get_lookup_table().size(), 2);

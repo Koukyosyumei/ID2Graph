@@ -12,8 +12,8 @@ struct RandomForestTree : Tree<RandomForestNode>
 {
     RandomForestTree() {}
     void fit(vector<RandomForestParty> *parties, vector<float> &y,
-             int min_leaf, int depth, float max_samples_ratio = 1.0,
-             float weight_entropy = 0.0, float max_leaf_purity = 1.0,
+             int min_leaf, int depth, vector<float> &prior,
+             float max_samples_ratio = 1.0, float mi_delta = 0,
              int active_party_id = -1, int n_job = 1, int seed = 0)
     {
         vector<int> idxs(y.size());
@@ -31,6 +31,6 @@ struct RandomForestTree : Tree<RandomForestNode>
         {
             parties->at(i).subsample_columns();
         }
-        dtree = RandomForestNode(parties, y, idxs, depth, weight_entropy, max_leaf_purity, active_party_id, n_job);
+        dtree = RandomForestNode(parties, y, idxs, depth, prior, mi_delta, active_party_id, n_job);
     }
 };

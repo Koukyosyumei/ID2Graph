@@ -12,7 +12,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 {
     float subsample_cols;
     float min_child_weight;
-    float max_leaf_purity;
     int depth;
     int min_leaf;
     float learning_rate;
@@ -20,12 +19,14 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     float lam;
     float gamma;
     float eps;
-    float weight_entropy;
+    float mi_bound;
     int active_party_id;
     int completelly_secure_round;
     float init_value;
     int n_job;
     bool save_loss;
+
+    float upsilon_Y;
 
     vector<float> init_pred;
     vector<XGBoostTree> estimators;
@@ -36,13 +37,12 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
                 int depth_ = 5, int min_leaf_ = 5,
                 float learning_rate_ = 0.4, int boosting_rounds_ = 5,
                 float lam_ = 1.5, float gamma_ = 1, float eps_ = 0.1,
-                float weight_entropy_ = 0.0, float max_leaf_purity_ = 1.0,
+                float mi_bound_ = numeric_limits<float>::infinity(),
                 int active_party_id_ = -1, int completelly_secure_round_ = 0,
                 float init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
     {
         subsample_cols = subsample_cols_;
         min_child_weight = min_child_weight_;
-        max_leaf_purity = max_leaf_purity_;
         depth = depth_;
         min_leaf = min_leaf_;
         learning_rate = learning_rate_;
@@ -50,12 +50,17 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         lam = lam_;
         gamma = gamma_;
         eps = eps_;
-        weight_entropy = weight_entropy_;
+        mi_bound = mi_bound_;
         active_party_id = active_party_id_;
         completelly_secure_round = completelly_secure_round_;
         init_value = init_value_;
         n_job = n_job_;
         save_loss = save_loss_;
+
+        if (mi_bound < 0)
+        {
+            mi_bound = numeric_limits<float>::infinity();
+        }
     }
 
     virtual vector<float> get_grad(vector<float> &y_pred, vector<float> &y) = 0;
@@ -82,6 +87,21 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     void fit(vector<XGBoostParty> &parties, vector<float> &y)
     {
         int row_count = y.size();
+
+        vector<float> prior(2, 0);
+        for (int j = 0; j < row_count; j++)
+        {
+            prior[y[j]] += 1;
+        }
+
+        for (int c = 0; c < 2; c++)
+        {
+            prior[c] /= float(row_count);
+        }
+
+        upsilon_Y = *min_element(prior.begin(), prior.end());
+        float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
+
         vector<float> base_pred;
         if (estimators.size() == 0)
         {
@@ -108,8 +128,8 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
             vector<float> hess = get_hess(base_pred, y);
 
             XGBoostTree boosting_tree = XGBoostTree();
-            boosting_tree.fit(&parties, y, grad, hess, min_child_weight,
-                              lam, gamma, eps, min_leaf, depth, weight_entropy, max_leaf_purity,
+            boosting_tree.fit(&parties, y, grad, hess, prior, min_child_weight,
+                              lam, gamma, eps, min_leaf, depth, mi_delta,
                               active_party_id, (completelly_secure_round > i), n_job);
             vector<float> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)

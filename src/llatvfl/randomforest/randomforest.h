@@ -4,6 +4,7 @@
 #include <limits>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include "../core/model.h"
 #include "tree.h"
 using namespace std;
@@ -14,29 +15,35 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int depth;
     int min_leaf;
     float max_samples_ratio;
-    float max_leaf_purity;
-    float weight_entropy;
     int num_trees;
+    float mi_bound;
     int active_party_id;
     int n_job;
     int seed;
 
+    float upsilon_Y;
+
     vector<RandomForestTree> estimators;
 
     RandomForestClassifier(float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
-                           float max_samples_ratio_ = 1.0, int num_trees_ = 5, float weight_entropy_ = 0.0,
-                           float max_leaf_purity_ = 1.0, int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
+                           float max_samples_ratio_ = 1.0, int num_trees_ = 5,
+                           float mi_bound_ = numeric_limits<float>::infinity(),
+                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
         subsample_cols = subsample_cols_;
         depth = depth_;
         min_leaf = min_leaf_;
         max_samples_ratio = max_samples_ratio_;
         num_trees = num_trees_;
+        mi_bound = mi_bound_;
         active_party_id = active_party_id_;
         n_job = n_job_;
         seed = seed_;
-        weight_entropy = weight_entropy_;
-        max_leaf_purity = max_leaf_purity_;
+
+        if (mi_bound < 0)
+        {
+            mi_bound = numeric_limits<float>::infinity();
+        }
     }
 
     void load_estimators(vector<RandomForestTree> &_estimators)
@@ -58,10 +65,23 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     {
         int row_count = y.size();
 
+        vector<float> prior(2, 0);
+        for (int j = 0; j < row_count; j++)
+        {
+            prior[y[j]] += 1;
+        }
+        for (int c = 0; c < 2; c++)
+        {
+            prior[c] /= float(row_count);
+        }
+
+        upsilon_Y = *min_element(prior.begin(), prior.end());
+        float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
+
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, min_leaf, depth, max_samples_ratio, weight_entropy, max_leaf_purity, active_party_id, n_job, seed);
+            tree.fit(&parties, y, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }

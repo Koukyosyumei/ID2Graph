@@ -33,10 +33,9 @@ int depth = 3;
 int n_job = 1;
 float learning_rate = 0.3;
 float eta = 0.3;
-float weight_entropy = 0.0;
-float max_leaf_purity = 1.0;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
+float mi_bound = numeric_limits<float>::infinity();
 int seconds_wait4timeout = 300;
 bool use_missing_value = false;
 bool is_weighted_graph = false;
@@ -45,7 +44,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:y:q:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:mwg")) != -1)
     {
         switch (opt)
         {
@@ -79,14 +78,11 @@ void parse_args(int argc, char *argv[])
         case 'o':
             epsilon_ldp = stof(string(optarg));
             break;
+        case 'b':
+            mi_bound = stof(string(optarg));
+            break;
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
-            break;
-        case 'y':
-            weight_entropy = stof(string(optarg));
-            break;
-        case 'q':
-            max_leaf_purity = stof(string(optarg));
             break;
         case 'm':
             use_missing_value = true;
@@ -252,8 +248,7 @@ int main(int argc, char *argv[])
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
-                                              weight_entropy, max_leaf_purity,
-                                              0, completely_secure_round,
+                                              mi_bound, 0, completely_secure_round,
                                               0.5, n_job, true);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
