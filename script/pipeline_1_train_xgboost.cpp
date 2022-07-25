@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
     {
-        int num_col = 0;
-        if (scanf("%d", &num_col) != 1)
+        int temp_num_col = 0;
+        if (scanf("%d", &temp_num_col) != 1)
         {
             try
             {
@@ -138,9 +138,9 @@ int main(int argc, char *argv[])
                 cerr << e.what() << "\n";
             }
         }
-        vector<int> feature_idxs(num_col);
-        vector<vector<float>> x(num_row_train, vector<float>(num_col));
-        for (int j = 0; j < num_col; j++)
+        vector<int> feature_idxs(temp_num_col);
+        vector<vector<float>> x(num_row_train, vector<float>(temp_num_col));
+        for (int j = 0; j < temp_num_col; j++)
         {
             feature_idxs[j] = temp_count_feature;
             for (int k = 0; k < num_row_train; k++)

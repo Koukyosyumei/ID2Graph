@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+from email.policy import default
 
 import numpy as np
 import pandas as pd
@@ -38,6 +39,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "-v",
+        "--feature_num_ratio_of_passive_party",
+        type=float,
+        default=-1,
+    )
+
+    parser.add_argument(
         "-i",
         "--imbalance",
         type=float,
@@ -64,6 +72,7 @@ def convert_df_to_input(
     col_alloc=None,
     parties_num=2,
     feature_num_ratio_of_active_party=0.5,
+    feature_num_ratio_of_passive_party=-1,
     replace_nan="-1",
 ):
     row_num_train, col_num = X_train.shape
@@ -74,13 +83,29 @@ def convert_df_to_input(
         col_num_of_active_party = max(
             1, int(feature_num_ratio_of_active_party * col_num)
         )
-        col_alloc = [
-            shufled_col_indicies[:col_num_of_active_party],
-            shufled_col_indicies[col_num_of_active_party:],
-        ]
+        if feature_num_ratio_of_passive_party < 0:
+            col_alloc = [
+                shufled_col_indicies[:col_num_of_active_party],
+                shufled_col_indicies[col_num_of_active_party:],
+            ]
+        else:
+            col_num_of_passive_party = max(
+                1, int(feature_num_ratio_of_passive_party * col_num)
+            )
+            col_alloc = [
+                shufled_col_indicies[:col_num_of_active_party],
+                shufled_col_indicies[
+                    col_num_of_active_party : (
+                        min(
+                            col_num_of_active_party + col_num_of_passive_party,
+                            col_num,
+                        )
+                    )
+                ],
+            ]
 
     with open(output_path, mode="w") as f:
-        f.write(f"{row_num_train} {col_num} {parties_num}\n")
+        f.write(f"{row_num_train} {len(sum(col_alloc, []))} {parties_num}\n")
         for ca in col_alloc:
             f.write(f"{len(ca)}\n")
             for i in ca:
@@ -270,5 +295,6 @@ if __name__ == "__main__":
         ),
         col_alloc=None,
         feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+        feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
         parties_num=2,
     )
