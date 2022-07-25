@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:i:r:c:a:h:b:j:e:l:o:z:k:s:wg OPT; do
+while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:wg OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -19,6 +19,10 @@ while getopts d:m:p:n:f:i:r:c:a:h:b:j:e:l:o:z:k:s:wg OPT; do
   "f")
     FLG_F="TRUE"
     VALUE_F="$OPTARG"
+    ;;
+  "v")
+    FLG_V="TRUE"
+    VALUE_V="$OPTARG"
     ;;
   "i")
     FLG_I="TRUE"
@@ -84,7 +88,7 @@ while getopts d:m:p:n:f:i:r:c:a:h:b:j:e:l:o:z:k:s:wg OPT; do
 done
 
 echo "random seed is ${VALUE_S}"
-python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -i ${VALUE_I} -s ${VALUE_S}
+python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -s ${VALUE_S}
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
 RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z}"

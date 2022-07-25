@@ -2,6 +2,7 @@
 #include <map>
 #include <random>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <vector>
 #include <numeric>
@@ -12,7 +13,7 @@ using namespace std;
 struct RRWithPrior
 {
     vector<float> prior_dist;
-    vector<int> sort_idx;
+    vector<int> sort_idx; // k-th value is top-k label
     unordered_map<int, int> label2argmaxpos;
     float epsilon;
     int K;
@@ -24,7 +25,7 @@ struct RRWithPrior
     mt19937 gen;
     uniform_real_distribution<> uniform_dist_0_to_1;
     uniform_int_distribution<> uniform_dist_0_to_Km1;
-    uniform_int_distribution<> uniform_dist_0_to_kstarm1;
+    uniform_int_distribution<> uniform_dist_1_to_kstarm1;
 
     RRWithPrior(){};
     RRWithPrior(float epsilon_, int K_, int seed = 0)
@@ -89,7 +90,7 @@ struct RRWithPrior
 
         best_w_k = max_w_k;
         threshold_prob = exp_eps / (exp_eps + float(k_star) - 1);
-        uniform_dist_0_to_kstarm1 = uniform_int_distribution<>(0, k_star - 1);
+        uniform_dist_1_to_kstarm1 = uniform_int_distribution<>(1, k_star - 1);
     }
 
     int rrtop_k(int y)
@@ -104,11 +105,11 @@ struct RRWithPrior
             }
             else
             {
-                temp_idx = uniform_dist_0_to_kstarm1(gen);
-                y_random = sort_idx[temp_idx];
+                temp_idx = uniform_dist_1_to_kstarm1(gen);
+                y_random = sort_idx[temp_idx - 1];
                 if (y_random == y)
                 {
-                    y_random = sort_idx[temp_idx + 1];
+                    y_random = sort_idx[k_star - 1];
                 }
             }
         }

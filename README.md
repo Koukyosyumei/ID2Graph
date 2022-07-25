@@ -17,14 +17,15 @@
     -c : (int) the number of completely secure rounds
     -a : (float) learning rate of XGBoost
     -h : (int) depth
-    -y : (float) weigt of entropy term
     -j : (int) the number of jobs
     -n : (int) the number of data records sampled for training
     -f : (float) the ratio of features owned by the active party
+    -v : (float) the ratio of features owned by the passive party
     -i : (float) the imlalance of dataset
     -e : (float) coefficient of edge weight (tau in our paper)
     -l : (float) epsilon of epsilon-greedy louvain
     -o : (float) epsilon of LP-MST
+    -b : (float) bound of mutual information
     -z : wait for timeout of louvain
     -t : (str) the path to the folder where this script saves all results (default=`result`)
     -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
