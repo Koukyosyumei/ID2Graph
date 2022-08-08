@@ -162,10 +162,8 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
             {
                 for (int c = 0; c < num_classes; c++)
                 {
-                    cout << y_pred_temp[j][c] << " ";
                     y_pred[j][c] += learning_rate * y_pred_temp[j][c];
                 }
-                cout << endl;
             }
         }
 
@@ -185,11 +183,11 @@ struct XGBoostClassifier : public XGBoostBase
         {
             if (y[i] == 1)
             {
-                loss += log(1 + exp(-1 * sigmoid(y_pred[i][1]))) / n;
+                loss += log(1 + exp(-1 * sigmoid(y_pred[i][0]))) / n;
             }
             else
             {
-                loss += log(1 + exp(sigmoid(y_pred[i][1]))) / n;
+                loss += log(1 + exp(sigmoid(y_pred[i][0]))) / n;
             }
         }
         return loss;
@@ -200,7 +198,7 @@ struct XGBoostClassifier : public XGBoostBase
         int element_num = y_pred.size();
         vector<vector<float>> grad(element_num);
         for (int i = 0; i < element_num; i++)
-            grad[i] = {sigmoid(y_pred[i][1]) - y[i]};
+            grad[i] = {sigmoid(y_pred[i][0]) - y[i]};
         return grad;
     }
 
@@ -210,7 +208,7 @@ struct XGBoostClassifier : public XGBoostBase
         vector<vector<float>> hess(element_num);
         for (int i = 0; i < element_num; i++)
         {
-            float temp_proba = sigmoid(y_pred[i][1]);
+            float temp_proba = sigmoid(y_pred[i][0]);
             hess[i] = {temp_proba * (1 - temp_proba)};
         }
         return hess;

@@ -19,21 +19,21 @@ TEST(RandomForest, RandomForestClassifierTest)
     int num_party = 2;
 
     vector<float> y = {1, 0, 1, 0, 1, 1, 0, 1};
-    vector<vector<float> > X = {{12, 1},
-                                {32, 1},
-                                {15, 0},
-                                {24, 0},
-                                {20, 1},
-                                {25, 1},
-                                {17, 0},
-                                {16, 1}};
-    vector<vector<int> > feature_idxs = {{0}, {1}};
+    vector<vector<float>> X = {{12, 1},
+                               {32, 1},
+                               {15, 0},
+                               {24, 0},
+                               {20, 1},
+                               {25, 1},
+                               {17, 0},
+                               {16, 1}};
+    vector<vector<int>> feature_idxs = {{0}, {1}};
     vector<RandomForestParty> parties(num_party);
 
     for (int i = 0; i < num_party; i++)
     {
         int num_col = feature_idxs[i].size();
-        vector<vector<float> > x(num_row, vector<float>(num_col));
+        vector<vector<float>> x(num_row, vector<float>(num_col));
         for (int j = 0; j < num_col; j++)
         {
             for (int k = 0; k < num_row; k++)
@@ -61,8 +61,6 @@ TEST(RandomForest, RandomForestClassifierTest)
     ASSERT_EQ(clf.estimators[0].dtree.best_col_id, 0);
     ASSERT_EQ(clf.estimators[0].dtree.best_threshold_id, 2);
 
-    cout << "A" << endl;
-
     ASSERT_EQ(clf.estimators[0].dtree.party_id, 0);
     ASSERT_EQ(get<0>(clf.estimators[0].dtree.parties->at(
                                                         clf.estimators[0].dtree.party_id)
@@ -72,8 +70,6 @@ TEST(RandomForest, RandomForestClassifierTest)
                                                         clf.estimators[0].dtree.party_id)
                          .lookup_table.at(clf.estimators[0].dtree.record_id)),
               16);
-
-    cout << "B" << endl;
 
     vector<int> test_idxs_left = {0, 2, 7};
     vector<int> test_idxs_right = {1, 3, 4, 5, 6};
@@ -118,36 +114,30 @@ TEST(RandomForest, RandomForestClassifierTest)
         ASSERT_EQ(test_idxs_right_right[i], idxs_right_right[i]);
     }
 
-    cout << "C" << endl;
-
     vector<float> test_predict_raw = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
-    vector<vector<float> > predict_raw = clf.predict_raw(X);
+    vector<vector<float>> predict_raw = clf.predict_raw(X);
     for (int i = 0; i < predict_raw.size(); i++)
     {
         ASSERT_EQ(test_predict_raw[i], predict_raw[i][1]);
     }
 
-    cout << "D" << endl;
-
     vector<float> test_predict_proba = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
-    vector<vector<float> > predict_proba = clf.predict_proba(X);
+    vector<vector<float>> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)
     {
         ASSERT_NEAR(test_predict_proba[i], predict_proba[i][1], 1e-6);
     }
 
-    cout << "E" << endl;
+    vector<vector<float>> test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 1, 1, 0, 0},
+                                          {1, 0, 0, 0, 0, 0, 0, 1},
+                                          {0, 0, 0, 0, 0, 0, 1, 0},
+                                          {0, 1, 0, 0, 0, 1, 0, 0},
+                                          {0, 1, 0, 0, 1, 0, 0, 0},
+                                          {0, 0, 0, 1, 0, 0, 0, 0},
+                                          {1, 0, 1, 0, 0, 0, 0, 0}};
 
-    vector<vector<float> > test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},
-                                           {0, 0, 0, 0, 1, 1, 0, 0},
-                                           {1, 0, 0, 0, 0, 0, 0, 1},
-                                           {0, 0, 0, 0, 0, 0, 1, 0},
-                                           {0, 1, 0, 0, 0, 1, 0, 0},
-                                           {0, 1, 0, 0, 1, 0, 0, 0},
-                                           {0, 0, 0, 1, 0, 0, 0, 0},
-                                           {1, 0, 1, 0, 0, 0, 0, 0}};
-
-    vector<vector<float> > adj_mat = extract_adjacency_matrix_from_forest(&clf, -1, false).to_densematrix();
+    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, -1, false).to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)

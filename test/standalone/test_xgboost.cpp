@@ -138,16 +138,12 @@ TEST(XGBoost, XGBoostClassifierTest)
     for (int i = 0; i < test_predcit_raw.size(); i++)
         ASSERT_NEAR(predict_raw[i][0], test_predcit_raw[i], 1e-6);
 
-    cout << "C" << endl;
-
     vector<vector<float>> predict_proba = clf.predict_proba(X);
     vector<float> test_predcit_proba = {0.79959955, 0.62996684, 0.79959955,
                                         0.55699226, 0.78498478, 0.78498478,
                                         0.55699226, 0.79959955};
     for (int i = 0; i < test_predcit_proba.size(); i++)
-        ASSERT_NEAR(predict_proba[i][1], test_predcit_proba[i], 1e-6);
-
-    cout << "D" << endl;
+        ASSERT_NEAR(predict_proba[i][0], test_predcit_proba[i], 1e-6);
 
     vector<vector<float>> test_adj_mat_weighted = {{0, 0, 1, 0, 0, 0, 0, 1},
                                                    {0, 0, 0, 1, 3, 3, 1, 0},
