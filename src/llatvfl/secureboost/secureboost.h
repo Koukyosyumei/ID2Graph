@@ -172,11 +172,11 @@ struct SecureBoostClassifier : public SecureBoostBase
         {
             if (y[i] == 1)
             {
-                loss += log(1 + exp(-1 * y_pred[i])) / n;
+                loss += log(1 + exp(-1 * sigmoid(y_pred[i]))) / n;
             }
             else
             {
-                loss += log(1 + exp(y_pred[i])) / n;
+                loss += log(1 + exp(sigmoid(y_pred[i]))) / n;
             }
         }
         return loss;
