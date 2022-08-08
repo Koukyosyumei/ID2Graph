@@ -3,7 +3,7 @@
 #include "rrp.h"
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
-#include "../secureboost/secureboost.h"
+//#include "../secureboost/secureboost.h"
 using namespace std;
 
 struct LPMST
@@ -25,10 +25,6 @@ struct LPMST
     void fit(XGBoostClassifier &clf, vector<XGBoostParty> &parties, vector<float> &y)
     {
         _fit<XGBoostClassifier, XGBoostParty>(clf, parties, y);
-    }
-    void fit(SecureBoostClassifier &clf, vector<SecureBoostParty> &parties, vector<float> &y)
-    {
-        _fit<SecureBoostClassifier, SecureBoostParty>(clf, parties, y);
     }
     void fit(RandomForestClassifier &clf, vector<RandomForestParty> &parties, vector<float> &y)
     {

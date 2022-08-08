@@ -30,15 +30,16 @@ struct RandomForestNode : Node<RandomForestParty>
     vector<float> prior;
 
     float entire_datasetsize = 0;
-    float entire_pos_cnt = 0;
+    vector<float> entire_class_cnt;
 
     RandomForestNode() {}
-    RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_,
+    RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_, int num_classes_,
                      vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_delta_,
                      int active_party_id_ = -1, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
+        num_classes = num_classes_;
         idxs = idxs_;
         depth = depth_;
         mi_delta = mi_delta_;
@@ -49,10 +50,11 @@ struct RandomForestNode : Node<RandomForestParty>
         row_count = idxs.size();
         num_parties = parties->size();
 
+        entire_class_cnt.resize(num_classes, 0);
         entire_datasetsize = y.size();
         for (int i = 0; i < entire_datasetsize; i++)
         {
-            entire_pos_cnt += y[i];
+            entire_class_cnt[int(y[i])] += 1.0;
         }
 
         giniimp = compute_giniimp();
@@ -99,7 +101,7 @@ struct RandomForestNode : Node<RandomForestParty>
         return record_id;
     }
 
-    float get_val()
+    vector<float> get_val()
     {
         return val;
     }
@@ -126,64 +128,84 @@ struct RandomForestNode : Node<RandomForestParty>
 
     float compute_giniimp()
     {
-        float temp_y_pos_cnt = 0;
+        vector<float> temp_y_class_cnt(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            temp_y_pos_cnt += y[idxs[r]];
+            temp_y_class_cnt[int(y[idxs[r]])] += 1;
         }
-        float temp_y_neg_cnt = row_count - temp_y_pos_cnt;
-        float giniimp = 1 -
-                        (temp_y_pos_cnt / row_count) * (temp_y_pos_cnt / row_count) -
-                        (temp_y_neg_cnt / row_count) * (temp_y_neg_cnt / row_count);
+
+        float giniimp = 1;
+        float temp_ratio_square;
+        for (int c = 0; c < num_classes; c++)
+        {
+            temp_ratio_square = (temp_y_class_cnt[c] / row_count);
+            giniimp -= (temp_ratio_square * temp_ratio_square);
+        }
+
         return giniimp;
     }
 
-    float compute_weight()
+    vector<float> compute_weight()
     {
         // TODO: support multi class
-        float pos_ratio = 0;
+        vector<float> class_ratio(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            pos_ratio += y[idxs[r]];
+            class_ratio[int(y[idxs[r]])] += 1 / float(row_count);
         }
-        return pos_ratio / float(row_count);
+        return class_ratio;
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, float tot_cnt, float pos_cnt)
+    void find_split_per_party(int party_id_start, int temp_num_parties, float tot_cnt, vector<float> &temp_y_class_cnt)
     {
-        float temp_left_size, temp_left_poscnt, temp_right_size, temp_right_poscnt;
+        float temp_left_size, temp_right_size;
+        vector<float> temp_left_class_cnt, temp_right_class_cnt;
         float temp_score, temp_giniimp, temp_left_giniimp, temp_right_giniimp;
-        float neg_cnt = tot_cnt - pos_cnt;
+
+        temp_left_class_cnt.resize(num_classes, 0);
+        temp_right_class_cnt.resize(num_classes, 0);
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, float>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
             {
                 temp_left_size = 0;
-                temp_left_poscnt = 0;
+
+                for (int c = 0; c < num_classes; c++)
+                {
+                    temp_left_class_cnt[c] = 0;
+                    temp_right_class_cnt[c] = 0;
+                }
 
                 temp_num_search_results_j = search_results[j].size();
                 for (int k = 0; k < temp_num_search_results_j; k++)
                 {
                     temp_left_size += search_results[j][k].first;
-                    temp_left_poscnt += search_results[j][k].second;
                     temp_right_size = tot_cnt - temp_left_size;
-                    temp_right_poscnt = pos_cnt - temp_left_poscnt;
+
+                    for (int c = 0; c < num_classes; c++)
+                    {
+                        temp_left_class_cnt[c] += search_results[j][k].second[c];
+                        temp_right_class_cnt[c] = temp_y_class_cnt[c] - temp_left_class_cnt[c];
+                    }
 
                     if (is_satisfied_with_mi_bound_cond(prior, mi_delta,
-                                                        temp_left_poscnt, temp_left_size,
-                                                        temp_right_poscnt, temp_right_size,
-                                                        entire_pos_cnt, entire_datasetsize))
+                                                        temp_left_class_cnt,
+                                                        temp_right_class_cnt,
+                                                        entire_class_cnt,
+                                                        temp_left_size,
+                                                        temp_right_size,
+                                                        entire_datasetsize))
                     {
                         continue;
                     }
 
-                    temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_poscnt);
-                    temp_right_giniimp = calc_giniimp(temp_right_size, temp_right_poscnt);
+                    temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_class_cnt);
+                    temp_right_giniimp = calc_giniimp(temp_right_size, temp_right_class_cnt);
                     temp_giniimp = temp_left_giniimp * (temp_left_size / tot_cnt) +
                                    temp_right_giniimp * (temp_right_size / tot_cnt);
 
@@ -203,17 +225,17 @@ struct RandomForestNode : Node<RandomForestParty>
     tuple<int, int, int> find_split()
     {
         float temp_score;
-        float pos_cnt = 0;
         float tot_cnt = row_count;
 
-        for (int i = 0; i < row_count; i++)
+        vector<float> temp_y_class_cnt(num_classes, 0);
+        for (int r = 0; r < row_count; r++)
         {
-            pos_cnt += float(y[idxs[i]]);
+            temp_y_class_cnt[int(y[idxs[r]])] += 1;
         }
 
         if (n_job == 1)
         {
-            find_split_per_party(0, num_parties, tot_cnt, pos_cnt);
+            find_split_per_party(0, num_parties, tot_cnt, temp_y_class_cnt);
         }
         else
         {
@@ -224,8 +246,8 @@ struct RandomForestNode : Node<RandomForestParty>
             for (int i = 0; i < n_job; i++)
             {
                 int local_num_parties = num_parties_per_thread[i];
-                thread temp_th([this, cnt_parties, local_num_parties, tot_cnt, pos_cnt]
-                               { this->find_split_per_party(cnt_parties, local_num_parties, tot_cnt, pos_cnt); });
+                thread temp_th([this, cnt_parties, local_num_parties, tot_cnt, &temp_y_class_cnt]
+                               { this->find_split_per_party(cnt_parties, local_num_parties, tot_cnt, temp_y_class_cnt); });
                 threads_parties.push_back(move(temp_th));
                 cnt_parties += num_parties_per_thread[i];
             }
@@ -248,13 +270,13 @@ struct RandomForestNode : Node<RandomForestParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        left = new RandomForestNode(parties, y, left_idxs,
+        left = new RandomForestNode(parties, y, num_classes, left_idxs,
                                     depth - 1, prior, mi_delta, active_party_id);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
-        right = new RandomForestNode(parties, y, right_idxs,
+        right = new RandomForestNode(parties, y, num_classes, right_idxs,
                                      depth - 1, prior, mi_delta, active_party_id);
         if (right->is_leaf_flag == 1)
         {
