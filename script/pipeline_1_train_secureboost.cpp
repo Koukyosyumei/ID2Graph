@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        SecureBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
+        SecureBoostParty party(x, 2, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
+    SecureBoostClassifier clf = SecureBoostClassifier(2, subsample_cols,
                                                       min_child_weight,
                                                       depth, min_leaf,
                                                       learning_rate,
@@ -291,12 +291,24 @@ int main(int argc, char *argv[])
         // result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
-    vector<float> predict_proba_train = clf.predict_proba(X_train);
+    vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
+    vector<float> predict_proba_train_pos(predict_proba_train.size());
+    for (int i = 0; i < predict_proba_train.size(); i++)
+    {
+        predict_proba_train_pos[i] = predict_proba_train[i][1];
+    }
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
-    vector<float> predict_proba_val = clf.predict_proba(X_val);
+    result_file << "Train AUC," << roc_auc_score(predict_proba_train_pos, y_true_train) << "\n";
+
+    vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
+    vector<float> predict_proba_val_pos(predict_proba_val.size());
+    for (int i = 0; i < predict_proba_val.size(); i++)
+    {
+        predict_proba_val_pos[i] = predict_proba_val[i][1];
+    }
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
+    result_file << "Val AUC," << roc_auc_score(predict_proba_val_pos, y_true_val) << "\n";
+
     result_file.close();
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());

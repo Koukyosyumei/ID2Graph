@@ -16,7 +16,7 @@ include(GNUInstallDirs)
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 add_subdirectory(${SOURCE_DIR})
-#add_subdirectory(${SCRIPT_DIR})
+add_subdirectory(${SCRIPT_DIR})
 #add_subdirectory(${MPISCRIPT_DIR})
 
 enable_testing()
