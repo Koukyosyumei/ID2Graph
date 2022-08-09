@@ -203,10 +203,8 @@ struct XGBoostClassifier : public XGBoostBase
         vector<vector<float>> predicted_probas(row_count, vector<float>(num_classes, 0));
         for (int i = 0; i < row_count; i++)
         {
-            for (int c = 0; c < num_classes; c++)
-            {
-                predicted_probas[i][c] = sigmoid(raw_score[i][c]);
-            }
+            predicted_probas[i][1] = sigmoid(raw_score[i][0]);
+            predicted_probas[i][0] = 1 - predicted_probas[i][1];
         }
         return predicted_probas;
     }
