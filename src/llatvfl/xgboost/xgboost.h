@@ -6,6 +6,7 @@
 #include <cmath>
 #include "../core/model.h"
 #include "tree.h"
+#include "loss.h"
 using namespace std;
 
 struct XGBoostBase : TreeModelBase<XGBoostParty>
@@ -28,6 +29,8 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     int num_classes;
 
     float upsilon_Y;
+
+    LossFunc *lossfunc_obj;
 
     vector<vector<float>> init_pred;
     vector<XGBoostTree> estimators;
@@ -63,11 +66,13 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         {
             mi_bound = numeric_limits<float>::infinity();
         }
+
+        if (num_classes == 2)
+        {
+            lossfunc_obj = new BCELoss();
+        }
     }
 
-    virtual vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y) = 0;
-    virtual vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y) = 0;
-    virtual float get_loss(vector<vector<float>> &y_pred, vector<float> &y) = 0;
     virtual vector<vector<float>> get_init_pred(vector<float> &y) = 0;
 
     void load_estimators(vector<XGBoostTree> &_estimators)
@@ -128,8 +133,8 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
         for (int i = 0; i < boosting_rounds; i++)
         {
-            vector<vector<float>> grad = get_grad(base_pred, y);
-            vector<vector<float>> hess = get_hess(base_pred, y);
+            vector<vector<float>> grad = lossfunc_obj->get_grad(base_pred, y);
+            vector<vector<float>> hess = lossfunc_obj->get_hess(base_pred, y);
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, num_classes, grad, hess, prior, min_child_weight,
@@ -144,15 +149,25 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
             if (save_loss)
             {
-                logging_loss.push_back(get_loss(base_pred, y));
+                logging_loss.push_back(lossfunc_obj->get_loss(base_pred, y));
             }
         }
     }
 
     vector<vector<float>> predict_raw(vector<vector<float>> &X)
     {
+        int pred_dim;
+        if (num_classes == 2)
+        {
+            pred_dim = 1;
+        }
+        else
+        {
+            pred_dim = num_classes;
+        }
+
         int row_count = X.size();
-        vector<vector<float>> y_pred(row_count, vector<float>(num_classes, init_value));
+        vector<vector<float>> y_pred(row_count, vector<float>(pred_dim, init_value));
         // copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
@@ -160,7 +175,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
             vector<vector<float>> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
             {
-                for (int c = 0; c < num_classes; c++)
+                for (int c = 0; c < pred_dim; c++)
                 {
                     y_pred[j][c] += learning_rate * y_pred_temp[j][c];
                 }
@@ -174,45 +189,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 struct XGBoostClassifier : public XGBoostBase
 {
     using XGBoostBase::XGBoostBase;
-
-    float get_loss(vector<vector<float>> &y_pred, vector<float> &y)
-    {
-        float loss = 0;
-        float n = y_pred.size();
-        for (int i = 0; i < n; i++)
-        {
-            if (y[i] == 1)
-            {
-                loss += log(1 + exp(-1 * sigmoid(y_pred[i][0]))) / n;
-            }
-            else
-            {
-                loss += log(1 + exp(sigmoid(y_pred[i][0]))) / n;
-            }
-        }
-        return loss;
-    }
-
-    vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y)
-    {
-        int element_num = y_pred.size();
-        vector<vector<float>> grad(element_num);
-        for (int i = 0; i < element_num; i++)
-            grad[i] = {sigmoid(y_pred[i][0]) - y[i]};
-        return grad;
-    }
-
-    vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y)
-    {
-        int element_num = y_pred.size();
-        vector<vector<float>> hess(element_num);
-        for (int i = 0; i < element_num; i++)
-        {
-            float temp_proba = sigmoid(y_pred[i][0]);
-            hess[i] = {temp_proba * (1 - temp_proba)};
-        }
-        return hess;
-    }
 
     vector<vector<float>> get_init_pred(vector<float> &y)
     {

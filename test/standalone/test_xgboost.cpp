@@ -67,11 +67,11 @@ TEST(XGBoost, XGBoostClassifierTest)
     copy(init_pred.begin(), init_pred.end(), back_inserter(base_pred));
     vector<float> test_base_grad = {-0.26894, 0.73106, -0.26894, 0.73106,
                                     -0.26894, -0.26894, 0.73106, -0.26894};
-    vector<vector<float>> grad = clf.get_grad(base_pred, y);
+    vector<vector<float>> grad = clf.lossfunc_obj->get_grad(base_pred, y);
     for (int i = 0; i < grad.size(); i++)
         ASSERT_NEAR(grad[i][0], test_base_grad[i], 1e-5);
 
-    vector<vector<float>> hess = clf.get_hess(base_pred, y);
+    vector<vector<float>> hess = clf.lossfunc_obj->get_hess(base_pred, y);
     vector<float> test_hess = {0.19661, 0.19661, 0.19661, 0.19661,
                                0.19661, 0.19661, 0.19661, 0.19661};
     for (int i = 0; i < hess.size(); i++)

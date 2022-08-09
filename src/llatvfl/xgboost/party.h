@@ -39,10 +39,10 @@ struct XGBoostParty : Party
         }
     }
 
-    vector<vector<tuple<float, float, float, vector<float>>>> greedy_search_split(vector<vector<float>> &gradient,
-                                                                                  vector<vector<float>> &hessian,
-                                                                                  vector<float> &y,
-                                                                                  vector<int> &idxs)
+    vector<vector<tuple<vector<float>, vector<float>, float, vector<float>>>> greedy_search_split(vector<vector<float>> &gradient,
+                                                                                                  vector<vector<float>> &hessian,
+                                                                                                  vector<float> &y,
+                                                                                                  vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -51,11 +51,13 @@ struct XGBoostParty : Party
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<tuple<float, float, float, vector<float>>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<tuple<vector<float>, vector<float>, float, vector<float>>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
+
+        int grad_dim = gradient[0].size();
 
         for (int i = 0; i < subsample_col_count; i++)
         {
@@ -94,8 +96,8 @@ struct XGBoostParty : Party
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                float temp_grad = 0;
-                float temp_hess = 0;
+                vector<float> temp_grad(grad_dim, 0);
+                vector<float> temp_hess(grad_dim, 0);
                 float temp_left_size = 0;
                 vector<float> temp_left_y_class_cnt(num_classes, 0);
 
@@ -103,10 +105,10 @@ struct XGBoostParty : Party
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        for (int c = 0; c < gradient[idxs[x_col_idxs[r]]].size(); c++)
+                        for (int c = 0; c < grad_dim; c++)
                         {
-                            temp_grad += gradient[idxs[x_col_idxs[r]]][c];
-                            temp_hess += hessian[idxs[x_col_idxs[r]]][c];
+                            temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
+                            temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
                         }
                         temp_left_size += 1.0;
                         temp_left_y_class_cnt[int(y[idxs[x_col_idxs[r]]])] += 1.0;
@@ -134,8 +136,8 @@ struct XGBoostParty : Party
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    float temp_grad = 0;
-                    float temp_hess = 0;
+                    vector<float> temp_grad(grad_dim, 0);
+                    vector<float> temp_hess(grad_dim, 0);
                     float temp_left_size = 0;
                     vector<float> temp_left_y_class_cnt(num_classes, 0);
 
@@ -143,10 +145,10 @@ struct XGBoostParty : Party
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            for (int c = 0; c < gradient[idxs[x_col_idxs[r]]].size(); c++)
+                            for (int c = 0; c < grad_dim; c++)
                             {
-                                temp_grad += gradient[idxs[x_col_idxs[r]]][c];
-                                temp_hess += hessian[idxs[x_col_idxs[r]]][c];
+                                temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
+                                temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
                             }
                             temp_left_size += 1.0;
                             temp_left_y_class_cnt[int(y[idxs[x_col_idxs[r]]])] += 1.0;
