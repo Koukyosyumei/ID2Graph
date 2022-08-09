@@ -114,7 +114,7 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
             }
             catch (std::exception &e)
             {
-                std::cout << e.what() << std::endl;
+                std::cerr << e.what() << std::endl;
             }
 
             row_count = party.y.size();
@@ -145,17 +145,13 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
             }
         }
 
-        cout << "CCCCCCCCCCCC" << endl;
-
         for (int i = 0; i < boosting_rounds; i++)
         {
             if (party.party_id == active_party_id)
             {
                 vector<vector<float>> plain_grad = lossfunc_obj->get_grad(base_pred, party.y);
                 vector<vector<float>> plain_hess = lossfunc_obj->get_hess(base_pred, party.y);
-                cout << "DDDDDDDDDDDDDDD" << endl;
                 party.set_plain_gradients_and_hessians(plain_grad, plain_hess);
-                cout << "EEEEEEEEEEEEEEEEEE" << endl;
                 int grad_dim = plain_grad[0].size();
 
                 for (int j = 0; j < row_count; j++)
@@ -168,7 +164,6 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                 }
 
                 MPISecureBoostTree boosting_tree = MPISecureBoostTree();
-                cout << "FFFFFFFFFFFFFFFFFFFFF" << endl;
                 boosting_tree.fit(&party, parties_num, party.y, min_child_weight, lam,
                                   gamma, eps, min_leaf, depth, active_party_id, (completelly_secure_round > i));
                 for (int p = 0; p < parties_num; p++)
@@ -178,15 +173,16 @@ struct MPISecureBoostBase : TreeModelBase<MPISecureBoostParty>
                         party.world.send(p, TAG_DEPTH, -1);
                     }
                 }
-                cout << "GGGGGGGGGGGGGGGGG" << endl;
 
                 vector<vector<float>> pred_temp = boosting_tree.get_train_prediction();
 
                 for (int j = 0; j < row_count; j++)
+                {
                     for (int c = 0; c < num_classes; c++)
+                    {
                         base_pred[j][c] += learning_rate * pred_temp[j][c];
-
-                cout << "HHHHHHHHHHHH" << endl;
+                    }
+                }
 
                 estimators.push_back(boosting_tree);
 

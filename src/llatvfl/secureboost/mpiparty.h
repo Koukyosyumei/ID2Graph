@@ -151,8 +151,6 @@ struct MPISecureBoostParty : SecureBoostParty
                 }
             }
 
-            cout << "2222222222222222222222" << endl;
-
             // enumerate missing value goto left
             if (use_missing_value)
             {
@@ -192,7 +190,6 @@ struct MPISecureBoostParty : SecureBoostParty
                 }
             }
         }
-        cout << "222333333" << endl;
         return split_candidates_grad_hess;
     }
 
@@ -249,13 +246,11 @@ struct MPISecureBoostParty : SecureBoostParty
             for (int p = 0; p < percentiles.size(); p++)
             {
                 vector<pair<PaillierCipherText, PaillierCipherText>> temp_grad_hess(grad_dim);
-                cout << "pppppppppppppppp" << endl;
                 for (int c = 0; c < grad_dim; c++)
                 {
                     temp_grad_hess[c].first = pk.encrypt<float>(0);
                     temp_grad_hess[c].second = pk.encrypt<float>(0);
                 }
-                cout << "-------" << endl;
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
@@ -264,7 +259,6 @@ struct MPISecureBoostParty : SecureBoostParty
                     {
                         for (int c = 0; c < grad_dim; c++)
                         {
-                            cout << temp_grad_hess.size() << " " << gradient[idxs[x_col_idxs[r]]].size() << endl;
                             temp_grad_hess[c].first = temp_grad_hess[c].first + gradient[idxs[x_col_idxs[r]]][c];
                             temp_grad_hess[c].second = temp_grad_hess[c].second + hessian[idxs[x_col_idxs[r]]][c];
                         }
@@ -277,8 +271,6 @@ struct MPISecureBoostParty : SecureBoostParty
                     }
                 }
 
-                cout << "99999999999999" << endl;
-
                 if (cumulative_left_size >= min_leaf &&
                     row_count - cumulative_left_size >= min_leaf)
                 {
@@ -286,8 +278,6 @@ struct MPISecureBoostParty : SecureBoostParty
                     temp_thresholds[i].push_back(percentiles[p]);
                 }
             }
-
-            cout << "333333333" << endl;
 
             // enumerate missing value goto left
             if (use_missing_value)
@@ -330,10 +320,7 @@ struct MPISecureBoostParty : SecureBoostParty
                     }
                 }
             }
-
-            cout << "55555555555" << endl;
         }
-        cout << "7777777777777777777777777" << endl;
         return split_candidates_grad_hess;
     }
 
@@ -364,9 +351,7 @@ struct MPISecureBoostParty : SecureBoostParty
 
     void send_search_results()
     {
-        cout << "$$$$$$$$$$$$$$$$$$$$$" << endl;
         world.send(active_party_rank, TAG_SEARCH_RESULTS, greedy_search_split_encrypt());
-        cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
     }
 
     void receive_best_split_info()
@@ -392,7 +377,6 @@ struct MPISecureBoostParty : SecureBoostParty
 
     void calc_sum_grad_and_hess()
     {
-        cout << "NNNNNNNNNNNNNNNNNNNNNNNN" << endl;
         sum_grad.resize(gradient[0].size());
         sum_hess.resize(hessian[0].size());
 
@@ -410,7 +394,6 @@ struct MPISecureBoostParty : SecureBoostParty
                 sum_hess[c] += plain_hessian[idxs[i]][c];
             }
         }
-        cout << "MMMMMMMMMMMMMMMMM" << endl;
     }
 
     void run_as_passive()
@@ -432,20 +415,15 @@ struct MPISecureBoostParty : SecureBoostParty
 
             if (is_leaf_flag == 0)
             {
-                cout << "!!!!!!!!!!!! AAAAAAAAAA" << endl;
                 if (current_depth == max_depth)
                 {
                     subsample_columns();
                     receive_encrypted_gradients_hessians();
                 }
 
-                cout << "!!!!!!!!!!!! BBBBBBBBBBBB" << endl;
-
                 receive_instance_space();
-
-                cout << "!!!!!!!!!!!! XXXXXXXXXXXXXXXXXX" << endl;
                 send_search_results();
-                cout << "!!!!!!!!!!!! YYYYYYYYYYYYYYYYY" << endl;
+
                 world.recv(active_party_rank, TAG_BEST_PARTY_ID, best_party_id);
 
                 if (best_party_id == party_id)

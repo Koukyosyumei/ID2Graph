@@ -69,7 +69,6 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         {
             tuple<int, int, int> best_split = find_split();
             party_id = get<0>(best_split);
-            cout << "will make children nodes" << endl;
             if (party_id != -1)
             {
                 make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
@@ -128,7 +127,6 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
 
     tuple<int, int, int> find_split()
     {
-        cout << "FIND SPLOT" << endl;
         float temp_score;
         vector<float> temp_left_grad(grad_dim, 0);
         vector<float> temp_left_hess(grad_dim, 0);
@@ -216,48 +214,36 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
 
             for (int i = 0; i < parties_num; i++)
             {
-                cout << "PAAAAAAAAAAAAARRRRRRRRRRRTYYYYYYYYYY " << i << endl;
                 if (i == active_party_id)
                 {
                     search_results = active_party->greedy_search_split();
                 }
                 else
                 {
-                    cout << "WILL RECCCCCCCCCCCCCCCCCCCCCCCCC" << endl;
                     active_party->world.recv(i, TAG_SEARCH_RESULTS, encrypted_search_result);
-                    cout << "DONEEEEEEEEEEEEEEEEEEEEEEEEE" << endl;
 
                     int temp_result_size = encrypted_search_result.size();
                     search_results.resize(temp_result_size);
                     int temp_vec_size;
                     for (int j = 0; j < temp_result_size; j++)
                     {
-                        cout << j << " " << search_results.size() << " " << encrypted_search_result.size() << endl;
                         temp_vec_size = encrypted_search_result[j].size();
                         search_results[j].resize(temp_vec_size);
-                        cout << "KKKKKKKKKK" << endl;
                         for (int k = 0; k < temp_vec_size; k++)
                         {
                             vector<float> temp_grad_decrypted, temp_hess_decrypted;
                             temp_grad_decrypted.resize(grad_dim);
                             temp_hess_decrypted.resize(grad_dim);
 
-                            cout << grad_dim << " " << encrypted_search_result[j][k].size() << endl;
-
                             for (int c = 0; c < grad_dim; c++)
                             {
-                                cout << c << " " << temp_grad_decrypted.size() << " " << encrypted_search_result[j][k].size() << endl;
                                 temp_grad_decrypted[c] = active_party->sk.decrypt<float>(encrypted_search_result[j][k][c].first);
                                 temp_hess_decrypted[c] = active_party->sk.decrypt<float>(encrypted_search_result[j][k][c].second);
                             }
 
-                            cout << "kkkkkkkkkkkkkkkkkkkkk" << endl;
-
                             search_results[j][k] = make_pair(temp_grad_decrypted, temp_hess_decrypted);
                         }
-                        cout << "RRRRRRRR" << endl;
                     }
-                    cout << "UUUUUUUUUUUUUUUUUUUUU" << endl;
                 }
 
                 for (int j = 0; j < search_results.size(); j++)
@@ -265,15 +251,11 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                     float temp_score;
                     bool skip_flag = false;
 
-                    cout << "LLLL 11111111" << endl;
-
                     for (int c = 0; c < grad_dim; c++)
                     {
                         temp_left_grad[c] = 0;
                         temp_left_hess[c] = 0;
                     }
-
-                    cout << "LLLL 22222222" << endl;
 
                     for (int k = 0; k < search_results[j].size(); k++)
                     {
@@ -283,10 +265,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                             temp_left_hess[c] += search_results[j][k].second[c];
                         }
 
-                        cout << "LLLL 33333333" << endl;
-
                         skip_flag = false;
-                        cout << "00000000000 " << active_party->sum_hess.size() << endl;
                         for (int c = 0; c < grad_dim; c++)
                         {
                             if (temp_left_hess[c] < min_child_weight ||
@@ -300,20 +279,14 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                             continue;
                         }
 
-                        cout << "LLLL 444444444" << endl;
-
                         for (int c = 0; c < grad_dim; c++)
                         {
                             temp_right_grad[c] = active_party->sum_grad[c] - temp_left_grad[c];
                             temp_right_hess[c] = active_party->sum_hess[c] - temp_left_hess[c];
                         }
 
-                        cout << "LLLL 5555555" << endl;
-
                         temp_score = active_party->compute_gain(temp_left_grad, temp_right_grad,
                                                                 temp_left_hess, temp_right_hess);
-
-                        cout << "LLLL 666666666" << endl;
 
                         if (temp_score > best_score)
                         {
@@ -325,10 +298,8 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                     }
                 }
             }
-            cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP" << endl;
         }
         score = best_score;
-        cout << "IIIIIIIIIIIIIIIIIIIIII" << endl;
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
 
