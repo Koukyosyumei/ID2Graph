@@ -119,21 +119,18 @@ struct SecureBoostNode : Node<SecureBoostParty>
         return xgboost_compute_weight(row_count, vanila_gradient, vanila_hessian, idxs, lam);
     }
 
-    float compute_gain(vector<float> left_grad, vector<float> right_grad, vector<float> left_hess, vector<float> right_hess)
+    float compute_gain(vector<float> &left_grad, vector<float> &right_grad, vector<float> &left_hess, vector<float> &right_hess)
     {
         return xgboost_compute_gain(left_grad, right_grad, left_hess, right_hess, gamma, lam);
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> sum_grad, vector<float> sum_hess)
+    void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> &sum_grad, vector<float> &sum_hess)
     {
         int grad_dim = sum_grad.size();
-        vector<float> temp_left_grad(grad_dim, 0);
-        vector<float> temp_left_hess(grad_dim, 0);
-        vector<float> temp_right_grad(grad_dim, 0);
-        vector<float> temp_right_hess(grad_dim, 0);
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
+
             vector<vector<pair<vector<float>, vector<float>>>> search_results;
             if (temp_party_id == active_party_id)
             {
@@ -165,16 +162,21 @@ struct SecureBoostNode : Node<SecureBoostParty>
                                                          .sk.decrypt<float>(
                                                              encrypted_search_result[j][k].second[c]);
                         }
-
                         search_results[j][k] = make_pair(temp_grad_decrypted, temp_hess_decrypted);
                     }
                 }
             }
 
+            float temp_score;
+            vector<float> temp_left_grad(grad_dim, 0);
+            vector<float> temp_left_hess(grad_dim, 0);
+            vector<float> temp_right_grad(grad_dim, 0);
+            vector<float> temp_right_hess(grad_dim, 0);
+            bool skip_flag = false;
+
             for (int j = 0; j < search_results.size(); j++)
             {
-                float temp_score;
-                bool skip_flag = false;
+                temp_score = 0;
 
                 for (int c = 0; c < grad_dim; c++)
                 {

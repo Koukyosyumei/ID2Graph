@@ -33,7 +33,7 @@ int completely_secure_round = 0;
 int depth = 3;
 int n_job = 1;
 float learning_rate = 0.3;
-float weight_entropy = 0.0;
+float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
@@ -45,7 +45,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:y:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:mwg")) != -1)
     {
         switch (opt)
         {
@@ -82,8 +82,8 @@ void parse_args(int argc, char *argv[])
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
             break;
-        case 'y':
-            weight_entropy = stof(string(optarg));
+        case 'b':
+            mi_bound = stof(string(optarg));
             break;
         case 'm':
             use_missing_value = true;
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < clf.estimators.size(); i++)
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
-        // result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+        result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);

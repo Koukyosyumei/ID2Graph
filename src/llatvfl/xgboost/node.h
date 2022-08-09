@@ -154,12 +154,12 @@ struct XGBoostNode : Node<XGBoostParty>
         return xgboost_compute_weight(row_count, gradient, hessian, idxs, lam);
     }
 
-    float compute_gain(vector<float> left_grad, vector<float> right_grad, vector<float> left_hess, vector<float> right_hess)
+    float compute_gain(vector<float> &left_grad, vector<float> &right_grad, vector<float> &left_hess, vector<float> &right_hess)
     {
         return xgboost_compute_gain(left_grad, right_grad, left_hess, right_hess, gamma, lam);
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> sum_grad, vector<float> sum_hess, float tot_cnt, vector<float> &temp_y_class_cnt)
+    void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> &sum_grad, vector<float> &sum_hess, float tot_cnt, vector<float> &temp_y_class_cnt)
     {
 
         vector<float> temp_left_class_cnt, temp_right_class_cnt;

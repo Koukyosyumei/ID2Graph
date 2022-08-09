@@ -123,13 +123,13 @@ int main(int argc, char *argv[])
 
         if (i == my_rank)
         {
-            my_party = MPISecureBoostParty(world, x, feature_idxs, my_rank, depth,
+            my_party = MPISecureBoostParty(world, x, 2, feature_idxs, my_rank, depth,
                                            boosting_rounds, min_leaf, subsample_cols,
                                            const_gamma, lam, max_bin, use_missing_value);
         }
     }
 
-    MPISecureBoostClassifier clf = MPISecureBoostClassifier(subsample_cols,
+    MPISecureBoostClassifier clf = MPISecureBoostClassifier(2, subsample_cols,
                                                             min_child_weight,
                                                             depth, min_leaf,
                                                             learning_rate, boosting_rounds,
@@ -237,17 +237,29 @@ int main(int argc, char *argv[])
     }
 
     world.barrier();
-    vector<float> predict_proba_train = clf.predict_proba(X_train);
+    vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
     world.barrier();
-    vector<float> predict_proba_val = clf.predict_proba(X_val);
+    vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
     world.barrier();
 
     if (my_rank == 0)
     {
+        vector<float> predict_proba_train_pos(predict_proba_train.size());
+        for (int i = 0; i < predict_proba_train.size(); i++)
+        {
+            predict_proba_train_pos[i] = predict_proba_train[i][1];
+        }
+
+        vector<float> predict_proba_val_pos(predict_proba_val.size());
+        for (int i = 0; i < predict_proba_val.size(); i++)
+        {
+            predict_proba_val_pos[i] = predict_proba_val[i][1];
+        }
+
         vector<int> y_true_train(y_train.begin(), y_train.end());
-        result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
+        result_file << "Train AUC," << roc_auc_score(predict_proba_train_pos, y_true_train) << "\n";
         vector<int> y_true_val(y_val.begin(), y_val.end());
-        result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
+        result_file << "Val AUC," << roc_auc_score(predict_proba_val_pos, y_true_val) << "\n";
         result_file.close();
     }
 }
