@@ -6,7 +6,7 @@
 #include "../utils/dok.h"
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
-//#include "../secureboost/secureboost.h"
+#include "../secureboost/secureboost.h"
 using namespace std;
 
 /**
@@ -166,6 +166,32 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
  * @param target_party_id The target party id.
  * @param is_weighted Use constant weight if false.
  */
+inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
+                                               SparseMatrixDOK<float> &adj_mat,
+                                               float weight,
+                                               int target_party_id,
+                                               bool is_weighted)
+{
+    int num_row = tree->dtree.y.size();
+    if (is_weighted)
+    {
+        travase_nodes_to_extract_weighted_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    }
+    else
+    {
+        travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, adj_mat, weight, target_party_id);
+    }
+}
+
+/**
+ * @brief Update adjacency matrix with given tree.
+ *
+ * @param tree The tree to be transformed to a graph.
+ * @param adj_mat The adjancecy matrix to be updated.
+ * @param weight The weight parameter.
+ * @param target_party_id The target party id.
+ * @param is_weighted Use constant weight if false.
+ */
 inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
                                                SparseMatrixDOK<float> &adj_mat,
                                                float weight,
@@ -194,6 +220,36 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
  * @return SparseMatrixDOK<float>
  */
 inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                   int target_party_id = -1,
+                                                                   bool is_weighted = true,
+                                                                   int skip_round = 0,
+                                                                   float eta = 0.3)
+{
+    int num_row = model->estimators[0].dtree.y.size();
+    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
+    for (int i = 0; i < model->estimators.size(); i++)
+    {
+        if (i >= skip_round)
+        {
+            extract_adjacency_matrix_from_tree(&model->estimators[i], adj_matrix,
+                                               pow(eta, float(i - skip_round)),
+                                               target_party_id, is_weighted);
+        }
+    }
+    return adj_matrix;
+}
+
+/**
+ * @brief Extract adjacency matrix from the trained model
+ *
+ * @param model The target tree-based model
+ * @param target_party_id The target party id. He cannot observe the leaf split information.
+ * @param is_weighted Use constant weight if false.
+ * @param skip_round The number of skipped rounds.
+ * @param eta The discount factor.
+ * @return SparseMatrixDOK<float>
+ */
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
                                                                    int target_party_id = -1,
                                                                    bool is_weighted = true,
                                                                    int skip_round = 0,
