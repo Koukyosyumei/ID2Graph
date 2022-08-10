@@ -270,7 +270,6 @@ struct Community
                 {
                     for (unsigned int i = 0; i < neigh_last; i++)
                     {
-                        temp_i = random_indicies_to_neigh_last[i];
                         float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
                         if (increase > best_increase)
                         {
