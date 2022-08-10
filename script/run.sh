@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # constant values
-NUM_TRIAL=1
+NUM_TRIAL=5
 
 # default values
 VALUE_D="breastcancer"
@@ -21,7 +21,7 @@ VALUE_K="vanila"
 VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
-VALUE_L=-1
+VALUE_L=0.0
 VALUE_Z=300
 VALUE_O=-1
 

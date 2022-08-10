@@ -101,8 +101,44 @@ fi
 if [ "${FLG_G}" = "TRUE" ]; then
   RUNCMD+=" -g"
 fi
+
 eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
-echo "Start Clustering trial=${VALUE_S}"
+if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
+  echo "Start Clustering trial=${VALUE_S}"
+else
+  echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=0.1."
+  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 0.1 -o ${VALUE_O} -z ${VALUE_Z}"
+  if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
+    RUNCMD+=" -a ${VALUE_A}"
+  fi
+  if [ "${FLG_W}" = "TRUE" ]; then
+    RUNCMD+=" -w"
+  fi
+  if [ "${FLG_G}" = "TRUE" ]; then
+    RUNCMD+=" -g"
+  fi
+
+  eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
+fi
+
+if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
+  echo "Start Clustering trial=${VALUE_S}"
+else
+  echo "Community detection failed trial=${VALUE_S}. Switch to epsilon=1.0."
+  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E}$ -l 1.0 -o ${VALUE_O} -z ${VALUE_Z}"
+  if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
+    RUNCMD+=" -a ${VALUE_A}"
+  fi
+  if [ "${FLG_W}" = "TRUE" ]; then
+    RUNCMD+=" -w"
+  fi
+  if [ "${FLG_G}" = "TRUE" ]; then
+    RUNCMD+=" -g"
+  fi
+
+  eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
+fi
+
 python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
 echo "Clustering is complete trial=${VALUE_S}"
