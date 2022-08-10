@@ -86,9 +86,9 @@ int main(int argc, char *argv[])
     std::ifstream input_file(input_filepath);
 
     // --- Load Data --- //
-    int num_row_train, num_row_val, num_col, num_party;
+    int num_classes, num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
-    input_file >> num_row_train >> num_col >> num_party;
+    input_file >> num_classes >> num_row_train >> num_col >> num_party;
 
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);

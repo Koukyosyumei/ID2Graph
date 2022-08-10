@@ -105,7 +105,7 @@ def convert_df_to_input(
             ]
 
     with open(output_path, mode="w") as f:
-        f.write(f"{row_num_train} {len(sum(col_alloc, []))} {parties_num}\n")
+        f.write(f"{len(list(set(y_train)))} {row_num_train} {len(sum(col_alloc, []))} {parties_num}\n")
         for ca in col_alloc:
             f.write(f"{len(ca)}\n")
             for i in ca:

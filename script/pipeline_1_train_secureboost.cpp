@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
     parse_args(argc, argv);
 
     // --- Load Data --- //
-    int num_row_train, num_row_val, num_col, num_party;
+    int num_classes, num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
-    if (scanf("%d %d %d", &num_row_train, &num_col, &num_party) != 3)
+    if (scanf("%d %d %d %d", &num_classes, &num_row_train, &num_col, &num_party) != 4)
     {
         try
         {

@@ -208,8 +208,15 @@ struct SecureBoostClassifier : public SecureBoostBase
         vector<vector<float>> predicted_probas(row_count, vector<float>(num_classes, 0));
         for (int i = 0; i < row_count; i++)
         {
-            predicted_probas[i][1] = sigmoid(raw_score[i][0]);
-            predicted_probas[i][0] = 1 - predicted_probas[i][1];
+            if (num_classes == 2)
+            {
+                predicted_probas[i][1] = sigmoid(raw_score[i][0]);
+                predicted_probas[i][0] = 1 - predicted_probas[i][1];
+            }
+            else
+            {
+                predicted_probas[i] = softmax(raw_score[i]);
+            }
         }
         return predicted_probas;
     }
