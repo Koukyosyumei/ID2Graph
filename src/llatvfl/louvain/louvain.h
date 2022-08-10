@@ -18,7 +18,7 @@ struct Louvain
     Community community;
     Graph g;
 
-    Louvain(float epsilon_ = 0.0, int max_itr_ = 30, float precision_ = 0.000001,
+    Louvain(float epsilon_ = 0.0, int max_itr_ = 100, float precision_ = 0.000001,
             int ndp_ = -1, int seed_ = 42, int verbose_ = -1)
     {
         epsilon = epsilon_;

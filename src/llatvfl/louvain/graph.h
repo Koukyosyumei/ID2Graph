@@ -25,8 +25,9 @@ struct Graph
         num_links = 0;
         total_weight = 0;
 
-        nodes.reserve(node2original_records.size());
-        for (size_t i = 0; i < node2original_records.size(); i++)
+        int size_of_node2original_records = node2original_records.size();
+        nodes.reserve(size_of_node2original_records);
+        for (size_t i = 0; i < size_of_node2original_records; i++)
         {
             nodes.push_back(node2original_records[i]);
         }
@@ -127,7 +128,8 @@ struct Graph
     {
         bool is_weights_size_is_not_zero = weights.size() != 0;
         pair<vector<unsigned int>::iterator, vector<float>::iterator> p = get_neighbors(node);
-        for (unsigned int i = 0; i < get_num_neighbors(node); i++)
+        unsigned int num_neighbors = get_num_neighbors(node);
+        for (unsigned int i = 0; i < num_neighbors; i++)
         {
             if (*(p.first + i) == node)
             {
