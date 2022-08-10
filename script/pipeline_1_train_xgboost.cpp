@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        XGBoostParty party(x, 2, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
+        XGBoostParty party(x, num_classes, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -242,14 +242,14 @@ int main(int argc, char *argv[])
     result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    XGBoostClassifier clf = XGBoostClassifier(2, subsample_cols,
+    XGBoostClassifier clf = XGBoostClassifier(num_classes, subsample_cols,
                                               min_child_weight,
                                               depth, min_leaf,
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
                                               mi_bound, 0, completely_secure_round,
-                                              0.5, n_job, true);
+                                              1 / num_classes, n_job, true);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
@@ -279,22 +279,17 @@ int main(int argc, char *argv[])
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
-    vector<float> predict_proba_train_pos(predict_proba_train.size());
-    for (int i = 0; i < predict_proba_train.size(); i++)
+    for (int c = 0; c < num_classes; c++)
     {
-        predict_proba_train_pos[i] = predict_proba_train[i][1];
+        cout << predict_proba_train[0][c] << " ";
     }
+    cout << endl;
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    result_file << "Train AUC," << roc_auc_score(predict_proba_train_pos, y_true_train) << "\n";
+    result_file << "Train AUC," << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
 
     vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
-    vector<float> predict_proba_val_pos(predict_proba_val.size());
-    for (int i = 0; i < predict_proba_val.size(); i++)
-    {
-        predict_proba_val_pos[i] = predict_proba_val[i][1];
-    }
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    result_file << "Val AUC," << roc_auc_score(predict_proba_val_pos, y_true_val) << "\n";
+    result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val) << "\n";
 
     result_file.close();
 

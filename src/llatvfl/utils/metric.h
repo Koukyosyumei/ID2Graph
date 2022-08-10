@@ -76,6 +76,42 @@ inline float roc_auc_score(vector<float> y_pred, vector<int> y_true)
     return trapz(tps, fps);
 }
 
+inline float ovr_roc_auc_score(vector<vector<float>> y_pred, vector<int> y_true)
+{
+    int num_elements = y_pred.size();
+    int num_classes = y_pred[0].size();
+
+    if (num_classes == 2)
+    {
+        vector<float> y_pred_pos(num_elements, 0);
+        for (int i = 0; i < num_elements; i++)
+        {
+            y_pred_pos[i] = y_pred[i][1];
+        }
+        return roc_auc_score(y_pred_pos, y_true);
+    }
+    else
+    {
+        float ovr_average_score = 0;
+        for (int c = 0; c < num_classes; c++)
+        {
+            vector<float> y_pred_c(num_elements, 0);
+            vector<int> y_true_c(num_elements, 0);
+            for (int i = 0; i < num_elements; i++)
+            {
+                y_pred_c[i] = y_pred[i][c];
+                if (c == y_true[i])
+                {
+                    y_true_c[i] = 1;
+                }
+            }
+
+            ovr_average_score += roc_auc_score(y_pred_c, y_true_c) / num_classes;
+        }
+        return ovr_average_score;
+    }
+}
+
 inline float calc_giniimp(float tot_cnt, vector<float> class_cnt)
 {
     int num_classes = class_cnt.size();

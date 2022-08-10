@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        RandomForestParty party(x, 2, feature_idxs, i, min_leaf, subsample_cols);
+        RandomForestParty party(x, num_classes, feature_idxs, i, min_leaf, subsample_cols);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
     result_file << "party size," << num_party << "\n";
 
     // --- Check Initialization --- //
-    RandomForestClassifier clf = RandomForestClassifier(2, subsample_cols, depth, min_leaf,
+    RandomForestClassifier clf = RandomForestClassifier(num_classes, subsample_cols, depth, min_leaf,
                                                         max_samples_ratio, num_trees,
                                                         mi_bound, 0, n_job, 0);
     printf("Start training trial=%s\n", fileprefix.c_str());
@@ -250,22 +250,12 @@ int main(int argc, char *argv[])
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
-    vector<float> predict_proba_train_pos(predict_proba_train.size());
-    for (int i = 0; i < predict_proba_train.size(); i++)
-    {
-        predict_proba_train_pos[i] = predict_proba_train[i][1];
-    }
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    result_file << "Train AUC," << roc_auc_score(predict_proba_train_pos, y_true_train) << "\n";
+    result_file << "Train AUC," << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
 
     vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
-    vector<float> predict_proba_val_pos(predict_proba_val.size());
-    for (int i = 0; i < predict_proba_val.size(); i++)
-    {
-        predict_proba_val_pos[i] = predict_proba_val[i][1];
-    }
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    result_file << "Val AUC," << roc_auc_score(predict_proba_val_pos, y_true_val) << "\n";
+    result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val) << "\n";
 
     result_file.close();
 

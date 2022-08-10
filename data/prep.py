@@ -105,7 +105,9 @@ def convert_df_to_input(
             ]
 
     with open(output_path, mode="w") as f:
-        f.write(f"{len(list(set(y_train)))} {row_num_train} {len(sum(col_alloc, []))} {parties_num}\n")
+        f.write(
+            f"{len(list(set(y_train)))} {row_num_train} {len(sum(col_alloc, []))} {parties_num}\n"
+        )
         for ca in col_alloc:
             f.write(f"{len(ca)}\n")
             for i in ca:
@@ -268,6 +270,13 @@ if __name__ == "__main__":
             ]
         ].values
         y = df["default.payment.next.month"].values
+
+    elif parsed_args.dataset_type == "waveform":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "waveform-5000.csv"))
+        if parsed_args.num_samples != -1:
+            df = df.sample(parsed_args.num_samples)
+        X = df[[f"x{i}" for i in range(1, 41)]].values
+        y = df["class"].values
 
     elif parsed_args.dataset_type == "breastcancer":
         data = load_breast_cancer()

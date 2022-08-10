@@ -123,19 +123,19 @@ int main(int argc, char *argv[])
 
         if (i == my_rank)
         {
-            my_party = MPISecureBoostParty(world, x, 2, feature_idxs, my_rank, depth,
+            my_party = MPISecureBoostParty(world, x, num_classes, feature_idxs, my_rank, depth,
                                            boosting_rounds, min_leaf, subsample_cols,
                                            const_gamma, lam, max_bin, use_missing_value);
         }
     }
 
-    MPISecureBoostClassifier clf = MPISecureBoostClassifier(2, subsample_cols,
+    MPISecureBoostClassifier clf = MPISecureBoostClassifier(num_classes, subsample_cols,
                                                             min_child_weight,
                                                             depth, min_leaf,
                                                             learning_rate, boosting_rounds,
                                                             lam, const_gamma, eps,
                                                             0, completely_secure_round,
-                                                            0.5, true);
+                                                            1 / num_classes, true);
 
     for (int j = 0; j < num_row_train; j++)
     {

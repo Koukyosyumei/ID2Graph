@@ -75,7 +75,7 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
-    kmeans = clustering_cls(n_clusters=2, random_state=parsed_args.seed).fit(
+    kmeans = clustering_cls(n_clusters=num_classes, random_state=parsed_args.seed).fit(
         X_train_minmax
     )
     c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
