@@ -269,18 +269,13 @@ struct Community
                 }
                 else
                 */
-                vector<int> random_indicies_to_neigh_last(neigh_last);
-                iota(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), 0);
-                shuffle(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), gen);
-                int temp_i = 0;
                 for (unsigned int i = 0; i < neigh_last; i++)
                 {
-                    temp_i = random_indicies_to_neigh_last[i];
-                    float increase = modularity_gain(node, neigh_pos[temp_i], neigh_weight[neigh_pos[temp_i]], w_degree);
+                    float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
                     if (increase > best_increase)
                     {
-                        best_comm = neigh_pos[temp_i];
-                        best_nblinks = neigh_weight[neigh_pos[temp_i]];
+                        best_comm = neigh_pos[i];
+                        best_nblinks = neigh_weight[neigh_pos[i]];
                         best_increase = increase;
                     }
                 }
