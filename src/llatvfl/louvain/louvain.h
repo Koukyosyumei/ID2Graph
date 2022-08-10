@@ -8,7 +8,7 @@ using namespace std;
 
 struct Louvain
 {
-    float epsilon;
+    int max_pass;
     int max_itr;
     float precision;
     int ndp;
@@ -18,10 +18,10 @@ struct Louvain
     Community community;
     Graph g;
 
-    Louvain(float epsilon_ = 0.0, int max_itr_ = 30, float precision_ = 0.000001,
+    Louvain(int max_pass_ = -1, int max_itr_ = 30, float precision_ = 0.000001,
             int ndp_ = -1, int seed_ = 42, int verbose_ = -1)
     {
-        epsilon = epsilon_;
+        max_pass = max_pass_;
         max_itr = max_itr_;
         precision = precision_;
         ndp = ndp_;
@@ -44,7 +44,7 @@ struct Louvain
 
         for (int i = 0; i < max_itr; i++)
         {
-            improvement = community.one_level(epsilon);
+            improvement = community.one_level(max_pass);
             new_mod = community.modularity();
             g = community.partition2graph_binary();
             community = Community(g, -1, precision, seed);

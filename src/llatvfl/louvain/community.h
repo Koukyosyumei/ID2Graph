@@ -217,7 +217,7 @@ struct Community
         return g2;
     }
 
-    bool one_level(float epsilon)
+    bool one_level(int max_pass = -1)
     {
         bool improvement = false;
         int nb_moves;
@@ -230,7 +230,7 @@ struct Community
 
         // repeat while
         //   there is an improvement of modularity
-        //   or there is an improvement of modularity greater than a given epsilon
+        //   or there is an improvement of modularity greater than a given min_modularity
         //   or a predefined number of pass have been done
         do
         {
@@ -258,6 +258,7 @@ struct Community
                 float best_nblinks = 0.;
                 float best_increase = 0.;
 
+                /*
                 if (epsilon > uniform_dist_0_to_1(gen))
                 {
                     // https://arxiv.org/abs/1503.01322
@@ -267,21 +268,20 @@ struct Community
                     best_nblinks = neigh_weight[neigh_pos[i]];
                 }
                 else
+                */
+                vector<int> random_indicies_to_neigh_last(neigh_last);
+                iota(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), 0);
+                shuffle(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), gen);
+                int temp_i = 0;
+                for (unsigned int i = 0; i < neigh_last; i++)
                 {
-                    vector<int> random_indicies_to_neigh_last(neigh_last);
-                    iota(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), 0);
-                    shuffle(random_indicies_to_neigh_last.begin(), random_indicies_to_neigh_last.end(), gen);
-                    int temp_i = 0;
-                    for (unsigned int i = 0; i < neigh_last; i++)
+                    temp_i = random_indicies_to_neigh_last[i];
+                    float increase = modularity_gain(node, neigh_pos[temp_i], neigh_weight[neigh_pos[temp_i]], w_degree);
+                    if (increase > best_increase)
                     {
-                        temp_i = random_indicies_to_neigh_last[i];
-                        float increase = modularity_gain(node, neigh_pos[temp_i], neigh_weight[neigh_pos[temp_i]], w_degree);
-                        if (increase > best_increase)
-                        {
-                            best_comm = neigh_pos[temp_i];
-                            best_nblinks = neigh_weight[neigh_pos[temp_i]];
-                            best_increase = increase;
-                        }
+                        best_comm = neigh_pos[temp_i];
+                        best_nblinks = neigh_weight[neigh_pos[temp_i]];
+                        best_increase = increase;
                     }
                 }
 
@@ -305,7 +305,7 @@ struct Community
             if (nb_moves > 0)
                 improvement = true;
 
-        } while (nb_moves > 0 && new_mod - cur_mod > min_modularity);
+        } while (nb_moves > 0 && new_mod - cur_mod > min_modularity && max_pass != nb_pass_done);
 
         return improvement;
     }
