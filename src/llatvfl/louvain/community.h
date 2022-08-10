@@ -258,13 +258,16 @@ struct Community
                 float best_nblinks = 0.;
                 float best_increase = 0.;
 
-                if (epsilon > uniform_dist_0_to_1(gen))
+                if (epsilon > 0)
                 {
-                    // https://arxiv.org/abs/1503.01322
-                    uniform_int_distribution<> distr(0, neigh_last - 1);
-                    int i = distr(gen);
-                    best_comm = neigh_pos[i];
-                    best_nblinks = neigh_weight[neigh_pos[i]];
+                    if (epsilon > uniform_dist_0_to_1(gen))
+                    {
+                        // https://arxiv.org/abs/1503.01322
+                        uniform_int_distribution<> distr(0, neigh_last - 1);
+                        int i = distr(gen);
+                        best_comm = neigh_pos[i];
+                        best_nblinks = neigh_weight[neigh_pos[i]];
+                    }
                 }
                 else
                 {
