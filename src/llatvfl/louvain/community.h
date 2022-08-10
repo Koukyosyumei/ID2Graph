@@ -80,12 +80,13 @@ struct Community
     float modularity()
     {
         float q = 0.;
-        float m2 = (float)g.total_weight;
+        float inv_m2 = 1 / (float)g.total_weight;
 
         for (int i = 0; i < num_nodes; i++)
         {
             if (tot[i] > 0)
-                q += (float)in[i] / m2 - ((float)tot[i] / m2) * ((float)tot[i] / m2);
+                q += inv_m2 * ((float)in[i] - (inv_m2 * (float)tot[i] * (float)tot[i]));
+            // q += (float)in[i] / m2 - ((float)tot[i] / m2) * ((float)tot[i] / m2);
         }
 
         return q;
@@ -198,9 +199,13 @@ struct Community
                         it->second += neigh_weight_i;
                 }
             }
-            g2.degrees[comm] = (comm == 0) ? m.size() : g2.degrees[comm - 1] + m.size();
-            g2.num_links += m.size();
 
+            unsigned int m_size = m.size();
+            g2.degrees[comm] = (comm == 0) ? m_size : g2.degrees[comm - 1] + m_size;
+            g2.num_links += m_size;
+
+            g2.links.reserve(m_size);
+            g2.weights.reserve(m_size);
             for (it = m.begin(); it != m.end(); it++)
             {
                 g2.total_weight += it->second;
@@ -220,16 +225,8 @@ struct Community
         float new_mod = modularity();
         float cur_mod = new_mod;
 
-        vector<int> random_order(num_nodes);
-        for (int i = 0; i < num_nodes; i++)
-            random_order[i] = i;
-        for (int i = 0; i < num_nodes - 1; i++)
-        {
-            int rand_pos = rand() % (num_nodes - i) + i;
-            int tmp = random_order[i];
-            random_order[i] = random_order[rand_pos];
-            random_order[rand_pos] = tmp;
-        }
+        vector<int> random_indicies_to_num_nodes(num_nodes);
+        iota(random_indicies_to_num_nodes.begin(), random_indicies_to_num_nodes.end(), 0);
 
         // repeat while
         //   there is an improvement of modularity
@@ -242,10 +239,11 @@ struct Community
             nb_pass_done++;
 
             // for each node: remove the node from its community and insert it in the best community
+            shuffle(random_indicies_to_num_nodes.begin(), random_indicies_to_num_nodes.end(), gen);
+
             for (int node_tmp = 0; node_tmp < num_nodes; node_tmp++)
             {
-                //      int node = node_tmp;
-                int node = random_order[node_tmp];
+                int node = random_indicies_to_num_nodes[node_tmp];
                 int node_comm = node2community[node];
                 float w_degree = g.get_weighted_degree(node);
 
