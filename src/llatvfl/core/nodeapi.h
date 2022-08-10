@@ -63,7 +63,7 @@ struct NodeAPI
 
     string print_leaf(NodeType *node, bool show_purity, bool binary_color)
     {
-        string node_info = to_string(node->get_val());
+        string node_info = to_string(node->get_val()[0]);
         if (show_purity)
         {
             int cnt_idxs = node->idxs.size();
@@ -203,7 +203,7 @@ struct NodeAPI
         return make_pair(node_info, skip_flag);
     }
 
-    float predict_row(NodeType *node, vector<float> &xi)
+    vector<float> predict_row(NodeType *node, vector<float> &xi)
     {
         queue<NodeType *> que;
         que.push(node);
@@ -231,13 +231,14 @@ struct NodeAPI
             }
         }
 
-        return nan("");
+        vector<float> nan_vec(node->num_classes, nan(""));
+        return nan_vec;
     }
 
-    vector<float> predict(NodeType *node, vector<vector<float>> &x_new)
+    vector<vector<float>> predict(NodeType *node, vector<vector<float>> &x_new)
     {
         int x_new_size = x_new.size();
-        vector<float> y_pred(x_new_size);
+        vector<vector<float>> y_pred(x_new_size);
         for (int i = 0; i < x_new_size; i++)
         {
             y_pred[i] = predict_row(node, x_new[i]);

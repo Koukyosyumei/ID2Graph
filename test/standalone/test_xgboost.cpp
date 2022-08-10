@@ -44,38 +44,38 @@ TEST(XGBoost, XGBoostClassifierTest)
                 x[k][j] = X[k][feature_idxs[i][j]];
             }
         }
-        XGBoostParty party(x, feature_idxs[i], i, min_leaf, subsample_cols);
+        XGBoostParty party(x, 2, feature_idxs[i], i, min_leaf, subsample_cols);
         parties[i] = party;
     }
 
     // --- Check Initialization --- //
-    XGBoostClassifier clf = XGBoostClassifier(subsample_cols,
+    XGBoostClassifier clf = XGBoostClassifier(2, subsample_cols,
                                               min_child_weight,
                                               depth, min_leaf,
                                               learning_rate,
                                               boosting_rounds,
                                               lam, const_gamma, eps,
                                               numeric_limits<float>::infinity(),
-                                              -1, 0, 1.0, 2);
+                                              -1, 0, 1.0, 1);
 
     vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    vector<float> init_pred = clf.get_init_pred(y);
+    vector<vector<float>> init_pred = clf.get_init_pred(y);
     for (int i = 0; i < init_pred.size(); i++)
-        ASSERT_EQ(init_pred[i], test_init_pred[i]);
+        ASSERT_EQ(init_pred[i][1], test_init_pred[i]);
 
-    vector<float> base_pred;
+    vector<vector<float>> base_pred;
     copy(init_pred.begin(), init_pred.end(), back_inserter(base_pred));
     vector<float> test_base_grad = {-0.26894, 0.73106, -0.26894, 0.73106,
                                     -0.26894, -0.26894, 0.73106, -0.26894};
-    vector<float> grad = clf.get_grad(base_pred, y);
+    vector<vector<float>> grad = clf.lossfunc_obj->get_grad(base_pred, y);
     for (int i = 0; i < grad.size(); i++)
-        ASSERT_NEAR(grad[i], test_base_grad[i], 1e-5);
+        ASSERT_NEAR(grad[i][0], test_base_grad[i], 1e-5);
 
-    vector<float> hess = clf.get_hess(base_pred, y);
+    vector<vector<float>> hess = clf.lossfunc_obj->get_hess(base_pred, y);
     vector<float> test_hess = {0.19661, 0.19661, 0.19661, 0.19661,
                                0.19661, 0.19661, 0.19661, 0.19661};
     for (int i = 0; i < hess.size(); i++)
-        ASSERT_NEAR(hess[i], test_hess[i], 1e-5);
+        ASSERT_NEAR(hess[i][0], test_hess[i], 1e-5);
 
     // --- Check Training --- //
     clf.fit(parties, y);
@@ -102,7 +102,7 @@ TEST(XGBoost, XGBoostClassifierTest)
         ASSERT_EQ(idxs_left[i], test_idxs_left[i]);
     ASSERT_TRUE(clf.estimators[0].dtree.left->is_pure());
     ASSERT_TRUE(clf.estimators[0].dtree.left->is_leaf());
-    ASSERT_NEAR(clf.estimators[0].dtree.left->val, 0.5074890528001861, 1e-6);
+    ASSERT_NEAR(clf.estimators[0].dtree.left->val[0], 0.5074890528001861, 1e-6);
 
     vector<int> test_idxs_right = {1, 3, 4, 5, 6};
     vector<int> idxs_right = clf.estimators[0].dtree.right->idxs;
@@ -110,7 +110,7 @@ TEST(XGBoost, XGBoostClassifierTest)
         ASSERT_EQ(idxs_right[i], test_idxs_right[i]);
     ASSERT_TRUE(!clf.estimators[0].dtree.right->is_pure());
     ASSERT_TRUE(!clf.estimators[0].dtree.right->is_leaf());
-    ASSERT_NEAR(clf.estimators[0].dtree.right->val, -0.8347166357912786, 1e-6);
+    ASSERT_NEAR(clf.estimators[0].dtree.right->val[0], -0.8347166357912786, 1e-6);
     XGBoostNode right_node = *clf.estimators[0].dtree.right;
     ASSERT_EQ(right_node.party_id, 1);
     ASSERT_EQ(get<0>(right_node.parties->at(right_node.party_id)
@@ -128,22 +128,25 @@ TEST(XGBoost, XGBoostClassifierTest)
 
     ASSERT_TRUE(clf.estimators[0].dtree.right->right->left->is_leaf());
     ASSERT_TRUE(clf.estimators[0].dtree.right->right->right->is_leaf());
-    ASSERT_NEAR(clf.estimators[0].dtree.right->right->left->val, 0.3860706492904221, 1e-6);
-    ASSERT_NEAR(clf.estimators[0].dtree.right->right->right->val, -0.6109404045885225, 1e-6);
+    ASSERT_NEAR(clf.estimators[0].dtree.right->right->left->val[0], 0.3860706492904221, 1e-6);
+    ASSERT_NEAR(clf.estimators[0].dtree.right->right->right->val[0], -0.6109404045885225, 1e-6);
 
-    vector<float> predict_raw = clf.predict_raw(X);
+    vector<vector<float>> predict_raw = clf.predict_raw(X);
     vector<float> test_predcit_raw = {1.38379341, 0.53207456, 1.38379341,
                                       0.22896408, 1.29495549, 1.29495549,
                                       0.22896408, 1.38379341};
     for (int i = 0; i < test_predcit_raw.size(); i++)
-        ASSERT_NEAR(predict_raw[i], test_predcit_raw[i], 1e-6);
+        ASSERT_NEAR(predict_raw[i][0], test_predcit_raw[i], 1e-6);
 
-    vector<float> predict_proba = clf.predict_proba(X);
+    vector<vector<float>> predict_proba = clf.predict_proba(X);
     vector<float> test_predcit_proba = {0.79959955, 0.62996684, 0.79959955,
                                         0.55699226, 0.78498478, 0.78498478,
                                         0.55699226, 0.79959955};
     for (int i = 0; i < test_predcit_proba.size(); i++)
-        ASSERT_NEAR(predict_proba[i], test_predcit_proba[i], 1e-6);
+    {
+        ASSERT_NEAR(predict_proba[i][1], test_predcit_proba[i], 1e-6);
+        ASSERT_NEAR(predict_proba[i][0], 1 - test_predcit_proba[i], 1e-6);
+    }
 
     vector<vector<float>> test_adj_mat_weighted = {{0, 0, 1, 0, 0, 0, 0, 1},
                                                    {0, 0, 0, 1, 3, 3, 1, 0},

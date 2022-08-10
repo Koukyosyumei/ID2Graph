@@ -14,23 +14,25 @@ struct MPISecureBoostParty : SecureBoostParty
     int rank;
 
     vector<float> y;
-    vector<float> plain_gradient;
-    vector<float> plain_hessian;
-    vector<PaillierCipherText> gradient;
-    vector<PaillierCipherText> hessian;
+    vector<vector<float>> plain_gradient;
+    vector<vector<float>> plain_hessian;
+    vector<vector<PaillierCipherText>> gradient;
+    vector<vector<PaillierCipherText>> hessian;
     vector<int> idxs;
     int max_depth, num_estimators, row_count;
     int best_col_id, best_threshold_id;
     float gam, lam;
-    float sum_grad, sum_hess;
+    vector<float> sum_grad, sum_hess;
+
+    int grad_dim;
 
     MPISecureBoostParty() {}
     MPISecureBoostParty(boost::mpi::communicator &world_, vector<vector<float>> x_,
-                        vector<int> &feature_id_, int party_id_,
+                        int num_classes_, vector<int> &feature_id_, int party_id_,
                         int max_depth_, int num_estimators_, int min_leaf_, float subsample_cols_,
                         float gam_, float lam_, int num_precentile_bin_ = 256,
                         bool use_missing_value_ = false,
-                        int seed_ = 0, int active_party_rank_ = 0) : SecureBoostParty(x_, feature_id_, party_id_,
+                        int seed_ = 0, int active_party_rank_ = 0) : SecureBoostParty(x_, num_classes_, feature_id_, party_id_,
                                                                                       min_leaf_, subsample_cols_,
                                                                                       num_precentile_bin_,
                                                                                       use_missing_value_, seed_)
@@ -40,11 +42,20 @@ struct MPISecureBoostParty : SecureBoostParty
         gam = gam_;
         lam = lam_;
 
+        if (num_classes = 2)
+        {
+            grad_dim = 1;
+        }
+        else
+        {
+            grad_dim = num_classes;
+        }
+
         world = world_;
         rank = world.rank();
         row_count = x.size();
-        gradient.resize(row_count);
-        hessian.resize(row_count);
+        gradient.resize(row_count, vector<PaillierCipherText>(grad_dim));
+        hessian.resize(row_count, vector<PaillierCipherText>(grad_dim));
         active_party_rank = active_party_rank_;
     }
 
@@ -57,7 +68,7 @@ struct MPISecureBoostParty : SecureBoostParty
         shuffle(temp_column_subsample.begin(), temp_column_subsample.end(), engine);
     }
 
-    vector<vector<pair<float, float>>> greedy_search_split()
+    vector<vector<pair<vector<float>, vector<float>>>> greedy_search_split()
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -66,7 +77,7 @@ struct MPISecureBoostParty : SecureBoostParty
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<float, float>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<pair<vector<float>, vector<float>>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         row_count = idxs.size();
@@ -110,16 +121,19 @@ struct MPISecureBoostParty : SecureBoostParty
 
             for (int p = 0; p < percentiles.size(); p++)
             {
-                float temp_grad = 0;
-                float temp_hess = 0;
+                vector<float> temp_grad(grad_dim, 0);
+                vector<float> temp_hess(grad_dim, 0);
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad += plain_gradient[idxs[x_col_idxs[r]]];
-                        temp_hess += plain_hessian[idxs[x_col_idxs[r]]];
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_grad[c] += plain_gradient[idxs[x_col_idxs[r]]][c];
+                            temp_hess[c] += plain_hessian[idxs[x_col_idxs[r]]][c];
+                        }
                         cumulative_left_size += 1;
                     }
                     else
@@ -144,16 +158,19 @@ struct MPISecureBoostParty : SecureBoostParty
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    float temp_grad = 0;
-                    float temp_hess = 0;
+                    vector<float> temp_grad(grad_dim, 0);
+                    vector<float> temp_hess(grad_dim, 0);
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            temp_grad += plain_gradient[idxs[x_col_idxs[r]]];
-                            temp_hess += plain_hessian[idxs[x_col_idxs[r]]];
+                            for (int c = 0; c < grad_dim; c++)
+                            {
+                                temp_grad[c] += plain_gradient[idxs[x_col_idxs[r]]][c];
+                                temp_hess[c] += plain_hessian[idxs[x_col_idxs[r]]][c];
+                            }
                             cumulative_right_size += 1;
                         }
                         else
@@ -176,7 +193,7 @@ struct MPISecureBoostParty : SecureBoostParty
         return split_candidates_grad_hess;
     }
 
-    vector<vector<pair<PaillierCipherText, PaillierCipherText>>> greedy_search_split_encrypt()
+    vector<vector<vector<pair<PaillierCipherText, PaillierCipherText>>>> greedy_search_split_encrypt()
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -185,7 +202,7 @@ struct MPISecureBoostParty : SecureBoostParty
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<PaillierCipherText, PaillierCipherText>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<vector<pair<PaillierCipherText, PaillierCipherText>>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
@@ -228,16 +245,23 @@ struct MPISecureBoostParty : SecureBoostParty
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                PaillierCipherText temp_grad = pk.encrypt(0);
-                PaillierCipherText temp_hess = pk.encrypt(0);
+                vector<pair<PaillierCipherText, PaillierCipherText>> temp_grad_hess(grad_dim);
+                for (int c = 0; c < grad_dim; c++)
+                {
+                    temp_grad_hess[c].first = pk.encrypt<float>(0);
+                    temp_grad_hess[c].second = pk.encrypt<float>(0);
+                }
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
-                        temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_grad_hess[c].first = temp_grad_hess[c].first + gradient[idxs[x_col_idxs[r]]][c];
+                            temp_grad_hess[c].second = temp_grad_hess[c].second + hessian[idxs[x_col_idxs[r]]][c];
+                        }
                         cumulative_left_size += 1;
                     }
                     else
@@ -250,7 +274,7 @@ struct MPISecureBoostParty : SecureBoostParty
                 if (cumulative_left_size >= min_leaf &&
                     row_count - cumulative_left_size >= min_leaf)
                 {
-                    split_candidates_grad_hess[i].push_back(make_pair(temp_grad, temp_hess));
+                    split_candidates_grad_hess[i].push_back(temp_grad_hess);
                     temp_thresholds[i].push_back(percentiles[p]);
                 }
             }
@@ -262,16 +286,23 @@ struct MPISecureBoostParty : SecureBoostParty
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    PaillierCipherText temp_grad = pk.encrypt<float>(0);
-                    PaillierCipherText temp_hess = pk.encrypt<float>(0);
+                    vector<pair<PaillierCipherText, PaillierCipherText>> temp_grad_hess(grad_dim);
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_grad_hess[c].first = pk.encrypt<float>(0);
+                        temp_grad_hess[c].second = pk.encrypt<float>(0);
+                    }
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
-                            temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
+                            for (int c = 0; c < grad_dim; c++)
+                            {
+                                temp_grad_hess[c].first = temp_grad_hess[c].first + gradient[idxs[x_col_idxs[r]]][c];
+                                temp_grad_hess[c].second = temp_grad_hess[c].second + hessian[idxs[x_col_idxs[r]]][c];
+                            }
                             cumulative_right_size += 1;
                         }
                         else
@@ -284,8 +315,7 @@ struct MPISecureBoostParty : SecureBoostParty
                     if (cumulative_right_size >= min_leaf &&
                         row_count - cumulative_right_size >= min_leaf)
                     {
-                        split_candidates_grad_hess[i + subsample_col_count].push_back(make_pair(temp_grad,
-                                                                                                temp_hess));
+                        split_candidates_grad_hess[i + subsample_col_count].push_back(temp_grad_hess);
                         temp_thresholds[i + subsample_col_count].push_back(percentiles[p]);
                     }
                 }
@@ -294,8 +324,8 @@ struct MPISecureBoostParty : SecureBoostParty
         return split_candidates_grad_hess;
     }
 
-    void set_plain_gradients_and_hessians(vector<float> &plain_gradients_,
-                                          vector<float> &plain_hessians_)
+    void set_plain_gradients_and_hessians(vector<vector<float>> &plain_gradients_,
+                                          vector<vector<float>> &plain_hessians_)
     {
         plain_gradient = plain_gradients_;
         plain_hessian = plain_hessians_;
@@ -335,36 +365,34 @@ struct MPISecureBoostParty : SecureBoostParty
         world.send(active_party_rank, TAG_BEST_INSTANCE_SPACE, split_rows(idxs, best_col_id, best_threshold_id));
     }
 
-    float compute_weight()
+    vector<float> compute_weight()
     {
-        sum_grad = 0;
-        sum_hess = 0;
-        for (int i = 0; i < row_count; i++)
-        {
-            sum_grad += plain_gradient[idxs[i]];
-            sum_hess += plain_hessian[idxs[i]];
-        }
-
-        return -1 * (sum_grad / (sum_hess + lam));
+        return xgboost_compute_weight(row_count, plain_gradient, plain_hessian, idxs, lam);
     }
 
-    float compute_gain(float left_grad, float right_grad, float left_hess, float right_hess)
+    float compute_gain(vector<float> left_grad, vector<float> right_grad, vector<float> left_hess, vector<float> right_hess)
     {
-        return 0.5 * ((left_grad * left_grad) / (left_hess + lam) +
-                      (right_grad * right_grad) / (right_hess + lam) -
-                      ((left_grad + right_grad) *
-                       (left_grad + right_grad) / (left_hess + right_hess + lam))) -
-               gam;
+        return xgboost_compute_gain(left_grad, right_grad, left_hess, right_hess, gam, lam);
     }
 
     void calc_sum_grad_and_hess()
     {
-        sum_grad = 0;
-        sum_hess = 0;
+        sum_grad.resize(gradient[0].size());
+        sum_hess.resize(hessian[0].size());
+
+        for (int c = 0; c < sum_grad.size(); c++)
+        {
+            sum_grad[c] = 0;
+            sum_hess[c] = 0;
+        }
+
         for (int i = 0; i < row_count; i++)
         {
-            sum_grad += plain_gradient[idxs[i]];
-            sum_hess += plain_hessian[idxs[i]];
+            for (int c = 0; c < sum_grad.size(); c++)
+            {
+                sum_grad[c] += plain_gradient[idxs[i]][c];
+                sum_hess[c] += plain_hessian[idxs[i]][c];
+            }
         }
     }
 
@@ -395,6 +423,7 @@ struct MPISecureBoostParty : SecureBoostParty
 
                 receive_instance_space();
                 send_search_results();
+
                 world.recv(active_party_rank, TAG_BEST_PARTY_ID, best_party_id);
 
                 if (best_party_id == party_id)

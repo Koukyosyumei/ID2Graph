@@ -7,24 +7,28 @@ using namespace std;
 struct SecureBoostNode : Node<SecureBoostParty>
 {
     vector<SecureBoostParty> *parties;
-    vector<PaillierCipherText> gradient, hessian;
-    vector<float> vanila_gradient, vanila_hessian;
+    vector<vector<PaillierCipherText>> gradient, hessian;
+    vector<vector<float>> vanila_gradient, vanila_hessian;
     float min_child_weight, lam, gamma, eps;
     bool use_only_active_party;
     SecureBoostNode *left, *right;
 
+    int num_classes;
+
     SecureBoostNode() {}
     SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> &y_,
-                    vector<PaillierCipherText> &gradient_,
-                    vector<PaillierCipherText> &hessian_,
-                    vector<float> &vanila_gradient_,
-                    vector<float> &vanila_hessian_,
+                    int num_classes_,
+                    vector<vector<PaillierCipherText>> &gradient_,
+                    vector<vector<PaillierCipherText>> &hessian_,
+                    vector<vector<float>> &vanila_gradient_,
+                    vector<vector<float>> &vanila_hessian_,
                     vector<int> &idxs_, float min_child_weight_, float lam_,
                     float gamma_, float eps_, int depth_, int active_party_id_ = 0,
                     bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
+        num_classes = num_classes_;
         gradient = gradient_;
         hessian = hessian_;
         vanila_gradient = vanila_gradient_;
@@ -85,7 +89,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
         return record_id;
     }
 
-    float get_val()
+    vector<float> get_val()
     {
         return val;
     }
@@ -110,40 +114,31 @@ struct SecureBoostNode : Node<SecureBoostParty>
         return parties->size();
     }
 
-    float compute_weight()
+    vector<float> compute_weight()
     {
-        float sum_grad = 0;
-        float sum_hess = 0;
-        for (int i = 0; i < row_count; i++)
-        {
-            sum_grad += vanila_gradient[idxs[i]];
-            sum_hess += vanila_hessian[idxs[i]];
-        }
-        return -1 * (sum_grad / (sum_hess + lam));
+        return xgboost_compute_weight(row_count, vanila_gradient, vanila_hessian, idxs, lam);
     }
 
-    float compute_gain(float left_grad, float right_grad, float left_hess, float right_hess)
+    float compute_gain(vector<float> &left_grad, vector<float> &right_grad, vector<float> &left_hess, vector<float> &right_hess)
     {
-        return 0.5 * ((left_grad * left_grad) / (left_hess + lam) +
-                      (right_grad * right_grad) / (right_hess + lam) -
-                      ((left_grad + right_grad) *
-                       (left_grad + right_grad) / (left_hess + right_hess + lam))) -
-               gamma;
+        return xgboost_compute_gain(left_grad, right_grad, left_hess, right_hess, gamma, lam);
     }
 
-    void find_split_per_party(int party_id_start, int temp_num_parties, float sum_grad, float sum_hess)
+    void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> &sum_grad, vector<float> &sum_hess)
     {
+        int grad_dim = sum_grad.size();
+
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
 
-            vector<vector<pair<float, float>>> search_results;
+            vector<vector<pair<vector<float>, vector<float>>>> search_results;
             if (temp_party_id == active_party_id)
             {
                 search_results = parties->at(temp_party_id).greedy_search_split(vanila_gradient, vanila_hessian, idxs);
             }
             else
             {
-                vector<vector<pair<PaillierCipherText, PaillierCipherText>>> encrypted_search_result =
+                vector<vector<pair<vector<PaillierCipherText>, vector<PaillierCipherText>>>> encrypted_search_result =
                     parties->at(temp_party_id).greedy_search_split_encrypt(gradient, hessian, idxs);
                 int temp_result_size = encrypted_search_result.size();
                 search_results.resize(temp_result_size);
@@ -154,32 +149,71 @@ struct SecureBoostNode : Node<SecureBoostParty>
                     search_results[j].resize(temp_vec_size);
                     for (int k = 0; k < temp_vec_size; k++)
                     {
-                        search_results[j][k] = make_pair(parties->at(active_party_id)
-                                                             .sk.decrypt<float>(
-                                                                 encrypted_search_result[j][k].first),
-                                                         parties->at(active_party_id)
-                                                             .sk.decrypt<float>(
-                                                                 encrypted_search_result[j][k].second));
+                        vector<float> temp_grad_decrypted, temp_hess_decrypted;
+                        temp_grad_decrypted.resize(grad_dim);
+                        temp_hess_decrypted.resize(grad_dim);
+
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_grad_decrypted[c] = parties->at(active_party_id)
+                                                         .sk.decrypt<float>(
+                                                             encrypted_search_result[j][k].first[c]);
+                            temp_hess_decrypted[c] = parties->at(active_party_id)
+                                                         .sk.decrypt<float>(
+                                                             encrypted_search_result[j][k].second[c]);
+                        }
+                        search_results[j][k] = make_pair(temp_grad_decrypted, temp_hess_decrypted);
                     }
                 }
             }
 
+            float temp_score;
+            vector<float> temp_left_grad(grad_dim, 0);
+            vector<float> temp_left_hess(grad_dim, 0);
+            vector<float> temp_right_grad(grad_dim, 0);
+            vector<float> temp_right_hess(grad_dim, 0);
+            bool skip_flag = false;
+
             for (int j = 0; j < search_results.size(); j++)
             {
-                float temp_score;
-                float temp_left_grad = 0;
-                float temp_left_hess = 0;
+                temp_score = 0;
+
+                for (int c = 0; c < grad_dim; c++)
+                {
+                    temp_left_grad[c] = 0;
+                    temp_left_hess[c] = 0;
+                }
+
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
-                    temp_left_grad += search_results[j][k].first;
-                    temp_left_hess += search_results[j][k].second;
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_left_grad[c] += search_results[j][k].first[c];
+                        temp_left_hess[c] += search_results[j][k].second[c];
+                    }
 
-                    if (temp_left_hess < min_child_weight ||
-                        sum_hess - temp_left_hess < min_child_weight)
+                    skip_flag = false;
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        if (temp_left_hess[c] < min_child_weight ||
+                            sum_hess[c] - temp_left_hess[c] < min_child_weight)
+                        {
+                            skip_flag = true;
+                        }
+                    }
+                    if (skip_flag)
+                    {
                         continue;
+                    }
 
-                    temp_score = compute_gain(temp_left_grad, sum_grad - temp_left_grad,
-                                              temp_left_hess, sum_hess - temp_left_hess);
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_right_grad[c] = sum_grad[c] - temp_left_grad[c];
+                        temp_right_hess[c] = sum_hess[c] - temp_left_hess[c];
+                    }
+
+                    temp_score = compute_gain(temp_left_grad, temp_right_grad,
+                                              temp_left_hess, temp_right_hess);
 
                     if (temp_score > best_score)
                     {
@@ -195,12 +229,15 @@ struct SecureBoostNode : Node<SecureBoostParty>
 
     tuple<int, int, int> find_split()
     {
-        float sum_grad = 0;
-        float sum_hess = 0;
+        vector<float> sum_grad(gradient[0].size(), 0);
+        vector<float> sum_hess(hessian[0].size(), 0);
         for (int i = 0; i < row_count; i++)
         {
-            sum_grad += vanila_gradient[idxs[i]];
-            sum_hess += vanila_hessian[idxs[i]];
+            for (int c = 0; c < sum_grad.size(); c++)
+            {
+                sum_grad[c] += vanila_gradient[idxs[i]][c];
+                sum_hess[c] += vanila_hessian[idxs[i]][c];
+            }
         }
 
         float temp_score, temp_left_grad, temp_left_hess;
@@ -223,7 +260,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
                 for (int i = 0; i < n_job; i++)
                 {
                     int local_num_parties = num_parties_per_thread[i];
-                    thread temp_th([this, cnt_parties, local_num_parties, sum_grad, sum_hess]
+                    thread temp_th([this, cnt_parties, local_num_parties, &sum_grad, &sum_hess]
                                    { this->find_split_per_party(cnt_parties, local_num_parties, sum_grad, sum_hess); });
                     threads_parties.push_back(move(temp_th));
                     cnt_parties += num_parties_per_thread[i];
@@ -248,7 +285,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        left = new SecureBoostNode(parties, y, gradient, hessian,
+        left = new SecureBoostNode(parties, y, num_classes, gradient, hessian,
                                    vanila_gradient, vanila_hessian,
                                    left_idxs, min_child_weight,
                                    lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);
@@ -256,7 +293,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
         {
             left->party_id = party_id;
         }
-        right = new SecureBoostNode(parties, y, gradient, hessian,
+        right = new SecureBoostNode(parties, y, num_classes, gradient, hessian,
                                     vanila_gradient, vanila_hessian,
                                     right_idxs, min_child_weight,
                                     lam, gamma, eps, depth - 1, active_party_id, use_only_active_party);

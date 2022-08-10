@@ -41,12 +41,12 @@ TEST(RandomForest, RandomForestClassifierTest)
                 x[k][j] = X[k][feature_idxs[i][j]];
             }
         }
-        RandomForestParty party(x, feature_idxs[i], i, min_leaf, subsample_cols);
+        RandomForestParty party(x, 2, feature_idxs[i], i, min_leaf, subsample_cols);
         parties[i] = party;
     }
 
     // --- Check Initialization --- //
-    RandomForestClassifier clf = RandomForestClassifier(subsample_cols, depth, min_leaf,
+    RandomForestClassifier clf = RandomForestClassifier(2, subsample_cols, depth, min_leaf,
                                                         max_samples_ratio, num_trees,
                                                         numeric_limits<float>::infinity(), -1, 1);
 
@@ -115,20 +115,17 @@ TEST(RandomForest, RandomForestClassifierTest)
     }
 
     vector<float> test_predict_raw = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
-    vector<float> predict_raw = clf.predict_raw(X);
+    vector<vector<float>> predict_raw = clf.predict_raw(X);
     for (int i = 0; i < predict_raw.size(); i++)
     {
-        ASSERT_EQ(test_predict_raw[i], predict_raw[i]);
+        ASSERT_EQ(test_predict_raw[i], predict_raw[i][1]);
     }
 
-    vector<float> test_predict_proba = {0.7310585786300049, 0.6607563732194243,
-                                        0.7310585786300049, 0.5,
-                                        0.6607563732194243, 0.6607563732194243,
-                                        0.5, 0.7310585786300049};
-    vector<float> predict_proba = clf.predict_proba(X);
+    vector<float> test_predict_proba = {1, 2.0 / 3.0, 1, 0, 2.0 / 3.0, 2.0 / 3.0, 0, 1};
+    vector<vector<float>> predict_proba = clf.predict_proba(X);
     for (int i = 0; i < predict_proba.size(); i++)
     {
-        ASSERT_NEAR(test_predict_proba[i], predict_proba[i], 1e-6);
+        ASSERT_NEAR(test_predict_proba[i], predict_proba[i][1], 1e-6);
     }
 
     vector<vector<float>> test_adj_mat = {{0, 0, 1, 0, 0, 0, 0, 1},

@@ -19,36 +19,36 @@ struct Tree
         return *dtree;
     }
 
-    vector<float> predict(vector<vector<float>> &X)
+    vector<vector<float>> predict(vector<vector<float>> &X)
     {
         return nodeapi.predict(&dtree, X);
     }
 
-    vector<pair<vector<int>, vector<float>>> extract_train_prediction_from_node(NodeType &node)
+    vector<pair<vector<int>, vector<vector<float>>>> extract_train_prediction_from_node(NodeType &node)
     {
         if (node.is_leaf())
         {
-            vector<pair<vector<int>, vector<float>>> result;
+            vector<pair<vector<int>, vector<vector<float>>>> result;
             result.push_back(make_pair(node.idxs,
-                                       vector<float>(node.idxs.size(),
-                                                     node.val)));
+                                       vector<vector<float>>(node.idxs.size(),
+                                                             node.val)));
             return result;
         }
         else
         {
-            vector<pair<vector<int>, vector<float>>> left_result =
+            vector<pair<vector<int>, vector<vector<float>>>> left_result =
                 extract_train_prediction_from_node(*node.left);
-            vector<pair<vector<int>, vector<float>>> right_result =
+            vector<pair<vector<int>, vector<vector<float>>>> right_result =
                 extract_train_prediction_from_node(*node.right);
             left_result.insert(left_result.end(), right_result.begin(), right_result.end());
             return left_result;
         }
     }
 
-    vector<float> get_train_prediction()
+    vector<vector<float>> get_train_prediction()
     {
-        vector<pair<vector<int>, vector<float>>> result = extract_train_prediction_from_node(dtree);
-        vector<float> y_train_pred(dtree.y.size());
+        vector<pair<vector<int>, vector<vector<float>>>> result = extract_train_prediction_from_node(dtree);
+        vector<vector<float>> y_train_pred(dtree.y.size());
         for (int i = 0; i < result.size(); i++)
         {
             for (int j = 0; j < result[i].first.size(); j++)

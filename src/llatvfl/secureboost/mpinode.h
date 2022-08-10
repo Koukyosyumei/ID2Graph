@@ -7,7 +7,7 @@ using namespace std;
 struct MPISecureBoostNode : Node<MPISecureBoostParty>
 {
     MPISecureBoostParty *active_party;
-    int parties_num, max_depth;
+    int parties_num, max_depth, grad_dim;
     float min_child_weight, lam, gamma, eps;
     bool use_only_active_party;
     MPISecureBoostNode *left, *right;
@@ -29,6 +29,15 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         depth = depth_;
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
+
+        if (active_party->num_classes == 2)
+        {
+            grad_dim = 1;
+        }
+        else
+        {
+            grad_dim = active_party->num_classes;
+        }
 
         y = active_party->y;
 
@@ -86,7 +95,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         return record_id;
     }
 
-    float get_val()
+    vector<float> get_val()
     {
         return val;
     }
@@ -111,16 +120,20 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         return *right;
     }
 
-    float compute_weight()
+    vector<float> compute_weight()
     {
         return active_party->compute_weight();
     }
 
     tuple<int, int, int> find_split()
     {
-        float temp_score, temp_left_grad, temp_left_hess;
-        vector<vector<pair<float, float>>> search_results;
-        vector<vector<pair<PaillierCipherText, PaillierCipherText>>> encrypted_search_result;
+        float temp_score;
+        vector<float> temp_left_grad(grad_dim, 0);
+        vector<float> temp_left_hess(grad_dim, 0);
+        vector<float> temp_right_grad(grad_dim, 0);
+        vector<float> temp_right_hess(grad_dim, 0);
+        vector<vector<pair<vector<float>, vector<float>>>> search_results;
+        vector<vector<vector<pair<PaillierCipherText, PaillierCipherText>>>> encrypted_search_result;
 
         if (use_only_active_party)
         {
@@ -130,19 +143,44 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             for (int j = 0; j < search_results.size(); j++)
             {
                 float temp_score;
-                float temp_left_grad = 0;
-                float temp_left_hess = 0;
+                bool skip_flag = false;
+
+                for (int c = 0; c < grad_dim; c++)
+                {
+                    temp_left_grad[c] = 0;
+                    temp_left_hess[c] = 0;
+                }
+
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
-                    temp_left_grad += search_results[j][k].first;
-                    temp_left_hess += search_results[j][k].second;
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_left_grad[c] += search_results[j][k].first[c];
+                        temp_left_hess[c] += search_results[j][k].second[c];
+                    }
 
-                    if (temp_left_hess < min_child_weight ||
-                        active_party->sum_hess - temp_left_hess < min_child_weight)
+                    skip_flag = false;
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        if (temp_left_hess[c] < min_child_weight ||
+                            active_party->sum_hess[c] - temp_left_hess[c] < min_child_weight)
+                        {
+                            skip_flag = true;
+                        }
+                    }
+                    if (skip_flag)
+                    {
                         continue;
+                    }
 
-                    temp_score = active_party->compute_gain(temp_left_grad, active_party->sum_grad - temp_left_grad,
-                                                            temp_left_hess, active_party->sum_hess - temp_left_hess);
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_right_grad[c] = active_party->sum_grad[c] - temp_left_grad[c];
+                        temp_right_hess[c] = active_party->sum_hess[c] - temp_left_hess[c];
+                    }
+
+                    temp_score = active_party->compute_gain(temp_left_grad, temp_right_grad,
+                                                            temp_left_hess, temp_right_hess);
 
                     if (temp_score > best_score)
                     {
@@ -193,10 +231,17 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                         search_results[j].resize(temp_vec_size);
                         for (int k = 0; k < temp_vec_size; k++)
                         {
-                            search_results[j][k] = make_pair(active_party->sk.decrypt<float>(
-                                                                 encrypted_search_result[j][k].first),
-                                                             active_party->sk.decrypt<float>(
-                                                                 encrypted_search_result[j][k].second));
+                            vector<float> temp_grad_decrypted, temp_hess_decrypted;
+                            temp_grad_decrypted.resize(grad_dim);
+                            temp_hess_decrypted.resize(grad_dim);
+
+                            for (int c = 0; c < grad_dim; c++)
+                            {
+                                temp_grad_decrypted[c] = active_party->sk.decrypt<float>(encrypted_search_result[j][k][c].first);
+                                temp_hess_decrypted[c] = active_party->sk.decrypt<float>(encrypted_search_result[j][k][c].second);
+                            }
+
+                            search_results[j][k] = make_pair(temp_grad_decrypted, temp_hess_decrypted);
                         }
                     }
                 }
@@ -204,19 +249,44 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
                 for (int j = 0; j < search_results.size(); j++)
                 {
                     float temp_score;
-                    float temp_left_grad = 0;
-                    float temp_left_hess = 0;
+                    bool skip_flag = false;
+
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_left_grad[c] = 0;
+                        temp_left_hess[c] = 0;
+                    }
+
                     for (int k = 0; k < search_results[j].size(); k++)
                     {
-                        temp_left_grad += search_results[j][k].first;
-                        temp_left_hess += search_results[j][k].second;
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_left_grad[c] += search_results[j][k].first[c];
+                            temp_left_hess[c] += search_results[j][k].second[c];
+                        }
 
-                        if (temp_left_hess < min_child_weight ||
-                            active_party->sum_hess - temp_left_hess < min_child_weight)
+                        skip_flag = false;
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            if (temp_left_hess[c] < min_child_weight ||
+                                active_party->sum_hess[c] - temp_left_hess[c] < min_child_weight)
+                            {
+                                skip_flag = true;
+                            }
+                        }
+                        if (skip_flag)
+                        {
                             continue;
+                        }
 
-                        temp_score = active_party->compute_gain(temp_left_grad, active_party->sum_grad - temp_left_grad,
-                                                                temp_left_hess, active_party->sum_hess - temp_left_hess);
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_right_grad[c] = active_party->sum_grad[c] - temp_left_grad[c];
+                            temp_right_hess[c] = active_party->sum_hess[c] - temp_left_hess[c];
+                        }
+
+                        temp_score = active_party->compute_gain(temp_left_grad, temp_right_grad,
+                                                                temp_left_hess, temp_right_hess);
 
                         if (temp_score > best_score)
                         {

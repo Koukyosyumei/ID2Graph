@@ -21,13 +21,15 @@ struct Node
     vector<float> y;
     vector<int> idxs;
 
+    int num_classes;
     int depth;
     int active_party_id;
     int n_job;
 
     int party_id, record_id;
     int row_count, num_parties;
-    float val, score;
+    float score;
+    vector<float> val;
 
     int best_party_id = -1;
     int best_col_id = -1;
@@ -64,7 +66,7 @@ struct Node
      *
      * @return float
      */
-    virtual float get_val() = 0;
+    virtual vector<float> get_val() = 0;
 
     /**
      * @brief Get the evaluation score of this node.
@@ -83,9 +85,9 @@ struct Node
     /**
      * @brief Compute the weight (val) of this node.
      *
-     * @return float
+     * @return vector<float>
      */
-    virtual float compute_weight() = 0;
+    virtual vector<float> compute_weight() = 0;
 
     /**
      * @brief Find the best split which gives the best score (gain).

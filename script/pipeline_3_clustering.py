@@ -50,10 +50,11 @@ if __name__ == "__main__":
     with open(parsed_args.path_to_input_file, mode="r") as f:
         lines = f.readlines()
         first_line = lines[0].split(" ")
-        num_row, num_col, num_party = (
+        num_classes, num_row, num_col, num_party = (
             int(first_line[0]),
             int(first_line[1]),
             int(first_line[2]),
+            int(first_line[3]),
         )
 
         start_line_num_of_active_party = 3 + int(lines[1][:-1])
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
-    kmeans = clustering_cls(n_clusters=2, random_state=parsed_args.seed).fit(
+    kmeans = clustering_cls(n_clusters=num_classes, random_state=parsed_args.seed).fit(
         X_train_minmax
     )
     c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
@@ -97,9 +98,9 @@ if __name__ == "__main__":
             for k in temp_nodes_in_comm:
                 X_com[int(k), i] += 1
 
-    kmeans_with_com = clustering_cls(n_clusters=2, random_state=parsed_args.seed).fit(
-        np.hstack([X_train_minmax, X_com])
-    )
+    kmeans_with_com = clustering_cls(
+        n_clusters=num_classes, random_state=parsed_args.seed
+    ).fit(np.hstack([X_train_minmax, X_com]))
     c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
     h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
     v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)

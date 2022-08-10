@@ -5,9 +5,9 @@ using namespace std;
 struct RandomForestParty : Party
 {
     RandomForestParty() {}
-    RandomForestParty(vector<vector<float> > &x_, vector<int> &feature_id_, int &party_id_,
+    RandomForestParty(vector<vector<float> > &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
                       int min_leaf_, float subsample_cols_,
-                      int seed_ = 0) : Party(x_, feature_id_, party_id_,
+                      int seed_ = 0) : Party(x_, num_classes_, feature_id_, party_id_,
                                              min_leaf_, subsample_cols_,
                                              false, seed_)
     {
@@ -22,24 +22,22 @@ struct RandomForestParty : Party
         return threshold_candidates;
     }
 
-    vector<vector<pair<float, float> > > greedy_search_split(vector<int> &idxs, vector<float> &y)
+    vector<vector<pair<float, vector<float> > > > greedy_search_split(vector<int> &idxs, vector<float> &y)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_cancidates_leftsize_leftposcnt[i][j] = temp_thresholds[i][j]
         int num_thresholds = subsample_col_count;
-        vector<vector<pair<float, float> > > split_cancidates_leftsize_leftposcnt(num_thresholds);
+        vector<vector<pair<float, vector<float> > > > split_cancidates_leftsize_leftposcnt(num_thresholds);
         temp_thresholds = vector<vector<float> >(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
 
-        float y_pos_cnt = 0;
-        float y_neg_cnt = 0;
+        vector<float> temp_y_class_cnt(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            y_pos_cnt += y[idxs[r]];
+            temp_y_class_cnt[int(y[idxs[r]])] += 1.0;
         }
-        y_neg_cnt = row_count - y_pos_cnt;
 
         for (int i = 0; i < subsample_col_count; i++)
         {
@@ -80,12 +78,12 @@ struct RandomForestParty : Party
             for (int p = 0; p < num_threshold_candidates; p++)
             {
                 float temp_left_size = 0;
-                float temp_left_y_pos_cnt = 0;
+                vector<float> temp_left_y_class_cnt(num_classes, 0);
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= threshold_candidates[p])
                     {
-                        temp_left_y_pos_cnt += y[idxs[x_col_idxs[r]]];
+                        temp_left_y_class_cnt[int(y[idxs[x_col_idxs[r]]])] += 1.0;
                         temp_left_size += 1.0;
                         cumulative_left_size += 1;
                     }
@@ -100,7 +98,7 @@ struct RandomForestParty : Party
                 if (cumulative_left_size >= min_leaf &&
                     row_count - cumulative_left_size >= min_leaf)
                 {
-                    split_cancidates_leftsize_leftposcnt[i].push_back(make_pair(temp_left_size, temp_left_y_pos_cnt));
+                    split_cancidates_leftsize_leftposcnt[i].push_back(make_pair(temp_left_size, temp_left_y_class_cnt));
                     temp_thresholds[i].push_back(threshold_candidates[p]);
                 }
             }

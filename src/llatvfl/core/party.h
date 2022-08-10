@@ -30,17 +30,20 @@ struct Party
     int col_count; // the number of columns
     int subsample_col_count;
 
+    int num_classes;
+
     unordered_map<int, tuple<int, float, int>> lookup_table; // record_id: (feature_id, threshold, missing_value_dir)
     vector<int> temp_column_subsample;
     vector<vector<float>> temp_thresholds; // feature_id->threshold
 
     Party() {}
-    Party(vector<vector<float>> &x_, vector<int> &feature_id_, int &party_id_,
+    Party(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
           int min_leaf_, float subsample_cols_,
           bool use_missing_value_ = false, int seed_ = 0)
     {
         validate_arguments(x_, feature_id_, party_id_, min_leaf_, subsample_cols_);
         x = x_;
+        num_classes = num_classes_;
         feature_id = feature_id_;
         party_id = party_id_;
         min_leaf = min_leaf_;

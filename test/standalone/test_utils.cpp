@@ -8,6 +8,17 @@
 #include "gtest/gtest.h"
 using namespace std;
 
+TEST(Utils, SoftmaxTest)
+{
+    vector<float> in = {1, 2, 3, 4, 5};
+    vector<float> out = softmax(in);
+    vector<float> ans = {0.01165623, 0.03168492, 0.08612854, 0.23412166, 0.63640865};
+    for (int i = 0; i < ans.size(); i++)
+    {
+        ASSERT_NEAR(out[i], ans[i], 1e-7);
+    }
+}
+
 TEST(Utils, QuantileTest)
 {
     vector<float> in = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};

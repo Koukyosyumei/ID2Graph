@@ -33,7 +33,7 @@ int completely_secure_round = 0;
 int depth = 3;
 int n_job = 1;
 float learning_rate = 0.3;
-float weight_entropy = 0.0;
+float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
@@ -45,7 +45,7 @@ bool save_adj_mat = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:y:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:mwg")) != -1)
     {
         switch (opt)
         {
@@ -82,8 +82,8 @@ void parse_args(int argc, char *argv[])
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
             break;
-        case 'y':
-            weight_entropy = stof(string(optarg));
+        case 'b':
+            mi_bound = stof(string(optarg));
             break;
         case 'm':
             use_missing_value = true;
@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
     parse_args(argc, argv);
 
     // --- Load Data --- //
-    int num_row_train, num_row_val, num_col, num_party;
+    int num_classes, num_row_train, num_row_val, num_col, num_party;
     int num_nan_cell = 0;
-    if (scanf("%d %d %d", &num_row_train, &num_col, &num_party) != 3)
+    if (scanf("%d %d %d %d", &num_classes, &num_row_train, &num_col, &num_party) != 4)
     {
         try
         {
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        SecureBoostParty party(x, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
+        SecureBoostParty party(x, num_classes, feature_idxs, i, min_leaf, subsample_cols, max_bin, use_missing_value);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     result_file << "num of nan," << num_nan_cell << "\n";
 
     // --- Check Initialization --- //
-    SecureBoostClassifier clf = SecureBoostClassifier(subsample_cols,
+    SecureBoostClassifier clf = SecureBoostClassifier(num_classes, subsample_cols,
                                                       min_child_weight,
                                                       depth, min_leaf,
                                                       learning_rate,
@@ -288,15 +288,17 @@ int main(int argc, char *argv[])
     for (int i = 0; i < clf.estimators.size(); i++)
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
-        // result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+        result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
-    vector<float> predict_proba_train = clf.predict_proba(X_train);
+    vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
-    result_file << "Train AUC," << roc_auc_score(predict_proba_train, y_true_train) << "\n";
-    vector<float> predict_proba_val = clf.predict_proba(X_val);
+    result_file << "Train AUC," << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
+
+    vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
-    result_file << "Val AUC," << roc_auc_score(predict_proba_val, y_true_val) << "\n";
+    result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val) << "\n";
+
     result_file.close();
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());

@@ -9,7 +9,7 @@
 #include <array>
 using namespace std;
 
-float inline trapz(vector<float> x, vector<float> y)
+inline float trapz(vector<float> x, vector<float> y)
 {
     float res = 0;
     int num_elements = x.size();
@@ -20,7 +20,7 @@ float inline trapz(vector<float> x, vector<float> y)
     return res;
 }
 
-vector<float> inline get_thresholds_idxs(vector<float> y_pred)
+inline vector<float> get_thresholds_idxs(vector<float> y_pred)
 {
     vector<float> thresholds_idxs;
     set<float> s{};
@@ -36,7 +36,7 @@ vector<float> inline get_thresholds_idxs(vector<float> y_pred)
     return thresholds_idxs;
 }
 
-float inline roc_auc_score(vector<float> y_pred, vector<int> y_true)
+inline float roc_auc_score(vector<float> y_pred, vector<int> y_true)
 {
     int num_elements = y_pred.size();
     vector<int> temp_idxs(num_elements);
@@ -76,15 +76,57 @@ float inline roc_auc_score(vector<float> y_pred, vector<int> y_true)
     return trapz(tps, fps);
 }
 
-float inline calc_giniimp(float tot_cnt, float pos_cnt)
+inline float ovr_roc_auc_score(vector<vector<float>> y_pred, vector<int> y_true)
 {
-    float neg_cnt = tot_cnt - pos_cnt;
-    float pos_ratio = pos_cnt / tot_cnt;
-    float neg_ratio = neg_cnt / tot_cnt;
-    return 1 - (pos_ratio * pos_ratio) - (neg_ratio * neg_ratio);
+    int num_elements = y_pred.size();
+    int num_classes = y_pred[0].size();
+
+    if (num_classes == 2)
+    {
+        vector<float> y_pred_pos(num_elements, 0);
+        for (int i = 0; i < num_elements; i++)
+        {
+            y_pred_pos[i] = y_pred[i][1];
+        }
+        return roc_auc_score(y_pred_pos, y_true);
+    }
+    else
+    {
+        float ovr_average_score = 0;
+        for (int c = 0; c < num_classes; c++)
+        {
+            vector<float> y_pred_c(num_elements, 0);
+            vector<int> y_true_c(num_elements, 0);
+            for (int i = 0; i < num_elements; i++)
+            {
+                y_pred_c[i] = y_pred[i][c];
+                if (c == y_true[i])
+                {
+                    y_true_c[i] = 1;
+                }
+            }
+
+            ovr_average_score += roc_auc_score(y_pred_c, y_true_c) / num_classes;
+        }
+        return ovr_average_score;
+    }
 }
 
-float inline calc_entropy(float tot_cnt, float pos_cnt)
+inline float calc_giniimp(float tot_cnt, vector<float> class_cnt)
+{
+    int num_classes = class_cnt.size();
+    float giniimp = 1;
+    float temp_class_ratio;
+    for (int c = 0; c < num_classes; c++)
+    {
+        temp_class_ratio = class_cnt[c] / tot_cnt;
+        giniimp -= (temp_class_ratio * temp_class_ratio);
+    }
+
+    return giniimp;
+}
+
+inline float calc_entropy(float tot_cnt, float pos_cnt)
 {
     float neg_cnt = tot_cnt - pos_cnt;
     float entropy = 0;

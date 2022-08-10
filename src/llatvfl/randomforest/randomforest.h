@@ -12,6 +12,7 @@ using namespace std;
 struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 {
     float subsample_cols;
+    int num_classes;
     int depth;
     int min_leaf;
     float max_samples_ratio;
@@ -25,11 +26,12 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
 
     vector<RandomForestTree> estimators;
 
-    RandomForestClassifier(float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
+    RandomForestClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
                            float max_samples_ratio_ = 1.0, int num_trees_ = 5,
                            float mi_bound_ = numeric_limits<float>::infinity(),
                            int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
     {
+        num_classes = num_classes_;
         subsample_cols = subsample_cols_;
         depth = depth_;
         min_leaf = min_leaf_;
@@ -65,7 +67,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     {
         int row_count = y.size();
 
-        vector<float> prior(2, 0);
+        vector<float> prior(num_classes, 0);
         for (int j = 0; j < row_count; j++)
         {
             prior[y[j]] += 1;
@@ -81,35 +83,35 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
+            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }
     }
 
     // retuen the average score of all trees (sklearn-style)
-    vector<float> predict_raw(vector<vector<float>> &X)
+    vector<vector<float>> predict_raw(vector<vector<float>> &X)
     {
         int row_count = X.size();
-        vector<float> y_pred(row_count, 0);
+        vector<vector<float>> y_pred(row_count, vector<float>(num_classes, 0));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {
-            vector<float> y_pred_temp = estimators[i].predict(X);
+            vector<vector<float>> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
-                y_pred[j] += y_pred_temp[j] / float(estimators_num);
+            {
+                for (int c = 0; c < num_classes; c++)
+                {
+                    y_pred[j][c] += y_pred_temp[j][c] / float(estimators_num);
+                }
+            }
         }
 
         return y_pred;
     }
 
-    vector<float> predict_proba(vector<vector<float>> &x)
+    vector<vector<float>> predict_proba(vector<vector<float>> &x)
     {
-        vector<float> raw_score = predict_raw(x);
-        int row_count = x.size();
-        vector<float> predicted_probas(row_count);
-        for (int i = 0; i < row_count; i++)
-            predicted_probas[i] = sigmoid(raw_score[i]);
-        return predicted_probas;
+        return predict_raw(x);
     }
 };

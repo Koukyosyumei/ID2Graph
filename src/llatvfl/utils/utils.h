@@ -16,6 +16,28 @@ inline float sigmoid(float x)
         return 1.0 / (1.0 + exp(-1 * x));
 }
 
+inline vector<float> softmax(vector<float> x)
+{
+    int n = x.size();
+    float max_x = *max_element(x.begin(), x.end());
+    vector<float> numerator(n, 0);
+    vector<float> output(n, 0);
+    float denominator = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        numerator[i] = exp(x[i] - max_x);
+        denominator += numerator[i];
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        output[i] = numerator[i] / denominator;
+    }
+
+    return output;
+}
+
 template <typename T>
 inline vector<T> remove_duplicates(vector<T> &inData)
 {
@@ -83,25 +105,27 @@ inline vector<int> get_num_parties_per_process(int n_job, int num_parties)
 }
 
 inline bool is_satisfied_with_mi_bound_cond(vector<float> &prior, float mi_delta,
-                                            float temp_left_poscnt, float temp_left_size,
-                                            float temp_right_poscnt, float temp_right_size,
-                                            float entire_pos_cnt, float entire_datasetsize)
+                                            vector<float> &temp_left_class_cnt,
+                                            vector<float> &temp_right_class_cnt,
+                                            vector<float> &entire_class_cnt,
+                                            float temp_left_size,
+                                            float temp_right_size,
+                                            float entire_datasetsize)
 {
+    int num_classes = temp_left_class_cnt.size();
     if (mi_delta > 0)
     {
-        float left_in_pos_ratio = temp_left_poscnt / temp_left_size;
-        float left_out_pos_ratio = (entire_pos_cnt - temp_left_poscnt) / (entire_datasetsize - temp_left_size);
-        float left_in_diff = max(abs(left_in_pos_ratio - prior[1]),
-                                 abs((1 - left_in_pos_ratio) - prior[0]));
-        float left_out_diff = max(abs(left_out_pos_ratio - prior[1]),
-                                  abs((1 - left_out_pos_ratio) - prior[0]));
-
-        float right_in_pos_ratio = temp_right_poscnt / temp_right_size;
-        float right_out_pos_ratio = (entire_pos_cnt - temp_right_poscnt) / (entire_datasetsize - temp_right_size);
-        float right_in_diff = max(abs(right_in_pos_ratio - prior[1]),
-                                  abs((1 - right_in_pos_ratio) - prior[0]));
-        float right_out_diff = max(abs(right_out_pos_ratio - prior[1]),
-                                   abs((1 - right_out_pos_ratio) - prior[0]));
+        float left_in_diff = 0;
+        float left_out_diff = 0;
+        float right_in_diff = 0;
+        float right_out_diff = 0;
+        for (int c = 0; c < num_classes; c++)
+        {
+            left_in_diff = max(left_in_diff, abs(temp_left_class_cnt[c] / temp_left_size - prior[c]));
+            left_out_diff = max(left_out_diff, (entire_class_cnt[c] - temp_left_class_cnt[c]) / (entire_datasetsize - temp_left_size));
+            right_in_diff = max(right_in_diff, abs(temp_right_class_cnt[c] / temp_right_size - prior[c]));
+            right_out_diff = max(right_out_diff, (entire_class_cnt[c] - temp_right_class_cnt[c]) / (entire_datasetsize - temp_right_size));
+        }
 
         return ((left_in_diff > mi_delta) | (left_out_diff > mi_delta) |
                 (right_in_diff > mi_delta) | (right_out_diff > mi_delta));

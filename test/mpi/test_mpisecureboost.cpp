@@ -65,13 +65,13 @@ TEST(MPISecureBoost, MPISecureBoostClassifierTest)
                     x[k][j] = X[k][feature_idxs[i][j]];
                 }
             }
-            my_party = MPISecureBoostParty(world, x, feature_idxs[i], my_rank, depth,
+            my_party = MPISecureBoostParty(world, x, 2, feature_idxs[i], my_rank, depth,
                                            boosting_rounds, min_leaf, subsample_cols,
                                            const_gamma, lam);
         }
     }
 
-    MPISecureBoostClassifier clf = MPISecureBoostClassifier(subsample_cols,
+    MPISecureBoostClassifier clf = MPISecureBoostClassifier(2, subsample_cols,
                                                             min_child_weight,
                                                             depth, min_leaf,
                                                             learning_rate, boosting_rounds,
@@ -106,46 +106,51 @@ TEST(MPISecureBoost, MPISecureBoostClassifierTest)
     world.barrier();
 
     clf.fit(my_party, num_party);
-    vector<float> predict_raw = clf.predict_raw(X);
-    vector<float> predict_proba = clf.predict_proba(X);
+
+    vector<vector<float>> predict_raw = clf.predict_raw(X);
+    vector<vector<float>> predict_proba = clf.predict_proba(X);
 
     if (my_rank == 0)
     {
         vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-        vector<float> init_pred = clf.get_init_pred(y);
+        vector<vector<float>> init_pred = clf.get_init_pred(y);
         for (int i = 0; i < init_pred.size(); i++)
-            assert(init_pred[i] == test_init_pred[i]);
+        {
+            ASSERT_EQ(init_pred[i][0], test_init_pred[i]);
+        }
 
-        assert(my_party.get_lookup_table().size() == 4);
+        ASSERT_EQ(my_party.get_lookup_table().size(), 4);
 
         vector<int> test_idxs_root = {0, 1, 2, 3, 4, 5, 6, 7};
         vector<int> idxs_root = clf.estimators[0].dtree.idxs;
 
         for (int i = 0; i < idxs_root.size(); i++)
-            assert(idxs_root[i] == test_idxs_root[i]);
+        {
+            ASSERT_EQ(idxs_root[i], test_idxs_root[i]);
+        }
 
-        assert(clf.estimators[0].dtree.depth == 3);
-        assert(clf.estimators[0].dtree.is_leaf() == 0);
+        ASSERT_EQ(clf.estimators[0].dtree.depth, 3);
+        ASSERT_FALSE(clf.estimators[0].dtree.is_leaf());
 
         vector<int> test_idxs_left = {0, 2, 7};
         vector<int> idxs_left = clf.estimators[0].dtree.left->idxs;
         for (int i = 0; i < idxs_left.size(); i++)
-            assert(idxs_left[i] == test_idxs_left[i]);
-        assert(clf.estimators[0].dtree.left->is_pure());
-        assert(clf.estimators[0].dtree.left->is_leaf());
-        assert(abs(clf.estimators[0].dtree.left->val - 0.5074890528001861) < 1e-6);
+            ASSERT_EQ(idxs_left[i], test_idxs_left[i]);
+        ASSERT_TRUE(clf.estimators[0].dtree.left->is_pure());
+        ASSERT_TRUE(clf.estimators[0].dtree.left->is_leaf());
+        ASSERT_NEAR(clf.estimators[0].dtree.left->val[0], 0.5074890528001861, 1e-6);
 
-        assert(clf.estimators[0].dtree.right->right->left->is_leaf());
-        assert(clf.estimators[0].dtree.right->right->right->is_leaf());
-        assert(abs(clf.estimators[0].dtree.right->right->left->val - 0.3860706492904221) < 1e-6);
-        assert(abs(clf.estimators[0].dtree.right->right->right->val - -0.6109404045885225) < 1e-6);
+        ASSERT_TRUE(clf.estimators[0].dtree.right->right->left->is_leaf());
+        ASSERT_TRUE(clf.estimators[0].dtree.right->right->right->is_leaf());
+        ASSERT_NEAR(clf.estimators[0].dtree.right->right->left->val[0], 0.3860706492904221, 1e-6);
+        ASSERT_NEAR(clf.estimators[0].dtree.right->right->right->val[0], -0.6109404045885225, 1e-6);
 
         vector<float> test_predcit_raw = {1.38379341, 0.53207456, 1.38379341,
                                           0.22896408, 1.29495549, 1.29495549,
                                           0.22896408, 1.38379341};
         for (int i = 0; i < test_predcit_raw.size(); i++)
         {
-            assert(abs(predict_raw[i] - test_predcit_raw[i]) < 1e-6);
+            ASSERT_NEAR(predict_raw[i][0], test_predcit_raw[i], 1e-6);
         }
 
         vector<float> test_predcit_proba = {0.79959955, 0.62996684, 0.79959955,
@@ -153,11 +158,11 @@ TEST(MPISecureBoost, MPISecureBoostClassifierTest)
                                             0.55699226, 0.79959955};
         for (int i = 0; i < test_predcit_raw.size(); i++)
         {
-            assert(abs(predict_proba[i] - test_predcit_proba[i]) < 1e-6);
+            ASSERT_NEAR(predict_proba[i][1], test_predcit_proba[i], 1e-6);
         }
     }
     else
     {
-        assert(my_party.get_lookup_table().size() == 2);
+        ASSERT_EQ(my_party.get_lookup_table().size(), 2);
     }
 }

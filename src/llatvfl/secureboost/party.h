@@ -9,12 +9,12 @@ struct SecureBoostParty : XGBoostParty
     PaillierSecretKey sk;
 
     SecureBoostParty() {}
-    SecureBoostParty(vector<vector<float>> &x_,
+    SecureBoostParty(vector<vector<float>> &x_, int num_classes_,
                      vector<int> &feature_id_, int &party_id_,
                      int min_leaf_, float subsample_cols_,
                      int num_precentile_bin_ = 256,
                      bool use_missing_value_ = false,
-                     int seed_ = 0) : XGBoostParty(x_, feature_id_, party_id_,
+                     int seed_ = 0) : XGBoostParty(x_, num_classes_, feature_id_, party_id_,
                                                    min_leaf_, subsample_cols_,
                                                    num_precentile_bin_,
                                                    use_missing_value_, seed_) {}
@@ -29,9 +29,9 @@ struct SecureBoostParty : XGBoostParty
         sk = sk_;
     }
 
-    vector<vector<pair<float, float>>> greedy_search_split(vector<float> &gradient,
-                                                           vector<float> &hessian,
-                                                           vector<int> &idxs)
+    vector<vector<pair<vector<float>, vector<float>>>> greedy_search_split(vector<vector<float>> &gradient,
+                                                                           vector<vector<float>> &hessian,
+                                                                           vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -40,11 +40,13 @@ struct SecureBoostParty : XGBoostParty
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<float, float>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<pair<vector<float>, vector<float>>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
+
+        int grad_dim = gradient[0].size();
 
         for (int i = 0; i < subsample_col_count; i++)
         {
@@ -83,16 +85,19 @@ struct SecureBoostParty : XGBoostParty
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                float temp_grad = 0;
-                float temp_hess = 0;
+                vector<float> temp_grad(grad_dim, 0);
+                vector<float> temp_hess(grad_dim, 0);
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad += gradient[idxs[x_col_idxs[r]]];
-                        temp_hess += hessian[idxs[x_col_idxs[r]]];
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
+                            temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
+                        }
                         cumulative_left_size += 1;
                     }
                     else
@@ -117,16 +122,19 @@ struct SecureBoostParty : XGBoostParty
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    float temp_grad = 0;
-                    float temp_hess = 0;
+                    vector<float> temp_grad(grad_dim, 0);
+                    vector<float> temp_hess(grad_dim, 0);
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            temp_grad += gradient[idxs[x_col_idxs[r]]];
-                            temp_hess += hessian[idxs[x_col_idxs[r]]];
+                            for (int c = 0; c < grad_dim; c++)
+                            {
+                                temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
+                                temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
+                            }
                             cumulative_right_size += 1;
                         }
                         else
@@ -150,9 +158,9 @@ struct SecureBoostParty : XGBoostParty
         return split_candidates_grad_hess;
     }
 
-    vector<vector<pair<PaillierCipherText, PaillierCipherText>>> greedy_search_split_encrypt(vector<PaillierCipherText> &gradient,
-                                                                                             vector<PaillierCipherText> &hessian,
-                                                                                             vector<int> &idxs)
+    vector<vector<pair<vector<PaillierCipherText>, vector<PaillierCipherText>>>> greedy_search_split_encrypt(vector<vector<PaillierCipherText>> &gradient,
+                                                                                                             vector<vector<PaillierCipherText>> &hessian,
+                                                                                                             vector<int> &idxs)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
@@ -161,11 +169,13 @@ struct SecureBoostParty : XGBoostParty
             num_thresholds = subsample_col_count * 2;
         else
             num_thresholds = subsample_col_count;
-        vector<vector<pair<PaillierCipherText, PaillierCipherText>>> split_candidates_grad_hess(num_thresholds);
+        vector<vector<pair<vector<PaillierCipherText>, vector<PaillierCipherText>>>> split_candidates_grad_hess(num_thresholds);
         temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
+
+        int grad_dim = gradient[0].size();
 
         for (int i = 0; i < subsample_col_count; i++)
         {
@@ -204,16 +214,24 @@ struct SecureBoostParty : XGBoostParty
             int cumulative_left_size = 0;
             for (int p = 0; p < percentiles.size(); p++)
             {
-                PaillierCipherText temp_grad = pk.encrypt<float>(0);
-                PaillierCipherText temp_hess = pk.encrypt<float>(0);
+                vector<PaillierCipherText> temp_grad(grad_dim);
+                vector<PaillierCipherText> temp_hess(grad_dim);
+                for (int c = 0; c < grad_dim; c++)
+                {
+                    temp_grad[c] = pk.encrypt<float>(0);
+                    temp_hess[c] = pk.encrypt<float>(0);
+                }
                 int temp_left_size = 0;
 
                 for (int r = current_min_idx; r < not_missing_values_count; r++)
                 {
                     if (x_col[r] <= percentiles[p])
                     {
-                        temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
-                        temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
+                        for (int c = 0; c < grad_dim; c++)
+                        {
+                            temp_grad[c] = temp_grad[c] + gradient[idxs[x_col_idxs[r]]][c];
+                            temp_hess[c] = temp_hess[c] + hessian[idxs[x_col_idxs[r]]][c];
+                        }
                         cumulative_left_size += 1;
                     }
                     else
@@ -238,16 +256,24 @@ struct SecureBoostParty : XGBoostParty
                 int cumulative_right_size = 0;
                 for (int p = percentiles.size() - 1; p >= 0; p--)
                 {
-                    PaillierCipherText temp_grad = pk.encrypt<float>(0);
-                    PaillierCipherText temp_hess = pk.encrypt<float>(0);
+                    vector<PaillierCipherText> temp_grad(grad_dim);
+                    vector<PaillierCipherText> temp_hess(grad_dim);
+                    for (int c = 0; c < grad_dim; c++)
+                    {
+                        temp_grad[c] = pk.encrypt<float>(0);
+                        temp_hess[c] = pk.encrypt<float>(0);
+                    }
                     int temp_left_size = 0;
 
                     for (int r = current_max_idx; r >= 0; r--)
                     {
                         if (x_col[r] >= percentiles[p])
                         {
-                            temp_grad = temp_grad + gradient[idxs[x_col_idxs[r]]];
-                            temp_hess = temp_hess + hessian[idxs[x_col_idxs[r]]];
+                            for (int c = 0; c < grad_dim; c++)
+                            {
+                                temp_grad[c] = temp_grad[c] + gradient[idxs[x_col_idxs[r]]][c];
+                                temp_hess[c] = temp_hess[c] + hessian[idxs[x_col_idxs[r]]][c];
+                            }
                             cumulative_right_size += 1;
                         }
                         else
