@@ -16,6 +16,28 @@ inline float sigmoid(float x)
         return 1.0 / (1.0 + exp(-1 * x));
 }
 
+inline vector<float> softmax(vector<float> x)
+{
+    int n = x.size();
+    float max_x = *max_element(x.begin(), x.end());
+    vector<float> numerator(n, 0);
+    vector<float> output(n, 0);
+    float denominator = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        numerator[i] = exp(x[i] - max_x);
+        denominator += numerator[i];
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        output[i] = numerator[i] / denominator;
+    }
+
+    return output;
+}
+
 template <typename T>
 inline vector<T> remove_duplicates(vector<T> &inData)
 {

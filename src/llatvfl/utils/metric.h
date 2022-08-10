@@ -9,7 +9,7 @@
 #include <array>
 using namespace std;
 
-float inline trapz(vector<float> x, vector<float> y)
+inline float trapz(vector<float> x, vector<float> y)
 {
     float res = 0;
     int num_elements = x.size();
@@ -20,7 +20,7 @@ float inline trapz(vector<float> x, vector<float> y)
     return res;
 }
 
-vector<float> inline get_thresholds_idxs(vector<float> y_pred)
+inline vector<float> get_thresholds_idxs(vector<float> y_pred)
 {
     vector<float> thresholds_idxs;
     set<float> s{};
@@ -36,7 +36,7 @@ vector<float> inline get_thresholds_idxs(vector<float> y_pred)
     return thresholds_idxs;
 }
 
-float inline roc_auc_score(vector<float> y_pred, vector<int> y_true)
+inline float roc_auc_score(vector<float> y_pred, vector<int> y_true)
 {
     int num_elements = y_pred.size();
     vector<int> temp_idxs(num_elements);
@@ -76,7 +76,7 @@ float inline roc_auc_score(vector<float> y_pred, vector<int> y_true)
     return trapz(tps, fps);
 }
 
-float inline calc_giniimp(float tot_cnt, vector<float> class_cnt)
+inline float calc_giniimp(float tot_cnt, vector<float> class_cnt)
 {
     int num_classes = class_cnt.size();
     float giniimp = 1;
@@ -90,7 +90,7 @@ float inline calc_giniimp(float tot_cnt, vector<float> class_cnt)
     return giniimp;
 }
 
-float inline calc_entropy(float tot_cnt, float pos_cnt)
+inline float calc_entropy(float tot_cnt, float pos_cnt)
 {
     float neg_cnt = tot_cnt - pos_cnt;
     float entropy = 0;

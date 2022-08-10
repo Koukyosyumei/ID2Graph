@@ -62,6 +62,10 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty>
         {
             lossfunc_obj = new BCELoss();
         }
+        else
+        {
+            lossfunc_obj = new CELoss(num_classes);
+        }
     }
 
     virtual vector<vector<float>> get_init_pred(vector<float> &y) = 0;
