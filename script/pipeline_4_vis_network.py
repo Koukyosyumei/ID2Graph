@@ -59,10 +59,11 @@ if __name__ == "__main__":
         with open(path_to_input_file, mode="r") as f:
             lines = f.readlines()
             first_line = lines[0].split(" ")
-            num_row, num_col, num_party = (
+            num_classes, num_row, num_col, num_party = (
                 int(first_line[0]),
                 int(first_line[1]),
                 int(first_line[2]),
+                int(first_line[3]),
             )
 
             y_train = lines[num_col + num_party + 1].split(" ")
@@ -114,12 +115,18 @@ if __name__ == "__main__":
             G,
             pos,
             with_labels=False,
-            alpha=1.0,
+            alpha=0.7,
             node_size=10,
             edgelist=[],
             edge_color=[],
             node_color=["g" if y == 0 else "r" for y in y_train],
         )
 
-        plt.savefig(path_to_adj_file.split(".")[0] + "_plot.png")
+        plt.savefig(
+            path_to_adj_file.split(".")[0] + "_plot.png",
+            bbox_inches="tight",
+            pad_inches=0,
+            format="png",
+            dpi=300,
+        )
         plt.close()
