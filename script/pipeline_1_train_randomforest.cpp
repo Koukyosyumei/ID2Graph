@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, depth, 1, skip_round);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
