@@ -32,13 +32,13 @@ float mi_bound = numeric_limits<float>::infinity();
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
-bool is_weighted_graph = false;
+int attack_start_depth = -1;
 bool save_adj_mat = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:wg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:g")) != -1)
     {
         switch (opt)
         {
@@ -76,7 +76,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'w':
-            is_weighted_graph = true;
+            attack_start_depth = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, skip_round);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();

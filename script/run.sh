@@ -24,8 +24,9 @@ VALUE_P=1
 VALUE_L=0.0
 VALUE_Z=300
 VALUE_O=-1
+VALUE_W=-1
 
-while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:wg OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:g OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -134,10 +135,7 @@ else
 fi
 
 for s in $(seq 1 ${NUM_TRIAL}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -k ${VALUE_K}"
-  if [ "${FLG_W}" = "TRUE" ]; then
-    TRAINCMD+=" -w"
-  fi
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -k ${VALUE_K} -w ${VALUE_W}"
   if [ "${FLG_G}" = "TRUE" ]; then
     TRAINCMD+=" -g"
   fi
