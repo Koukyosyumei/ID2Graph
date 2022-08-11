@@ -20,6 +20,7 @@ const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
 const int max_timeout_num_patience = 5;
 const int M_LPMST = 1;
+const vector<float> vec_epsilon_random_unfolding = {0.0, 0.1, 1.0};
 
 string folderpath;
 string fileprefix;
@@ -32,13 +33,13 @@ float mi_bound = numeric_limits<float>::infinity();
 float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
-bool is_weighted_graph = false;
+int attack_start_depth = -1;
 bool save_adj_mat = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:wg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:g")) != -1)
     {
         switch (opt)
         {
@@ -76,7 +77,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'w':
-            is_weighted_graph = true;
+            attack_start_depth = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
@@ -92,6 +93,11 @@ void parse_args(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     parse_args(argc, argv);
+
+    if (attack_start_depth < 0)
+    {
+        attack_start_depth = depth;
+    }
 
     // --- Load Data --- //
     int num_classes, num_row_train, num_row_val, num_col, num_party;
@@ -261,7 +267,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, 1, is_weighted_graph, skip_round);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, skip_round);
     Graph g = Graph(adj_matrix);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
@@ -272,40 +278,47 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
-    printf("Start community detection (epsilon=%f) trial=%s\n",
-           epsilon_random_unfolding, fileprefix.c_str());
-    Louvain louvain = Louvain(epsilon_random_unfolding);
+    Louvain louvain = Louvain(0);
     future<void> future = async(launch::async, [&louvain, &g]()
                                 { louvain.fit(g); });
     future_status status;
-    int count_timeout = 0;
-    do
+    for (int i = 0; vec_epsilon_random_unfolding.size(); i++)
     {
-        count_timeout++;
-        start = chrono::system_clock::now();
-        status = future.wait_for(chrono::seconds(seconds_wait4timeout));
-        end = chrono::system_clock::now();
+        printf("Start community detection (epsilon=%f) trial=%s\n",
+               vec_epsilon_random_unfolding[i], fileprefix.c_str());
 
-        switch (status)
+        louvain.epsilon = vec_epsilon_random_unfolding[i];
+
+        int count_timeout = 0;
+        do
         {
-        case future_status::deferred:
-            printf("deferred\n");
-            break;
-        case future_status::timeout:
-            printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
-                   fileprefix.c_str());
-            if (count_timeout == max_timeout_num_patience)
+            count_timeout++;
+            start = chrono::system_clock::now();
+            status = future.wait_for(chrono::seconds(seconds_wait4timeout));
+            end = chrono::system_clock::now();
+
+            switch (status)
             {
-                throw runtime_error("Maximum number of attempts at timeout reached");
+            case future_status::deferred:
+                printf("deferred\n");
+                break;
+            case future_status::timeout:
+                printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
+                       fileprefix.c_str());
+                louvain.reseed(louvain.seed + 1);
+                break;
+            case future_status::ready:
+                elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+                printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+                break;
             }
-            louvain.reseed(louvain.seed + 1);
-            break;
-        case future_status::ready:
-            elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+        } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
+
+        if (status == future_status::ready)
+        {
             break;
         }
-    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
+    }
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";

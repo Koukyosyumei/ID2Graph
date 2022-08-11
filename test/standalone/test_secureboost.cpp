@@ -160,24 +160,6 @@ TEST(SecureBoost, SecureBoostClassifierTest)
     for (int i = 0; i < test_predcit_proba.size(); i++)
         ASSERT_NEAR(predict_proba[i][1], test_predcit_proba[i], 1e-6);
 
-    vector<vector<float>> test_adj_mat_weighted = {{0, 0, 1, 0, 0, 0, 0, 1},
-                                                   {0, 0, 0, 1, 3, 3, 1, 0},
-                                                   {1, 0, 0, 0, 0, 0, 0, 1},
-                                                   {0, 1, 0, 0, 1, 1, 3, 0},
-                                                   {0, 3, 0, 1, 0, 6, 1, 0},
-                                                   {0, 3, 0, 1, 6, 0, 1, 0},
-                                                   {0, 1, 0, 3, 1, 1, 0, 0},
-                                                   {1, 0, 1, 0, 0, 0, 0, 0}};
-
-    vector<vector<float>> adj_mat_weighted = extract_adjacency_matrix_from_forest(&clf, -1, true, 1.0).to_densematrix();
-    for (int j = 0; j < test_adj_mat_weighted.size(); j++)
-    {
-        for (int k = 0; k < test_adj_mat_weighted[j].size(); k++)
-        {
-            ASSERT_EQ(adj_mat_weighted[j][k], test_adj_mat_weighted[j][k]);
-        }
-    }
-
     vector<vector<float>> test_adj_mat = {{0, 0, 1.3, 0, 0, 0, 0, 1.3},
                                           {0, 0, 0, 0, 0, 0, 0, 0},
                                           {1.3, 0, 0, 0, 0, 0, 0, 1.3},
@@ -187,7 +169,7 @@ TEST(SecureBoost, SecureBoostClassifierTest)
                                           {0, 0, 0, 1.3, 0, 0, 0, 0},
                                           {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, -1, false, 0, 0.3).to_densematrix();
+    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, 0, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)
@@ -205,7 +187,7 @@ TEST(SecureBoost, SecureBoostClassifierTest)
                                             {0, 0, 0, 1.3, 0, 0, 0, 0},
                                             {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, 1, false, 0.3).to_densematrix();
+    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat_1.size(); j++)
     {
         for (int k = 0; k < test_adj_mat_1[j].size(); k++)
