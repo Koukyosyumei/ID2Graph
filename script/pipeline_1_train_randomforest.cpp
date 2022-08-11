@@ -19,7 +19,6 @@ const int min_leaf = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
 const int max_timeout_num_patience = 5;
-const int M_LPMST = 1;
 
 string folderpath;
 string fileprefix;
@@ -34,11 +33,12 @@ float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
+int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:g")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:x:g")) != -1)
     {
         switch (opt)
         {
@@ -77,6 +77,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'w':
             attack_start_depth = stoi(string(optarg));
+            break;
+        case 'x':
+            m_lpmst = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
@@ -227,7 +230,7 @@ int main(int argc, char *argv[])
     start = chrono::system_clock::now();
     if (epsilon_ldp > 0)
     {
-        LPMST lp_1st(M_LPMST, epsilon_ldp, 0);
+        LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
         lp_1st.fit(clf, parties, y_train);
     }
     else

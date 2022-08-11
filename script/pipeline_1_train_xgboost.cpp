@@ -23,7 +23,7 @@ const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
 const int max_timeout_num_patience = 5;
-const int M_LPMST = 1;
+const bool use_missing_value = false;
 
 string folderpath;
 string fileprefix;
@@ -37,14 +37,14 @@ float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 float mi_bound = numeric_limits<float>::infinity();
 int seconds_wait4timeout = 300;
-bool use_missing_value = false;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
+int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:w:mg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:w:x:g")) != -1)
     {
         switch (opt)
         {
@@ -84,11 +84,11 @@ void parse_args(int argc, char *argv[])
         case 'z':
             seconds_wait4timeout = stoi(string(optarg));
             break;
-        case 'm':
-            use_missing_value = true;
-            break;
         case 'w':
             attack_start_depth = stoi(string(optarg));
+            break;
+        case 'x':
+            m_lpmst = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
@@ -156,11 +156,6 @@ int main(int argc, char *argv[])
                         cerr << e.what() << "\n";
                     }
                 }
-                if (use_missing_value && x[k][j] == -1)
-                {
-                    x[k][j] = nan("");
-                    num_nan_cell += 1;
-                }
                 X_train[k][temp_count_feature] = x[k][j];
             }
             temp_count_feature += 1;
@@ -211,10 +206,6 @@ int main(int argc, char *argv[])
                     cerr << e.what() << "\n";
                 }
             }
-            if (use_missing_value && X_val[j][i] == -1)
-            {
-                X_val[j][i] = nan("");
-            }
         }
     }
     for (int j = 0; j < num_row_val; j++)
@@ -256,7 +247,7 @@ int main(int argc, char *argv[])
     start = chrono::system_clock::now();
     if (epsilon_ldp > 0)
     {
-        LPMST lp_1st(M_LPMST, epsilon_ldp, 0);
+        LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
         lp_1st.fit(clf, parties, y_train);
     }
     else

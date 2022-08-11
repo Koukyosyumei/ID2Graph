@@ -30,7 +30,8 @@
     -t : (str) the path to the folder where this script saves all results (default=`result`)
     -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
     -p : (int) number of parallelly executed experiments
-    -w : (optional) includes intermidiate nodes for construction of adj_mat (default=false)
+    -w : (int) include from this node
+    -x : (int) M of LP-MST
     -g : (optional) draw the extracted graph (default=false)
 ```
 
