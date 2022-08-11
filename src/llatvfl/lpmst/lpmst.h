@@ -38,21 +38,42 @@ struct LPMST
     template <typename ModelType, typename PartyType>
     void _fit(ModelType &model, vector<PartyType> &parties, vector<float> &y)
     {
-        int y_size = y.size();
+        int n = y.size();
+        int chunk_size = n / M;
         int class_num = *max_element(y.begin(), y.end()) + 1;
-        vector<float> prior_dist(class_num, 1.0 / float(class_num));
+        vector<float> init_prior_dist(class_num, 1.0 / float(class_num));
 
-        if (M == 1)
+        vector<float> y_hat(chunk_size);
+        int temp_ptr = 0;
+
+        for (int m = 0; m < M; m++)
         {
-            rrp = RRWithPrior(epsilon, prior_dist, seed);
-            vector<float> y_hat(y_size);
-            for (int i = 0; i < y_size; i++)
+            if (m == 0)
             {
-                y_hat[i] = rrp.rrtop_k(y[i]);
+                rrp = RRWithPrior(epsilon, init_prior_dist, seed);
+                for (int i = temp_ptr; i < chunk_size; i++)
+                {
+                    y_hat[i] = rrp.rrtop_k(y[i]);
+                }
+                temp_ptr = chunk_size;
             }
-
-            model.fit(parties, y_hat);
+            else
+            {
+                vector<PartyType> temp_party_vec = {parties[model.active_party_id]};
+                model.clear();
+                model.fit(temp_party_vec, y_hat);
+                for (int i = temp_ptr; i < min(n, chunk_size * (m + 1)); i++)
+                {
+                    vector<vector<float>> temp_x = {parties[model.active_party_id].x[i]};
+                    vector<float> prior_dist = model.predict_proba(temp_x)[0];
+                    rrp = RRWithPrior(epsilon, prior_dist, seed);
+                    y_hat.push_back(rrp.rrtop_k(y[i]));
+                }
+                temp_ptr = min(n, chunk_size * (m + 1));
+            }
         }
-        // TODO: support LP-MST (M >= 2)
+
+        model.clear();
+        model.fit(parties, y_hat);
     }
 };
