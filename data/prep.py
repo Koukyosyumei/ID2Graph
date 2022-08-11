@@ -187,6 +187,27 @@ if __name__ == "__main__":
         X = df[list(range(34))].values
         y = df[34].values
 
+    elif parsed_args.dataset_type == "heartdisease":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "processed.cleveland.data"),
+            header=None,
+        )
+        df = sampling(df, 13, parsed_args)
+
+        X = df[list(range(13))].values
+        y = df[13].values
+
+    elif parsed_args.dataset_type == "glass":
+        y_dict = {1: 0, 2: 1, 3: 2, 5: 3, 6: 4, 7: 5}
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "glass.data"), header=None
+        )
+        df = sampling(df, 10, parsed_args)
+        df[10] = df[10].apply(lambda x: y_dict[x])
+
+        X = df[list(range(1, 10))].values
+        y = df[10].values
+
     elif parsed_args.dataset_type == "spambase":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "spambase.data"), header=None

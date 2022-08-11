@@ -37,6 +37,10 @@
 
 ## Overview of datasets
 
+|glass|heartdisease|waveform|
+|---|---|---|
+|6|5|3|
+
 |label|Give Me Some Credit|UCI Credit Card|ionospere|parkinsons|sonar|spambase|
 |---|---   | --- | --- | --- | --- | --- |
 |0  |139974|23364| 126 |48   | 111 | 2788|
