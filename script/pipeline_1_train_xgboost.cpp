@@ -270,11 +270,6 @@ int main(int argc, char *argv[])
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
-    for (int c = 0; c < num_classes; c++)
-    {
-        cout << predict_proba_train[0][c] << " ";
-    }
-    cout << endl;
     vector<int> y_true_train(y_train.begin(), y_train.end());
     result_file << "Train AUC," << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
 
