@@ -60,7 +60,7 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             left_skip_flag = temp_node->left->is_leaf() && temp_node->left->depth <= 0 && target_party_id != -1 && temp_node->left->party_id != target_party_id;
             right_skip_flag = temp_node->right->is_leaf() && temp_node->right->depth <= 0 && target_party_id != -1 && temp_node->right->party_id != target_party_id;
 
-            if ((left_skip_flag && right_skip_flag) || (max_depth - temp_node->depth) >= start_depth)
+            if ((left_skip_flag && right_skip_flag) || ((start_depth > 0) && (max_depth - temp_node->depth) >= start_depth))
             {
                 temp_idxs_size = temp_node->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)

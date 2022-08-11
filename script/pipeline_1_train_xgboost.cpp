@@ -38,13 +38,13 @@ float epsilon_ldp = -1;
 float mi_bound = numeric_limits<float>::infinity();
 int seconds_wait4timeout = 300;
 bool use_missing_value = false;
-bool is_weighted_graph = false;
+int attack_start_depth = -1;
 bool save_adj_mat = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:mwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:w:mg")) != -1)
     {
         switch (opt)
         {
@@ -88,7 +88,7 @@ void parse_args(int argc, char *argv[])
             use_missing_value = true;
             break;
         case 'w':
-            is_weighted_graph = true;
+            attack_start_depth = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
