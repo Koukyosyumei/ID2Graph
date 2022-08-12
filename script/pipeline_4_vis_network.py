@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import random
 
 import networkx as nx
 import numpy as np
@@ -25,6 +26,10 @@ def add_args(parser):
 
 
 if __name__ == "__main__":
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
     list_adj_files = glob.glob(os.path.join(parsed_args.path_to_dir, "*_adj_mat.txt"))
@@ -111,6 +116,8 @@ if __name__ == "__main__":
             cmap=cmap,
             edge_color=edge_color_in_list,
         )
+
+        label2color = {0: "g", 1: "r", 2: "b", 3: "k", 4: "y", 5: "m"}
         nx.draw_networkx(
             G,
             pos,
@@ -119,7 +126,9 @@ if __name__ == "__main__":
             node_size=10,
             edgelist=[],
             edge_color=[],
-            node_color=["g" if y == 0 else "r" for y in y_train],
+            # cmap=cm.get_cmap("jet"),
+            # node_color=y_train
+            node_color=[label2color[y] for y in y_train],
         )
 
         plt.savefig(
