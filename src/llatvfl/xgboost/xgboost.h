@@ -32,7 +32,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
     LossFunc *lossfunc_obj;
 
-    vector<vector<float> > init_pred;
+    vector<vector<float>> init_pred;
     vector<XGBoostTree> estimators;
     vector<float> logging_loss;
 
@@ -77,7 +77,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         }
     }
 
-    virtual vector<vector<float> > get_init_pred(vector<float> &y) = 0;
+    virtual vector<vector<float>> get_init_pred(vector<float> &y) = 0;
 
     void load_estimators(vector<XGBoostTree> &_estimators)
     {
@@ -113,7 +113,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         upsilon_Y = *min_element(prior.begin(), prior.end());
         float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
 
-        vector<vector<float> > base_pred;
+        vector<vector<float>> base_pred;
         if (estimators.size() == 0)
         {
             init_pred = get_init_pred(y);
@@ -128,7 +128,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
             for (int i = 0; i < estimators.size(); i++)
             {
-                vector<vector<float> > pred_temp = estimators[i].get_train_prediction();
+                vector<vector<float>> pred_temp = estimators[i].get_train_prediction();
                 for (int j = 0; j < row_count; j++)
                     for (int c = 0; c < num_classes; c++)
                         base_pred[j][c] += learning_rate * pred_temp[j][c];
@@ -137,14 +137,14 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
         for (int i = 0; i < boosting_rounds; i++)
         {
-            vector<vector<float> > grad = lossfunc_obj->get_grad(base_pred, y);
-            vector<vector<float> > hess = lossfunc_obj->get_hess(base_pred, y);
+            vector<vector<float>> grad = lossfunc_obj->get_grad(base_pred, y);
+            vector<vector<float>> hess = lossfunc_obj->get_hess(base_pred, y);
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, num_classes, grad, hess, prior, min_child_weight,
                               lam, gamma, eps, min_leaf, depth, mi_delta,
                               active_party_id, (completelly_secure_round > i), n_job);
-            vector<vector<float> > pred_temp = boosting_tree.get_train_prediction();
+            vector<vector<float>> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)
                 for (int c = 0; c < num_classes; c++)
                     base_pred[j][c] += learning_rate * pred_temp[j][c];
@@ -158,7 +158,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         }
     }
 
-    vector<vector<float> > predict_raw(vector<vector<float> > &X)
+    vector<vector<float>> predict_raw(vector<vector<float>> &X)
     {
         int pred_dim;
         if (num_classes == 2)
@@ -171,12 +171,12 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         }
 
         int row_count = X.size();
-        vector<vector<float> > y_pred(row_count, vector<float>(pred_dim, init_value));
+        vector<vector<float>> y_pred(row_count, vector<float>(pred_dim, init_value));
         // copy(init_pred.begin(), init_pred.end(), back_inserter(y_pred));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {
-            vector<vector<float> > y_pred_temp = estimators[i].predict(X);
+            vector<vector<float>> y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
             {
                 for (int c = 0; c < pred_dim; c++)
@@ -194,17 +194,17 @@ struct XGBoostClassifier : public XGBoostBase
 {
     using XGBoostBase::XGBoostBase;
 
-    vector<vector<float> > get_init_pred(vector<float> &y)
+    vector<vector<float>> get_init_pred(vector<float> &y)
     {
-        vector<vector<float> > init_pred(y.size(), vector<float>(num_classes, init_value));
+        vector<vector<float>> init_pred(y.size(), vector<float>(num_classes, init_value));
         return init_pred;
     }
 
-    vector<vector<float> > predict_proba(vector<vector<float> > &x)
+    vector<vector<float>> predict_proba(vector<vector<float>> &x)
     {
-        vector<vector<float> > raw_score = predict_raw(x);
+        vector<vector<float>> raw_score = predict_raw(x);
         int row_count = x.size();
-        vector<vector<float> > predicted_probas(row_count, vector<float>(num_classes, 0));
+        vector<vector<float>> predicted_probas(row_count, vector<float>(num_classes, 0));
         for (int i = 0; i < row_count; i++)
         {
             if (num_classes == 2)
