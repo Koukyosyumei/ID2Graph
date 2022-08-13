@@ -72,7 +72,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         {
             prior[y[j]] += 1;
         }
-        for (int c = 0; c < 2; c++)
+        for (int c = 0; c < num_classes; c++)
         {
             prior[c] /= float(row_count);
         }
@@ -90,14 +90,14 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     }
 
     // retuen the average score of all trees (sklearn-style)
-    vector<vector<float>> predict_raw(vector<vector<float>> &X)
+    vector<vector<float> > predict_raw(vector<vector<float> > &X)
     {
         int row_count = X.size();
-        vector<vector<float>> y_pred(row_count, vector<float>(num_classes, 0));
+        vector<vector<float> > y_pred(row_count, vector<float>(num_classes, 0));
         int estimators_num = estimators.size();
         for (int i = 0; i < estimators_num; i++)
         {
-            vector<vector<float>> y_pred_temp = estimators[i].predict(X);
+            vector<vector<float> > y_pred_temp = estimators[i].predict(X);
             for (int j = 0; j < row_count; j++)
             {
                 for (int c = 0; c < num_classes; c++)
@@ -110,7 +110,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         return y_pred;
     }
 
-    vector<vector<float>> predict_proba(vector<vector<float>> &x)
+    vector<vector<float> > predict_proba(vector<vector<float> > &x)
     {
         return predict_raw(x);
     }
