@@ -91,7 +91,7 @@ if __name__ == "__main__":
         lines = f.readlines()
         comm_num = int(lines[0])
         node_num = int(lines[1])
-        X_com = np.zeros((node_num, comm_num))
+        X_com = np.zeros((num_row, comm_num))
 
         for i in range(comm_num):
             temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
