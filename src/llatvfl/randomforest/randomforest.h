@@ -72,7 +72,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         {
             prior[y[j]] += 1;
         }
-        for (int c = 0; c < 2; c++)
+        for (int c = 0; c < num_classes; c++)
         {
             prior[c] /= float(row_count);
         }
