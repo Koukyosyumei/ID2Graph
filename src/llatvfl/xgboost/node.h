@@ -195,6 +195,12 @@ struct XGBoostNode : Node<XGBoostParty>
                     temp_left_hess[c] = 0;
                 }
 
+                for (int c = 0; c < num_classes; c++)
+                {
+                    temp_left_class_cnt[c] = 0;
+                    temp_right_class_cnt[c] = 0;
+                }
+
                 for (int k = 0; k < search_results[j].size(); k++)
                 {
                     for (int c = 0; c < grad_dim; c++)
@@ -204,12 +210,6 @@ struct XGBoostNode : Node<XGBoostParty>
                     }
                     temp_left_size += get<2>(search_results[j][k]);
                     temp_right_size = tot_cnt - temp_left_size;
-
-                    for (int c = 0; c < num_classes; c++)
-                    {
-                        temp_left_class_cnt[c] = 0;
-                        temp_right_class_cnt[c] = 0;
-                    }
 
                     for (int c = 0; c < num_classes; c++)
                     {
