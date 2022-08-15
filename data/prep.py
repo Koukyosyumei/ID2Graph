@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import string
 from email.policy import default
 
 import numpy as np
@@ -196,6 +197,28 @@ if __name__ == "__main__":
 
         X = df[list(range(13))].values
         y = df[13].values
+
+    elif parsed_args.dataset_type == "avila":
+        df_tr = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "avila-tr.txt"),
+            header=None,
+        )
+        df_ts = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "avila-ts.txt"),
+            header=None,
+        )
+        df = pd.concat([df_tr, df_ts], axis=0)
+        string2int = {
+            s: i
+            for i, s in enumerate(
+                ["A", "B", "C", "D", "E", "F", "G", "H", "I", "W", "X", "Y"]
+            )
+        }
+        df[10] = df[10].apply(lambda x: string2int[x])
+        df = sampling(df, 10, parsed_args)
+
+        X = df[list(range(10))].values
+        y = df[10].values
 
     elif parsed_args.dataset_type == "glass":
         y_dict = {1: 0, 2: 1, 3: 2, 5: 3, 6: 4, 7: 5}
