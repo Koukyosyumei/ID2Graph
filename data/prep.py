@@ -3,6 +3,7 @@ import os
 import random
 import string
 from email.policy import default
+from enum import unique
 
 import numpy as np
 import pandas as pd
@@ -271,6 +272,16 @@ if __name__ == "__main__":
             ]
         ].values
         y = df["status"].values
+
+    elif parsed_args.dataset_type == "phishing":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "phishing.data"), header=None
+        )
+        df[30] = df[30].apply(lambda x: 0 if x == -1 else 1)
+        df = sampling(df, 30, parsed_args)
+
+        X = df[list(range(30))].values
+        y = df[30].values
 
     elif parsed_args.dataset_type == "sonar":
         df = pd.read_csv(
