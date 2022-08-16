@@ -19,9 +19,9 @@ using namespace std;
 
 struct Party
 {
-    vector<vector<float>> x; // a feature vector of this party
-    vector<int> feature_id;  // id of the features
-    int party_id;            // id of this party
+    vector<vector<float> > x; // a feature vector of this party
+    vector<int> feature_id;   // id of the features
+    int party_id;             // id of this party
     int min_leaf;
     float subsample_cols; // ratio of subsampled columuns
     bool use_missing_value;
@@ -32,12 +32,12 @@ struct Party
 
     int num_classes;
 
-    unordered_map<int, tuple<int, float, int>> lookup_table; // record_id: (feature_id, threshold, missing_value_dir)
+    unordered_map<int, tuple<int, float, int> > lookup_table; // record_id: (feature_id, threshold, missing_value_dir)
     vector<int> temp_column_subsample;
-    vector<vector<float>> temp_thresholds; // feature_id->threshold
+    vector<vector<float> > temp_thresholds; // feature_id->threshold
 
     Party() {}
-    Party(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
+    Party(vector<vector<float> > &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
           int min_leaf_, float subsample_cols_,
           bool use_missing_value_ = false, int seed_ = 0)
     {
@@ -52,10 +52,10 @@ struct Party
         seed = seed_;
 
         col_count = x.at(0).size();
-        subsample_col_count = int(subsample_cols * float(col_count));
+        subsample_col_count = max(1, int(subsample_cols * float(col_count)));
     }
 
-    void validate_arguments(vector<vector<float>> &x_, vector<int> &feature_id_, int &party_id_,
+    void validate_arguments(vector<vector<float> > &x_, vector<int> &feature_id_, int &party_id_,
                             int min_leaf_, float subsample_cols_)
     {
         try
@@ -95,7 +95,7 @@ struct Party
         }
     }
 
-    unordered_map<int, tuple<int, float, int>> get_lookup_table()
+    unordered_map<int, tuple<int, float, int> > get_lookup_table()
     {
         return lookup_table;
     }

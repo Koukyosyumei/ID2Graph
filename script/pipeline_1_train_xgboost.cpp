@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
             cerr << e.what() << "\n";
         }
     }
-    vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
+    vector<vector<float> > X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
     vector<XGBoostParty> parties(num_party);
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
             }
         }
         vector<int> feature_idxs(temp_num_col);
-        vector<vector<float>> x(num_row_train, vector<float>(temp_num_col));
+        vector<vector<float> > x(num_row_train, vector<float>(temp_num_col));
         for (int j = 0; j < temp_num_col; j++)
         {
             feature_idxs[j] = temp_count_feature;
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
             cerr << e.what() << "\n";
         }
     }
-    vector<vector<float>> X_val(num_row_val, vector<float>(num_col));
+    vector<vector<float> > X_val(num_row_val, vector<float>(num_col));
     vector<float> y_val(num_row_val);
     for (int i = 0; i < num_col; i++)
     {
@@ -269,11 +269,11 @@ int main(int argc, char *argv[])
         result_file << clf.estimators[i].print(true, true).c_str() << "\n";
     }
 
-    vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
+    vector<vector<float> > predict_proba_train = clf.predict_proba(X_train);
     vector<int> y_true_train(y_train.begin(), y_train.end());
     result_file << "Train AUC," << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
 
-    vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
+    vector<vector<float> > predict_proba_val = clf.predict_proba(X_val);
     vector<int> y_true_val(y_val.begin(), y_val.end());
     result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val) << "\n";
 
