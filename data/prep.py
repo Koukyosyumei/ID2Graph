@@ -283,6 +283,53 @@ if __name__ == "__main__":
         X = df[list(range(30))].values
         y = df[30].values
 
+    elif parsed_args.dataset_type == "bankruptcy":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "data.csv"))
+        df = sampling(df, "Bankrupt?", parsed_args)
+
+        X = df.drop("Bankrupt?", axis=1).values
+        y = df["Bankrupt?"].values
+
+    elif parsed_args.dataset_type == "cnae9":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "CNAE-9.data"), header=None
+        )
+        df = sampling(df, 0, parsed_args)
+        df[0] = df[0] - 1
+
+        X = df[list(range(1, 857))].values
+        y = df[0].values
+
+    elif parsed_args.dataset_type == "hcv":
+        cols = [
+            "Age",
+            "Sex",
+            "ALB",
+            "ALP",
+            "ALT",
+            "AST",
+            "BIL",
+            "CHE",
+            "CHOL",
+            "CREA",
+            "GGT",
+            "PROT",
+        ]
+        label_dict = {
+            "0=Blood Donor": 0,
+            "0s=suspect Blood Donor": 1,
+            "1=Hepatitis": 2,
+            "2=Fibrosis": 3,
+            "3=Cirrhosis": 4,
+        }
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "hcvdat0.csv"))
+        df["Category"] = df["Category"].apply(lambda x: label_dict[x])
+        df["Sex"] = df["Sex"].apply(lambda x: 1 if x == "m" else 0)
+        df = sampling(df, "Category", parsed_args)
+
+        X = df[cols].values
+        y = df["Category"].values
+
     elif parsed_args.dataset_type == "sonar":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "sonar.all-data"), header=None

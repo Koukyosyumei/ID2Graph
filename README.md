@@ -47,6 +47,15 @@
 |0  |139974|23364| 126 |48   | 111 | 2788|
 |1  |10026 |6636 | 225 |147  | 97  | 1813|
 
+### additional dataset
+
+- bankruptcy: taiwan
+- ucicreditcard
+- hcv
+- cnae9
+- spambase
+
+
 
 ## Idea
 
