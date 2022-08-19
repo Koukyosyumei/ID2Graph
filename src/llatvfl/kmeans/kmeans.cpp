@@ -265,8 +265,9 @@ public:
 
     vector<int> get_cluster_ids()
     {
+        cout << total_points << endl;
         vector<int> cluster_ids(total_points);
-
+        cout << points.size() << endl;
         for (int i = 0; i < total_points; i++)
         {
             cluster_ids[i] = points[i].getCluster();
