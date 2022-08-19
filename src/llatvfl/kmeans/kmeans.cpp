@@ -265,7 +265,7 @@ public:
         assigned_clusters(total_points, 0);
         for (int i = 0; i < total_points; i++)
         {
-            assigned_clusters[i] = points[i].getCluster();
+            assigned_clusters[i] = all_points[i].getCluster();
         }
     }
 
