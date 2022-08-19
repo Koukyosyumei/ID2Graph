@@ -133,6 +133,7 @@ int main()
 
     for (int i = 0; i < X_train.size(); i++)
     {
-        cout << cluster_ids[i] << endl;
+        cout << cluster_ids[i] << " ";
     }
+    cout << endl;
 }
