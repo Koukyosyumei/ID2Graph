@@ -92,7 +92,6 @@ class KMeans
 private:
     int K, iters, dimensions, total_points;
     vector<Cluster> clusters;
-    string output_dir;
 
     void clearClusters()
     {
@@ -152,11 +151,10 @@ private:
     }
 
 public:
-    KMeans(int K, int iterations, string output_dir)
+    KMeans(int K, int iterations)
     {
         this->K = K;
         this->iters = iterations;
-        this->output_dir = output_dir;
     }
 
     void run(vector<vector<float>> X)
@@ -261,6 +259,16 @@ public:
                 break;
             }
             iter++;
+        }
+    }
+
+    vector<int> get_cluster_ids()
+    {
+        vector<int> cluster_ids(total_points);
+
+        for (int i = 0; i < total_points; i++)
+        {
+            cluster_ids[i] = clusters[i].getId();
         }
     }
 };
