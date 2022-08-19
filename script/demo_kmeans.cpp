@@ -127,7 +127,7 @@ int main()
         }
     }
 
-    kmeans = KMeans(2, 100);
+    KMeans kmeans = KMeans(2, 100);
     kmeans.run(X_train);
     vector<int> cluster_ids = kmeans.get_cluster_ids();
 
