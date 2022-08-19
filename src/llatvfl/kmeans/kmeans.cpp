@@ -92,6 +92,7 @@ class KMeans
 private:
     int K, iters, dimensions, total_points;
     vector<Cluster> clusters;
+    vector<Point> points;
 
     void clearClusters()
     {
@@ -160,7 +161,7 @@ public:
     void run(vector<vector<float>> X)
     {
         int n = X.size();
-        vector<Point> points(n);
+        points.resize(n);
 
         for (int i = 0; i < n; i++)
         {
@@ -268,7 +269,7 @@ public:
 
         for (int i = 0; i < total_points; i++)
         {
-            cluster_ids[i] = clusters[i].getId();
+            cluster_ids[i] = points[i].getCluster();
         }
     }
 };
