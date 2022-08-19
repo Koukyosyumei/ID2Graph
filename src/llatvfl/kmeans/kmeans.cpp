@@ -92,7 +92,7 @@ class KMeans
 private:
     int K, iters, dimensions, total_points;
     vector<Cluster> clusters;
-    vector<Point> points;
+    vector<int> assigned_clusters;
 
     void clearClusters()
     {
@@ -161,7 +161,7 @@ public:
     void run(vector<vector<float>> X)
     {
         int n = X.size();
-        points.resize(n);
+        vector<Point> points(n);
 
         for (int i = 0; i < n; i++)
         {
@@ -261,16 +261,16 @@ public:
             }
             iter++;
         }
+
+        assigned_clusters(total_points, 0);
+        for (int i = 0; i < total_points; i++)
+        {
+            assigned_clusters[i] = points[i].getCluster();
+        }
     }
 
     vector<int> get_cluster_ids()
     {
-        cout << total_points << endl;
-        vector<int> cluster_ids(total_points);
-        cout << points.size() << endl;
-        for (int i = 0; i < total_points; i++)
-        {
-            cluster_ids[i] = points[i].getCluster();
-        }
+        return assigned_clusters;
     }
 };
