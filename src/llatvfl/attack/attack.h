@@ -14,6 +14,8 @@ using namespace std;
  *
  * @tparam NodeType NodeType The type of Node.
  * @param node The node where you want to start travasing
+ * @param max_depth The maximum depth of this tree
+ * @param start_depth The attack starts from the node with the specified depth
  * @param adj_mat The space adhacency matrix to be updated
  * @param weight The weight parameter
  * @param target_party_id The target party id
@@ -83,6 +85,7 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
  * @brief Update adjacency matrix with given tree.
  *
  * @param tree The tree to be transformed to a graph.
+ * @param start_depth The attack starts from the node with the specified depth
  * @param adj_mat The adjancecy matrix to be updated.
  * @param weight The weight parameter.
  * @param target_party_id The target party id.
@@ -101,6 +104,7 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
  * @brief Update adjacency matrix with given tree.
  *
  * @param tree The tree to be transformed to a graph.
+ * @param start_depth The attack starts from the node with the specified depth
  * @param adj_mat The adjancecy matrix to be updated.
  * @param weight The weight parameter.
  * @param target_party_id The target party id.
@@ -167,6 +171,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *
  * @brief Extract adjacency matrix from the trained model
  *
  * @param model The target tree-based model
+ * @param start_depth The attack starts from the node with the specified depth
  * @param target_party_id The target party id. He cannot observe the leaf split information.
  * @param skip_round The number of skipped rounds.
  * @param eta The discount factor.
@@ -197,6 +202,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBa
  * @brief Extract adjacency matrix from the trained model
  *
  * @param model The target tree-based model
+ * @param start_depth The attack starts from the node with the specified depth
  * @param target_party_id The target party id. He cannot observe the leaf split information.
  * @param skip_round The number of skipped rounds.
  * @param eta The discount factor.
