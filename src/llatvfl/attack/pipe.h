@@ -62,7 +62,7 @@ struct QuickAttackPipeline
 
         louvain = Louvain(epsilon_random_unfolding);
 
-        future<void> future = async(launch::async, [=]()
+        future<void> future = async(launch::async, [*this]() mutable
                                     { this->louvain.fit(this->g); });
         future_status status;
 
@@ -110,7 +110,7 @@ struct QuickAttackPipeline
         }
     }
 
-    void run_kmeans()
+    void run_kmeans(vector<vector<float>> &base_X)
     {
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
@@ -123,6 +123,6 @@ struct QuickAttackPipeline
         prepare_graph<T>(clf);
         run_louvain();
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
-        run_kmeans();
+        run_kmeans(base_X);
     }
 };
