@@ -263,9 +263,9 @@ int main(int argc, char *argv[])
 
     result_file.close();
 
-    qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
-                              epsilon_random_unfolding, seconds_wait4timeout,
-                              max_timeout_num_patience);
+    QuickAttackPipeline qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
+                                                  epsilon_random_unfolding, seconds_wait4timeout,
+                                                  max_timeout_num_patience);
 
     qap.attack(clf, parties[1].x);
 
