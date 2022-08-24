@@ -62,7 +62,7 @@ struct QuickAttackPipeline
 
         louvain = Louvain(epsilon_random_unfolding);
 
-        future<void> future = async(launch::async, [*this]() mutable
+        future<void> future = async(launch::async, [=]() mutable
                                     { this->louvain.fit(this->g); });
         future_status status;
 
