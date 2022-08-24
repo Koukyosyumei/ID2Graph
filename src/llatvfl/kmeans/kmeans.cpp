@@ -152,6 +152,7 @@ private:
     }
 
 public:
+    KMeans() {}
     KMeans(int K, int iterations)
     {
         this->K = K;
