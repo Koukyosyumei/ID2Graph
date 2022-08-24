@@ -57,8 +57,8 @@ struct QuickAttackPipeline
 
     void run_louvain()
     {
-        printf("Start community detection (epsilon=%f) trial=%s\n",
-               epsilon_random_unfolding, fileprefix.c_str());
+        printf("Start community detection (epsilon=%f)\n",
+               epsilon_random_unfolding);
 
         louvain = Louvain(epsilon_random_unfolding);
 
