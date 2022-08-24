@@ -69,7 +69,6 @@ struct QuickAttackPipeline
         int count_timeout = 0;
         chrono::system_clock::time_point start, end;
         do
-
         {
             count_timeout++;
             start = chrono::system_clock::now();
