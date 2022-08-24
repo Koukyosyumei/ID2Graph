@@ -15,6 +15,7 @@
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
 #include "../secureboost/secureboost.h"
+#include "../kmeans/kmeans.cpp"
 using namespace std;
 
 struct QuickAttackPipeline
@@ -30,6 +31,8 @@ struct QuickAttackPipeline
     SparseMatrixDOK<float> adj_matrix;
     Graph g;
     Louvain louvain;
+    KMeans kmeans;
+    vector<int> cluster_ids;
 
     QuickAttackPipeline(int cluster_size_, int attack_start_depth_,
                         int target_party_id_, int skip_round_,
@@ -94,10 +97,33 @@ struct QuickAttackPipeline
         } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
     }
 
+    void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X)
+    {
+        int com_size = louvain.g.nodes.size();
+        int row_num = base_X[0].size();
+        for (int i = 0; i < com_size; i++)
+        {
+            base_X.push_back(vector<float>(row_num, 0));
+            for (int j = 0; j < louvain.g.nodes[i].size(); j++)
+            {
+                base_X[row_num + i][louvain.g.nodes[i][j]] = 1;
+            }
+        }
+    }
+
+    void run_kmeans()
+    {
+        kmeans = KMeans(2, 100);
+        kmeans.run(base_X);
+        cluster_ids = kmeans.get_cluster_ids();
+    }
+
     template <typename T>
     void attack(T &clf, vector<vector<float>> &base_X)
     {
         prepare_graph<T>(clf);
         run_louvain();
+        concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
+        run_kmeans();
     }
 };
