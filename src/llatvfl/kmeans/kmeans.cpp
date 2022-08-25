@@ -265,6 +265,7 @@ public:
 
         cout << total_points << endl;
         assigned_clusters.resize(total_points);
+        cout << all_points.size() << endl;
 
         for (int i = 0; i < total_points; i++)
         {
