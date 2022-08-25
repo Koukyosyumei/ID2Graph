@@ -9,7 +9,7 @@
 #include <utility>
 #include <chrono>
 #include <unistd.h>
-#include "llatvfl/kmeans/kmeans.cpp"
+#include "llatvfl/kmeans/kmeans.h"
 
 int main()
 {
