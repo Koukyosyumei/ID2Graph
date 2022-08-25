@@ -114,6 +114,8 @@ struct QuickAttackPipeline
     {
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
+        cout << "receive the end of k-means" << endl;
+        cluser_ids.resize(base_X.size());
         cluster_ids = kmeans.get_cluster_ids();
     }
 
