@@ -268,6 +268,7 @@ int main(int argc, char *argv[])
                                                   max_timeout_num_patience);
 
     qap.attack(clf, parties[1].x);
+    cout << "all done!" << endl;
 
     /*
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
