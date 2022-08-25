@@ -115,20 +115,18 @@ struct QuickAttackPipeline
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
         cout << "receive the end of k-means" << endl;
-        // cluster_ids.resize(base_X.size());
         vector<int> temp_cluster_ids = kmeans.get_cluster_ids();
         cout << temp_cluster_ids.size() << endl;
         cout << "end of run-kmeans" << endl;
-        // cluster_ids = kmeans.get_cluster_ids();
     }
 
     template <typename T>
-    void attack(T &clf, vector<vector<float>> &base_X)
+    void attack(T &clf, vector<vector<float>> base_X)
     {
         prepare_graph<T>(clf);
         run_louvain();
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
         run_kmeans(base_X);
-        printf("Finish Attack");
+        cout << "finish atyack" << endl;
     }
 };
