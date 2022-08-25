@@ -115,8 +115,10 @@ struct QuickAttackPipeline
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
         cout << "receive the end of k-means" << endl;
-        cluster_ids.resize(base_X.size());
-        cluster_ids = kmeans.get_cluster_ids();
+        // cluster_ids.resize(base_X.size());
+        vector<int> temp_cluster_ids = kmeans.get_cluster_ids();
+        cout << temp_cluster_ids.size() << endl;
+        // cluster_ids = kmeans.get_cluster_ids();
     }
 
     template <typename T>
