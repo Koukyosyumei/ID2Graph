@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
                                                   epsilon_random_unfolding, seconds_wait4timeout,
                                                   max_timeout_num_patience);
 
-    vector<int> estimated_clusters = qap.attack(clf, parties[1].x);
+    vector<int> estimated_clusters = qap.attack<RandomForestClassifier>(clf, parties[1].x);
     cout << "all done!" << endl;
 
     /*
