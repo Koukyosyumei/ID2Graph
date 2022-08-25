@@ -110,7 +110,7 @@ struct QuickAttackPipeline
         }
     }
 
-    void run_kmeans(vector<vector<float>> &base_X)
+    void run_kmeans(vector<vector<float>> base_X)
     {
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
@@ -118,6 +118,7 @@ struct QuickAttackPipeline
         // cluster_ids.resize(base_X.size());
         vector<int> temp_cluster_ids = kmeans.get_cluster_ids();
         cout << temp_cluster_ids.size() << endl;
+        cout << "end of run-kmeans" << endl;
         // cluster_ids = kmeans.get_cluster_ids();
     }
 
