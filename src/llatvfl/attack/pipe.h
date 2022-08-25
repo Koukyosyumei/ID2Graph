@@ -15,7 +15,7 @@
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
 #include "../secureboost/secureboost.h"
-#include "../kmeans/kmeans.cpp"
+#include "../kmeans/kmeans.h"
 using namespace std;
 
 struct QuickAttackPipeline
@@ -108,25 +108,24 @@ struct QuickAttackPipeline
                 base_X[row_num + i][louvain.g.nodes[i][j]] = 1;
             }
         }
+        cout << base_X[0].size() << endl;
     }
 
-    void run_kmeans(vector<vector<float>> base_X)
+    vector<int> run_kmeans(vector<vector<float>> base_X)
     {
         kmeans = KMeans(2, 100);
         kmeans.run(base_X);
-        cout << "receive the end of k-means" << endl;
-        vector<int> temp_cluster_ids = kmeans.get_cluster_ids();
-        cout << temp_cluster_ids.size() << endl;
-        cout << "end of run-kmeans" << endl;
+        return kmeans.get_cluster_ids();
     }
 
     template <typename T>
-    void attack(T &clf, vector<vector<float>> base_X)
+    vector<int> attack(T &clf, vector<vector<float>> base_X)
     {
         prepare_graph<T>(clf);
         run_louvain();
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
-        run_kmeans(base_X);
-        cout << "finish atyack" << endl;
+        vector<int> estimated_clusters = run_kmeans(base_X);
+        cout << "Finish Attack" << endl;
+        return estimated_clusters;
     }
 };
