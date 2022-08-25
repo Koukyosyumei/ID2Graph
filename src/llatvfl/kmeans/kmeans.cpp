@@ -263,7 +263,9 @@ public:
             iter++;
         }
 
+        cout << total_points << endl;
         assigned_clusters.resize(total_points);
+
         for (int i = 0; i < total_points; i++)
         {
             assigned_clusters[i] = all_points[i].getCluster();
