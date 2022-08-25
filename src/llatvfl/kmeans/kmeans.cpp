@@ -170,6 +170,7 @@ public:
         }
 
         run_from_point(points);
+        cout << "all clustering done" << endl;
     }
 
     void run_from_point(vector<Point> &all_points)
