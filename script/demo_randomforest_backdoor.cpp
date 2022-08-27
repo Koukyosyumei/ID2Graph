@@ -268,5 +268,10 @@ int main(int argc, char *argv[])
                                                   max_timeout_num_patience);
 
     vector<int> estimated_clusters = qap.attack<RandomForestClassifier>(clf, parties[1].x);
-    cout << "all done!" << endl;
+
+    for (int i = 0; i < num_row_train; i++)
+    {
+        cout << estimated_clusters[i] << " ";
+    }
+    cout << endl;
 }

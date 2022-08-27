@@ -240,7 +240,7 @@ public:
         }
     }
 
-    float run_from_point(vector<Point> &all_points)
+    float run_from_point(vector<Point> all_points)
     {
         total_points = all_points.size();
         dimensions = all_points[0].getDimensions();
@@ -265,15 +265,10 @@ public:
                 }
             }
         }
-        cout << "Clusters initialized = " << clusters.size() << endl
-             << endl;
-
-        cout << "Running K-Means Clustering.." << endl;
 
         int iter = 1;
         while (true)
         {
-            cout << "Iter - " << iter << "/" << iters << endl;
             bool done = true;
 
             // Add all points to their nearest cluster
@@ -320,8 +315,6 @@ public:
 
             if (done || iter >= iters)
             {
-                cout << "Clustering completed in iteration : " << iter << endl
-                     << endl;
                 break;
             }
             iter++;
