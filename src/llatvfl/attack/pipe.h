@@ -61,7 +61,9 @@ struct QuickAttackPipeline
                epsilon_random_unfolding);
 
         louvain = Louvain(epsilon_random_unfolding);
+        louvain.fit(g);
 
+        /*
         future<void> future = async(launch::async, [=]() mutable
                                     { this->louvain.fit(this->g); });
         future_status status;
@@ -94,6 +96,7 @@ struct QuickAttackPipeline
                 break;
             }
         } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
+        */
     }
 
     void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X)
