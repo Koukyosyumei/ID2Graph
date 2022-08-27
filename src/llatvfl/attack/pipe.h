@@ -99,19 +99,19 @@ struct QuickAttackPipeline
         */
     }
 
-    void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X)
+    void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> base_X)
     {
         int com_size = louvain.g.nodes.size();
         int row_num = base_X[0].size();
         for (int i = 0; i < com_size; i++)
         {
             base_X.push_back(vector<float>(row_num, 0));
+            cout << base_X.size() << " " << row_num + i << endl;
             for (int j = 0; j < louvain.g.nodes[i].size(); j++)
             {
                 base_X[row_num + i][louvain.g.nodes[i][j]] = 1;
             }
         }
-        cout << base_X[0].size() << endl;
     }
 
     vector<int> run_kmeans(vector<vector<float>> base_X)
@@ -126,8 +126,11 @@ struct QuickAttackPipeline
     {
         prepare_graph<T>(clf);
         run_louvain();
+        cout << "B" << endl;
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
+        cout << "C" << endl;
         vector<int> estimated_clusters = run_kmeans(base_X);
+        cout << "D" << endl;
         return estimated_clusters;
     }
 };
