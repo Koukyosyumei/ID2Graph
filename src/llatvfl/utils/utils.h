@@ -136,7 +136,7 @@ inline bool is_satisfied_with_mi_bound_cond(vector<float> &prior, float mi_delta
     }
 }
 
-vector<float> minmax_normaliza(vector<vector<float>> &X)
+vector<vector<float>> minmax_normaliza(vector<vector<float>> &X)
 {
     int row_num = X.size();
     int column_num = X[0].size();
