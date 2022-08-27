@@ -108,7 +108,7 @@ for TEMP_VALUE_L in ${VALUE_L} 0.1 1.0; do
 
     eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
-    if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
+    if [ -e "${VALUE_P}/${VALUE_S}_clusters_and_labels.out" ]; then
         break
     fi
 done

@@ -152,13 +152,13 @@ done
 
 script/run_extract_result.sh -o ${TEMPD}
 
-echo "Making a report ..."
-python3 script/pipeline_5_report.py -p ${TEMPD} >"${RESUD}/report.md"
+# echo "Making a report ..."
+# python3 script/pipeline_5_report.py -p ${TEMPD} >"${RESUD}/report.md"
 
 mv ${TEMPD}/*.ans ${RESUD}/
 mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
-mv ${TEMPD}/result.png ${RESUD}/
+mv ${TEMPD}/*_clusters_and_labels.out ${RESUD}/
 
 wait
 rm -rf ${TEMPD}
