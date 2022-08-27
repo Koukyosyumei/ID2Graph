@@ -135,3 +135,28 @@ inline bool is_satisfied_with_mi_bound_cond(vector<float> &prior, float mi_delta
         return false;
     }
 }
+
+vector<float> minmax_normaliza(vector<vector<float>> &X)
+{
+    int row_num = X.size();
+    int column_num = X[0].size();
+
+    vector<vector<float>> res(row_num, vector<float>(column_num, 0));
+
+    float min_val, max_val, den;
+    for (int c = 0; c < column_num; c++)
+    {
+        min_val = (*std::min_element(begin(X), end(X), [](auto &a, auto &b)
+                                     { return a[c] < b[c]; }))[c];
+        max_val = (*std::max_element(begin(X), end(X), [](auto &a, auto &b)
+                                     { return a[c] < b[c]; }))[c];
+        den = 1 / (max_val - min_val);
+
+        for (int i = 0; i < row_num; i++)
+        {
+            res[i][c] = (X[i][c] - min_val) * den;
+        }
+    }
+
+    res;
+}

@@ -11,6 +11,7 @@
 #include <chrono>
 #include "attack.h"
 #include "llatvfl/louvain/louvain.h"
+#include "../utils/utils.h"
 #include "../utils/dok.h"
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
@@ -127,7 +128,8 @@ struct QuickAttackPipeline
     {
         prepare_graph<T>(clf);
         run_louvain();
-        concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
+        vector<vector<float>> base_X_normalized = minmax_normaliza(base_x);
+        concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         vector<int> estimated_clusters = run_kmeans(base_X);
         return estimated_clusters;
     }
