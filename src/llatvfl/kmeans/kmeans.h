@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -90,9 +91,10 @@ public:
 class KMeans
 {
 private:
-    int K, iters, dimensions, total_points;
+    int K, n_init, iters, dimensions, total_points;
     vector<Cluster> clusters;
     vector<int> assigned_clusters;
+    vector<int> best_assigned_clusters;
 
     void clearClusters()
     {
@@ -151,15 +153,65 @@ private:
         return NearestClusterId;
     }
 
+    float getDist2NearestCentroid(Point point)
+    {
+        float sum = 0.0, min_dist;
+        int NearestClusterId;
+        if (dimensions == 1)
+        {
+            min_dist = abs(clusters[0].getCentroidByPos(0) - point.getVal(0));
+        }
+        else
+        {
+            for (int i = 0; i < dimensions; i++)
+            {
+                sum += pow(clusters[0].getCentroidByPos(i) - point.getVal(i), 2.0);
+                // sum += abs(clusters[0].getCentroidByPos(i) - point.getVal(i));
+            }
+            min_dist = sqrt(sum);
+        }
+        NearestClusterId = clusters[0].getId();
+
+        for (int i = 1; i < K; i++)
+        {
+            float dist;
+            sum = 0.0;
+
+            if (dimensions == 1)
+            {
+                dist = abs(clusters[i].getCentroidByPos(0) - point.getVal(0));
+            }
+            else
+            {
+                for (int j = 0; j < dimensions; j++)
+                {
+                    sum += pow(clusters[i].getCentroidByPos(j) - point.getVal(j), 2.0);
+                    // sum += abs(clusters[i].getCentroidByPos(j) - point.getVal(j));
+                }
+
+                dist = sqrt(sum);
+                // dist = sum;
+            }
+            if (dist < min_dist)
+            {
+                min_dist = dist;
+                NearestClusterId = clusters[i].getId();
+            }
+        }
+
+        return min_dist;
+    }
+
 public:
     KMeans() {}
-    KMeans(int K, int iterations)
+    KMeans(int K, int n_init = 10, int iterations = 100)
     {
         this->K = K;
+        this->n_init = n_init;
         this->iters = iterations;
     }
 
-    void run(vector<vector<float>> X)
+    void run(vector<vector<float>> &X)
     {
         int n = X.size();
         vector<Point> points(n);
@@ -169,8 +221,23 @@ public:
             points[i] = Point(i, X[i]);
         }
 
-        run_from_point(points);
-        cout << "all clustering done" << endl;
+        assigned_clusters.resize(n);
+        best_assigned_clusters.resize(n);
+
+        float temp_dist;
+        float best_dist = numeric_limits<float>::infinity();
+        for (int j = 0; j < n_init; j++)
+        {
+            temp_dist = run_from_point(points);
+            if (temp_dist < best_dist)
+            {
+                best_dist = temp_dist;
+                for (int i = 0; i < n; i++)
+                {
+                    best_assigned_clusters[i] = assigned_clusters[i];
+                }
+            }
+        }
     }
 
     void run_from_point(vector<Point> &all_points)
@@ -260,18 +327,22 @@ public:
             iter++;
         }
 
-        cout << total_points << endl;
-        assigned_clusters.resize(total_points);
-        cout << all_points.size() << endl;
-
         for (int i = 0; i < total_points; i++)
         {
             assigned_clusters[i] = all_points[i].getCluster();
         }
+
+        float temp_dist = 0;
+        for (int i = 0; i < total_points; i++)
+        {
+            temp_dist += getDist2NearestCentroid(all_points[i]);
+        }
+
+        return temp_dist;
     }
 
     vector<int> get_cluster_ids()
     {
-        return assigned_clusters;
+        return best_assigned_clusters;
     }
 };

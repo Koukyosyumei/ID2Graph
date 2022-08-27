@@ -115,15 +115,15 @@ struct QuickAttackPipeline
         }
     }
 
-    vector<int> run_kmeans(vector<vector<float>> base_X)
+    vector<int> run_kmeans(vector<vector<float>> &base_X)
     {
-        kmeans = KMeans(2, 100);
+        kmeans = KMeans(2);
         kmeans.run(base_X);
         return kmeans.get_cluster_ids();
     }
 
     template <typename T>
-    vector<int> attack(T clf, vector<vector<float>> base_X)
+    vector<int> attack(T &clf, vector<vector<float>> &base_X)
     {
         prepare_graph<T>(clf);
         run_louvain();
