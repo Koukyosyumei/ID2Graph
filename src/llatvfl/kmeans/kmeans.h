@@ -1,4 +1,4 @@
-#include <omp.h>
+#pragma once
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -209,9 +209,7 @@ public:
             cout << "Iter - " << iter << "/" << iters << endl;
             bool done = true;
 
-// Add all points to their nearest cluster
-#pragma omp parallel for reduction(&& \
-                                   : done) num_threads(16)
+            // Add all points to their nearest cluster
             for (int i = 0; i < total_points; i++)
             {
                 int currentClusterId = all_points[i].getCluster();
@@ -244,8 +242,6 @@ public:
                     float sum = 0.0;
                     if (ClusterSize > 0)
                     {
-#pragma omp parallel for reduction(+ \
-                                   : sum) num_threads(16)
                         for (int p = 0; p < ClusterSize; p++)
                         {
                             sum += clusters[i].getPoint(p).getVal(j);
