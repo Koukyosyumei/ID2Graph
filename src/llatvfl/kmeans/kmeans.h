@@ -240,7 +240,7 @@ public:
         }
     }
 
-    void run_from_point(vector<Point> &all_points)
+    float run_from_point(vector<Point> &all_points)
     {
         total_points = all_points.size();
         dimensions = all_points[0].getDimensions();
