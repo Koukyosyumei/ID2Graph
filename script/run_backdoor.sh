@@ -136,7 +136,7 @@ else
 fi
 
 for s in $(seq 1 ${NUM_TRIAL}); do
-    TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -k ${VALUE_K} -w ${VALUE_W} -x ${VALUE_X}"
+    TRAINCMD="script/run_training_for_backdoor.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -k ${VALUE_K} -w ${VALUE_W} -x ${VALUE_X}"
     if [ "${FLG_G}" = "TRUE" ]; then
         TRAINCMD+=" -g"
     fi
