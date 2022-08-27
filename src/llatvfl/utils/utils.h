@@ -146,9 +146,9 @@ vector<float> minmax_normaliza(vector<vector<float>> &X)
     float min_val, max_val, den;
     for (int c = 0; c < column_num; c++)
     {
-        min_val = (*std::min_element(begin(X), end(X), [](auto &a, auto &b)
+        min_val = (*std::min_element(begin(X), end(X), [c](auto &a, auto &b)
                                      { return a[c] < b[c]; }))[c];
-        max_val = (*std::max_element(begin(X), end(X), [](auto &a, auto &b)
+        max_val = (*std::max_element(begin(X), end(X), [c](auto &a, auto &b)
                                      { return a[c] < b[c]; }))[c];
         den = 1 / (max_val - min_val);
 
