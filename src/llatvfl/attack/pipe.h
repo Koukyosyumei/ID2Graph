@@ -125,7 +125,7 @@ struct QuickAttackPipeline
         run_louvain();
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X);
         vector<int> estimated_clusters = run_kmeans(base_X);
-        cout << "Finish Attack " << estimated_clusters.size() << endl;
+        cout << "Finish Attack " << endl;
         return estimated_clusters;
     }
 };
