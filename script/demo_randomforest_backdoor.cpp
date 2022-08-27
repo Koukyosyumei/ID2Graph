@@ -269,9 +269,18 @@ int main(int argc, char *argv[])
 
     vector<int> estimated_clusters = qap.attack<RandomForestClassifier>(clf, parties[1].x);
 
+    std::ofstream cl_file;
+    string cl_filepath = folderpath + "/" + fileprefix + "_clusters_and_labels.ans";
+    cl_file.open(cl_filepath, std::ios::out);
+
     for (int i = 0; i < num_row_train; i++)
     {
-        cout << estimated_clusters[i] << " ";
+        cl_file << estimated_clusters[i] << " ";
     }
-    cout << endl;
+    cl_file << endl;
+    for (int i = 0; i < num_row_train; i++)
+    {
+        cl_file << y_train[i] << " ";
+    }
+    cl_file << endl;
 }
