@@ -94,7 +94,6 @@ private:
     int K, n_init, iters, dimensions, total_points;
     vector<Cluster> clusters;
     vector<int> assigned_clusters;
-    vector<int> best_assigned_clusters;
 
     void clearClusters()
     {
@@ -204,10 +203,9 @@ private:
 
 public:
     KMeans() {}
-    KMeans(int K, int n_init = 10, int iterations = 100)
+    KMeans(int K, int iterations = 100)
     {
         this->K = K;
-        this->n_init = n_init;
         this->iters = iterations;
     }
 
@@ -222,22 +220,8 @@ public:
         }
 
         assigned_clusters.resize(n);
-        best_assigned_clusters.resize(n);
 
-        float temp_dist;
-        float best_dist = numeric_limits<float>::infinity();
-        for (int j = 0; j < n_init; j++)
-        {
-            temp_dist = run_from_point(points);
-            if (temp_dist < best_dist)
-            {
-                best_dist = temp_dist;
-                for (int i = 0; i < n; i++)
-                {
-                    best_assigned_clusters[i] = assigned_clusters[i];
-                }
-            }
-        }
+        float temp_dist = run_from_point(points);
     }
 
     float run_from_point(vector<Point> all_points)
@@ -336,6 +320,6 @@ public:
 
     vector<int> get_cluster_ids()
     {
-        return best_assigned_clusters;
+        return assigned_clusters;
     }
 };
