@@ -253,6 +253,7 @@ public:
         int iter = 1;
         while (true)
         {
+            cout << "K-Means: iter=" << iter << endl;
             bool done = true;
 
             // Add all points to their nearest cluster
