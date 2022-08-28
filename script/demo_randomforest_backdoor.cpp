@@ -277,10 +277,12 @@ int main(int argc, char *argv[])
     {
         cl_file << estimated_clusters[i] << " ";
     }
-    cl_file << endl;
+    cl_file << "\n";
     for (int i = 0; i < num_row_train; i++)
     {
         cl_file << y_train[i] << " ";
     }
-    cl_file << endl;
+    cl_file << "\n";
+
+    cl_file.close();
 }

@@ -30,7 +30,9 @@ if __name__ == "__main__":
             lines = f.readlines()
 
         clusters_ids = lines[0]
+        print(clusters_ids)
         true_labels = lines[1]
+        print(true_labels)
 
         f_score, _, _ = get_f_p_r(true_labels, clusters_ids)
         v_score = metrics.v_measure_score(true_labels, clusters_ids)
