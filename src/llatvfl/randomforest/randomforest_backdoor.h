@@ -35,6 +35,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
 
     vector<RandomForestTree> estimators;
     vector<int> estimated_clusters;
+    vector<int> matched_target_labels_idxs;
 
     RandomForestBackDoorClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
                                    float max_samples_ratio_ = 1.0, int num_trees_ = 5,
@@ -114,7 +115,21 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
                 QuickAttackPipeline qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
                                                               epsilon_random_unfolding, seconds_wait4timeout,
                                                               max_timeout_num_patience);
-                estimated_clusters = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x);
+
+                vector<int> class_cnts(num_classes);
+                for (int c = 0; c < num_classes; c++)
+                {
+                    class_cnts = count(y.begin(), y.end(), c);
+                }
+
+                vector<size_t> class_orders(num_classes);
+                iota(class_orders.begin(), class_orders.end(), 0);
+                stable_sort(class_orders.begin(), class_orders.end(),
+                            [&y](size_t i1, size_t i2)
+                            { return y[i1] < y[i2]; });
+                pair<vector<int>, vector<int>> res = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x, class_orders, 1);
+                estimated_clusters = res.first;
+                matched_target_labels_idxs = res.second;
             }
         }
     }

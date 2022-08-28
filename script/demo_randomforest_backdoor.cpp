@@ -276,9 +276,17 @@ int main(int argc, char *argv[])
         cl_file << clf.estimated_clusters[i] - 1 << " ";
     }
     cl_file << "\n";
+
     for (int i = 0; i < num_row_train; i++)
     {
         cl_file << y_train[i] << " ";
+    }
+    cl_file << "\n";
+
+    int temp_size = clf.matched_target_labels_idxs.size();
+    for (int i = 0; i < temp_size; i++)
+    {
+        cl_file << clf.matched_target_labels_idxs[i] << " ";
     }
     cl_file << "\n";
 

@@ -21,7 +21,7 @@ using namespace std;
 
 struct QuickAttackPipeline
 {
-    int cluster_size;
+    int num_class;
     int attack_start_depth;
     int target_party_id;
     int skip_round;
@@ -35,12 +35,12 @@ struct QuickAttackPipeline
     KMeans kmeans;
     vector<int> cluster_ids;
 
-    QuickAttackPipeline(int cluster_size_, int attack_start_depth_,
+    QuickAttackPipeline(int num_class_, int attack_start_depth_,
                         int target_party_id_, int skip_round_,
                         float epsilon_random_unfolding_,
                         int seconds_wait4timeout_, int max_timeout_num_patience_)
     {
-        cluster_size = cluster_size_;
+        num_class = num_class_;
         attack_start_depth = attack_start_depth_;
         target_party_id = target_party_id_;
         skip_round = skip_round_;
@@ -118,19 +118,55 @@ struct QuickAttackPipeline
 
     vector<int> run_kmeans(vector<vector<float>> &base_X_normalized)
     {
-        kmeans = KMeans(2);
+        kmeans = KMeans(num_class);
         kmeans.run(base_X_normalized);
         return kmeans.get_cluster_ids();
     }
 
+    vector<int> match_prior_and_estimatedclusters(vector<float> &priors, vector<int> &estimated_clusters, int target_class)
+    {
+        vector<size_t> class_idx(priors.size());
+        iota(class_idx.begin(), class_idx.end(), 0);
+        stable_sort(class_idx.begin(), class_idx.end(),
+                    [&priors](size_t i1, size_t i2)
+                    { return priors[i1] < priors[i2]; });
+
+        int rank_of_target_class = class_idx[target_class];
+
+        vector<int> cluster_size(num_class);
+        for (int c = 0; c < num_class; c++)
+        {
+            cluster_size[c] = count(estimated_clusters.begin(), estimated_clusters.end(), c + 1);
+        }
+        vector<size_t> cluster_idx(cluster_size.size());
+        iota(cluster_idx.begin(), cluster_idx.end(), 0);
+        stable_sort(cluster_idx.begin(), cluster_idx.end(),
+                    [&cluster_size](size_t i1, size_t i2)
+                    { return cluster_size[i1] < cluster_size[i2]; });
+
+        int matched_cluster_id = cluster_ids[rank_of_target_class];
+        vector<int> matched_cluster_points;
+        matched_cluster_points.reserve(cluster_size[matched_cluster_id]);
+        for (int i = 0; i < estimated_clusters.size(); i++)
+        {
+            if (estimated_clusters[i] - 1 == matched_cluster_id)
+            {
+                matched_cluster_points.push_back(i);
+            }
+        }
+
+        return matched_cluster_points;
+    }
+
     template <typename T>
-    vector<int> attack(T &clf, vector<vector<float>> &base_X)
+    pair<vector<int>, vector<int8_t>> attack(T &clf, vector<vector<float>> &base_X, vector<float> prior, int target_class)
     {
         prepare_graph<T>(clf);
         run_louvain();
         vector<vector<float>> base_X_normalized = minmax_normaliza(base_X);
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         vector<int> estimated_clusters = run_kmeans(base_X_normalized);
-        return estimated_clusters;
+        vector<int> matched_target_labels = match_prior_and_estimatedclusters(prior, estimated_clusters, target_class);
+        return make_pair(estimated_clusters, matched_target_labels);
     }
 };
