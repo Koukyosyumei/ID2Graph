@@ -30,6 +30,22 @@ TEST(Utils, QuantileTest)
     }
 }
 
+TEST(Utils, MinMAXScaler)
+{
+    vector<vector<float>> x = {{1, 2}, {3, 4}, {5, 6}};
+    vector<vector<float>> test_x_normalized = {{0, 0}, {0.5, 0.5}, {1, 1}};
+
+    vector<vector<float>> x_normalized = minmax_normaliza(x);
+
+    for (int i = 0; i < test_x_normalized.size(); i++)
+    {
+        for (int j = 0; j < test_x_normalized[i].size(); j++)
+        {
+            ASSERT_EQ(x_normalized[i][j], test_x_normalized[i][j]);
+        }
+    }
+}
+
 TEST(Utils, NumPartiesTest)
 {
     vector<int> num_parties_per_process = get_num_parties_per_process(3, 8);
