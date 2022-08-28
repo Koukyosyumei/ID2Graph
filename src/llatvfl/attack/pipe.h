@@ -100,7 +100,7 @@ struct QuickAttackPipeline
     void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X_normalized)
     {
         int com_size = louvain.g.nodes.size();
-        int row_num = base_X.size();
+        int row_num = base_X_normalized.size();
         int column_num = base_X_normalized[0].size();
         for (int i = 0; i < com_size; i++)
         {
