@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < num_row_train; i++)
     {
-        cl_file << estimated_clusters[i] << " ";
+        cl_file << estimated_clusters[i] - 1 << " ";
     }
     cl_file << "\n";
     for (int i = 0; i < num_row_train; i++)
