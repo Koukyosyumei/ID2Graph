@@ -116,10 +116,10 @@ struct QuickAttackPipeline
         }
     }
 
-    vector<int> run_kmeans(vector<vector<float>> &base_X)
+    vector<int> run_kmeans(vector<vector<float>> &base_X_normalized)
     {
         kmeans = KMeans(2);
-        kmeans.run(base_X);
+        kmeans.run(base_X_normalized);
         return kmeans.get_cluster_ids();
     }
 
@@ -131,6 +131,7 @@ struct QuickAttackPipeline
         vector<vector<float>> base_X_normalized = minmax_normaliza(base_X);
         cout << base_X_normalized.size() << " " << base_X_normalized[0].size() << endl;
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
+        cout << base_X_normalized.size() << " " << base_X_normalized[0].size() << endl;
         vector<int> estimated_clusters = run_kmeans(base_X_normalized);
         return estimated_clusters;
     }
