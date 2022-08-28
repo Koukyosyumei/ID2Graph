@@ -1,7 +1,6 @@
-#pragma once
+#include <omp.h>
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -91,7 +90,7 @@ public:
 class KMeans
 {
 private:
-    int K, n_init, iters, dimensions, total_points;
+    int K, iters, dimensions, total_points;
     vector<Cluster> clusters;
     vector<int> assigned_clusters;
 
@@ -152,64 +151,14 @@ private:
         return NearestClusterId;
     }
 
-    float getDist2NearestCentroid(Point point)
-    {
-        float sum = 0.0, min_dist;
-        int NearestClusterId;
-        if (dimensions == 1)
-        {
-            min_dist = abs(clusters[0].getCentroidByPos(0) - point.getVal(0));
-        }
-        else
-        {
-            for (int i = 0; i < dimensions; i++)
-            {
-                sum += pow(clusters[0].getCentroidByPos(i) - point.getVal(i), 2.0);
-                // sum += abs(clusters[0].getCentroidByPos(i) - point.getVal(i));
-            }
-            min_dist = sqrt(sum);
-        }
-        NearestClusterId = clusters[0].getId();
-
-        for (int i = 1; i < K; i++)
-        {
-            float dist;
-            sum = 0.0;
-
-            if (dimensions == 1)
-            {
-                dist = abs(clusters[i].getCentroidByPos(0) - point.getVal(0));
-            }
-            else
-            {
-                for (int j = 0; j < dimensions; j++)
-                {
-                    sum += pow(clusters[i].getCentroidByPos(j) - point.getVal(j), 2.0);
-                    // sum += abs(clusters[i].getCentroidByPos(j) - point.getVal(j));
-                }
-
-                dist = sqrt(sum);
-                // dist = sum;
-            }
-            if (dist < min_dist)
-            {
-                min_dist = dist;
-                NearestClusterId = clusters[i].getId();
-            }
-        }
-
-        return min_dist;
-    }
-
 public:
-    KMeans() {}
-    KMeans(int K, int iterations = 100)
+    KMeans(int K, int iterations)
     {
         this->K = K;
         this->iters = iterations;
     }
 
-    void run(vector<vector<float>> &X)
+    void run(vector<vector<float>> X)
     {
         int n = X.size();
         vector<Point> points(n);
@@ -219,12 +168,10 @@ public:
             points[i] = Point(i, X[i]);
         }
 
-        assigned_clusters.resize(n);
-
-        float temp_dist = run_from_point(points);
+        run_from_point(points);
     }
 
-    float run_from_point(vector<Point> all_points)
+    void run_from_point(vector<Point> &all_points)
     {
         total_points = all_points.size();
         dimensions = all_points[0].getDimensions();
@@ -249,14 +196,20 @@ public:
                 }
             }
         }
+        cout << "Clusters initialized = " << clusters.size() << endl
+             << endl;
+
+        cout << "Running K-Means Clustering.." << endl;
 
         int iter = 1;
         while (true)
         {
-            cout << "K-Means: iter=" << iter << endl;
+            cout << "Iter - " << iter << "/" << iters << endl;
             bool done = true;
 
-            // Add all points to their nearest cluster
+// Add all points to their nearest cluster
+#pragma omp parallel for reduction(&& \
+                                   : done) num_threads(16)
             for (int i = 0; i < total_points; i++)
             {
                 int currentClusterId = all_points[i].getCluster();
@@ -289,6 +242,8 @@ public:
                     float sum = 0.0;
                     if (ClusterSize > 0)
                     {
+#pragma omp parallel for reduction(+ \
+                                   : sum) num_threads(16)
                         for (int p = 0; p < ClusterSize; p++)
                         {
                             sum += clusters[i].getPoint(p).getVal(j);
@@ -300,23 +255,18 @@ public:
 
             if (done || iter >= iters)
             {
+                cout << "Clustering completed in iteration : " << iter << endl
+                     << endl;
                 break;
             }
             iter++;
         }
 
+        assigned_clusters.resize(total_points);
         for (int i = 0; i < total_points; i++)
         {
             assigned_clusters[i] = all_points[i].getCluster();
         }
-
-        float temp_dist = 0;
-        for (int i = 0; i < total_points; i++)
-        {
-            temp_dist += getDist2NearestCentroid(all_points[i]);
-        }
-
-        return temp_dist;
     }
 
     vector<int> get_cluster_ids()
