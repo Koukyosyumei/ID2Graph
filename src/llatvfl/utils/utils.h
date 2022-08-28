@@ -146,16 +146,20 @@ inline vector<vector<float>> minmax_normaliza(vector<vector<float>> &X)
     float min_val, max_val, den;
     for (int c = 0; c < column_num; c++)
     {
+        cout << "1" << endl;
         min_val = (*std::min_element(begin(X), end(X), [c](auto &a, auto &b)
                                      { return a[c] < b[c]; }))[c];
+        cout << "2" << endl;
         max_val = (*std::max_element(begin(X), end(X), [c](auto &a, auto &b)
                                      { return a[c] < b[c]; }))[c];
+        cout << "3" << endl;
         den = 1 / (max_val - min_val);
 
         for (int i = 0; i < row_num; i++)
         {
             res[i][c] = (X[i][c] - min_val) * den;
         }
+        cout << "5" << endl;
     }
 
     res;
