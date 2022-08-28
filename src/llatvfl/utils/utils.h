@@ -157,6 +157,5 @@ inline vector<vector<float>> minmax_normaliza(vector<vector<float>> &X)
             res[i][c] = (X[i][c] - min_val) * den;
         }
     }
-
-    res;
+    return res;
 }
