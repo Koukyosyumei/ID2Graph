@@ -159,14 +159,13 @@ struct QuickAttackPipeline
     }
 
     template <typename T>
-    pair<vector<int>, vector<int>> attack(T &clf, vector<vector<float>> &base_X, vector<float> prior, int target_class)
+    vector<int> attack(T &clf, vector<vector<float>> &base_X)
     {
         prepare_graph<T>(clf);
         run_louvain();
         vector<vector<float>> base_X_normalized = minmax_normaliza(base_X);
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         vector<int> estimated_clusters = run_kmeans(base_X_normalized);
-        vector<int> matched_target_labels = match_prior_and_estimatedclusters(prior, estimated_clusters, target_class);
-        return make_pair(estimated_clusters, matched_target_labels);
+        return estimated_clusters;
     }
 };
