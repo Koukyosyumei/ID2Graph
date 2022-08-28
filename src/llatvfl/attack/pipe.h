@@ -111,7 +111,7 @@ struct QuickAttackPipeline
 
             for (int j = 0; j < louvain.g.nodes[i].size(); j++)
             {
-                base_X_normalized[j][column_num + i] = 1;
+                base_X_normalized[louvain.g.nodes[i][j]][column_num + i] = 1;
             }
         }
     }
