@@ -97,21 +97,21 @@ struct QuickAttackPipeline
         } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
     }
 
-    void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X)
+    void concatenate_basex_with_one_hot_encoding_of_communities_allocation(vector<vector<float>> &base_X_normalized)
     {
         int com_size = louvain.g.nodes.size();
         int row_num = base_X.size();
-        int column_num = base_X[0].size();
+        int column_num = base_X_normalized[0].size();
         for (int i = 0; i < com_size; i++)
         {
             for (int j = 0; j < row_num; j++)
             {
-                base_X[j].push_back(0);
+                base_X_normalized[j].push_back(0);
             }
 
             for (int j = 0; j < louvain.g.nodes[i].size(); j++)
             {
-                base_X[j][column_num + i] = 1;
+                base_X_normalized[j][column_num + i] = 1;
             }
         }
     }
@@ -130,6 +130,7 @@ struct QuickAttackPipeline
         run_louvain();
         cout << "P" << endl;
         vector<vector<float>> base_X_normalized = minmax_normaliza(base_X);
+        cout << base_X_normalized.size() << " " << base_X_normalized[0].size() << endl;
         cout << "Q" << endl;
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         cout << "R" << endl;
