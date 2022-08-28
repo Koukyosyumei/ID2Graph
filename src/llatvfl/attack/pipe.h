@@ -132,7 +132,7 @@ struct QuickAttackPipeline
         cout << base_X_normalized.size() << " " << base_X_normalized[0].size() << endl;
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         cout << base_X_normalized.size() << " " << base_X_normalized[0].size() << endl;
-        vector<int> estimated_clusters = run_kmeans(base_X_normalized);
+        vector<int> estimated_clusters = run_kmeans(base_X);
         return estimated_clusters;
     }
 };
