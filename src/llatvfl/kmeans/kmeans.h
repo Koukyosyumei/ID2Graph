@@ -248,6 +248,8 @@ public:
         // Initializing Clusters
         vector<int> used_pointIds;
 
+        cout << "A" << endl;
+
         for (int i = 1; i <= K; i++)
         {
             while (true)
@@ -265,6 +267,8 @@ public:
                 }
             }
         }
+
+        cout << "B" << endl;
 
         int iter = 1;
         while (true)
@@ -320,16 +324,22 @@ public:
             iter++;
         }
 
+        cout << "C" << endl;
+
         for (int i = 0; i < total_points; i++)
         {
             assigned_clusters[i] = all_points[i].getCluster();
         }
+
+        cout << "D" << endl;
 
         float temp_dist = 0;
         for (int i = 0; i < total_points; i++)
         {
             temp_dist += getDist2NearestCentroid(all_points[i]);
         }
+
+        cout << "E" << endl;
 
         return temp_dist;
     }
