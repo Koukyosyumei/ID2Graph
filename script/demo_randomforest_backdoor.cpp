@@ -223,9 +223,13 @@ int main(int argc, char *argv[])
     result_file << "party size," << num_party << "\n";
 
     // --- Check Initialization --- //
-    RandomForestClassifier clf = RandomForestClassifier(num_classes, subsample_cols, depth, min_leaf,
-                                                        max_samples_ratio, num_trees,
-                                                        mi_bound, 0, n_job, 0);
+    RandomForestBackDoorClassifier clf = RandomForestBackDoorClassifier(num_classes, subsample_cols, depth, min_leaf,
+                                                                        max_samples_ratio, num_trees,
+                                                                        mi_bound, 0, n_job, 0, 3,
+                                                                        attack_start_depth, 1, skip_round,
+                                                                        epsilon_random_unfolding,
+                                                                        seconds_wait4timeout,
+                                                                        max_timeout_num_patience);
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();
@@ -263,19 +267,13 @@ int main(int argc, char *argv[])
 
     result_file.close();
 
-    QuickAttackPipeline qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
-                                                  epsilon_random_unfolding, seconds_wait4timeout,
-                                                  max_timeout_num_patience);
-
-    vector<int> estimated_clusters = qap.attack<RandomForestClassifier>(clf, parties[1].x);
-
     std::ofstream cl_file;
     string cl_filepath = folderpath + "/" + fileprefix + "_clusters_and_labels.out";
     cl_file.open(cl_filepath, std::ios::out);
 
     for (int i = 0; i < num_row_train; i++)
     {
-        cl_file << estimated_clusters[i] - 1 << " ";
+        cl_file << clf.estimated_clusters[i] - 1 << " ";
     }
     cl_file << "\n";
     for (int i = 0; i < num_row_train; i++)

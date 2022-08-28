@@ -6,10 +6,11 @@
 #include <cmath>
 #include <algorithm>
 #include "../core/model.h"
+#include "../attack/pipe.h"
 #include "tree.h"
 using namespace std;
 
-struct RandomForestClassifier : TreeModelBase<RandomForestParty>
+struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
 {
     float subsample_cols;
     int num_classes;
@@ -22,14 +23,27 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int n_job;
     int seed;
 
+    int attack_start_round;
+    int attack_start_depth;
+    int target_party_id;
+    int skip_round;
+    float epsilon_random_unfolding;
+    int seconds_wait4timeout;
+    int max_timeout_num_patience;
+
     float upsilon_Y;
 
     vector<RandomForestTree> estimators;
+    vector<int> estimated_clusters;
 
-    RandomForestClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
-                           float max_samples_ratio_ = 1.0, int num_trees_ = 5,
-                           float mi_bound_ = numeric_limits<float>::infinity(),
-                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
+    RandomForestBackDoorClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
+                                   float max_samples_ratio_ = 1.0, int num_trees_ = 5,
+                                   float mi_bound_ = numeric_limits<float>::infinity(),
+                                   int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0,
+                                   int attack_start_round_ = 3,
+                                   int attack_start_depth_ = -1, int target_party_id_ = 1,
+                                   int skip_round_ = 0, float epsilon_random_unfolding_ = 0.0,
+                                   int seconds_wait4timeout_ = 10, int max_timeout_num_patience_ = 5)
     {
         num_classes = num_classes_;
         subsample_cols = subsample_cols_;
@@ -41,6 +55,14 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         active_party_id = active_party_id_;
         n_job = n_job_;
         seed = seed_;
+
+        attack_start_round = attack_start_round_;
+        attack_start_depth = attack_start_depth_;
+        target_party_id = target_party_id_;
+        skip_round = skip_round_;
+        epsilon_random_unfolding = epsilon_random_unfolding_;
+        seconds_wait4timeout = seconds_wait4timeout_;
+        max_timeout_num_patience = max_timeout_num_patience_;
 
         if (mi_bound < 0)
         {
@@ -86,6 +108,14 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
             tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
+
+            if (i < attack_start_round)
+            {
+                QuickAttackPipeline qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
+                                                              epsilon_random_unfolding, seconds_wait4timeout,
+                                                              max_timeout_num_patience);
+                estimated_clusters = qap.attack<RandomForestBackDoor>(*this, parties[1].x);
+            }
         }
     }
 
