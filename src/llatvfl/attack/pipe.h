@@ -159,7 +159,7 @@ struct QuickAttackPipeline
     }
 
     template <typename T>
-    pair<vector<int>, vector<int8_t>> attack(T &clf, vector<vector<float>> &base_X, vector<float> prior, int target_class)
+    pair<vector<int>, vector<int>> attack(T &clf, vector<vector<float>> &base_X, vector<float> prior, int target_class)
     {
         prepare_graph<T>(clf);
         run_louvain();

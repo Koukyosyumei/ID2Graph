@@ -122,7 +122,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
                     class_cnts = count(y.begin(), y.end(), c);
                 }
 
-                vector<size_t> class_orders(num_classes);
+                vector<float> class_orders(num_classes);
                 iota(class_orders.begin(), class_orders.end(), 0);
                 stable_sort(class_orders.begin(), class_orders.end(),
                             [&y](size_t i1, size_t i2)
