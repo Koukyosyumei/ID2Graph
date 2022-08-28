@@ -34,4 +34,4 @@ if __name__ == "__main__":
 
         f_score, _, _ = get_f_p_r(true_labels, clusters_ids)
         v_score = metrics.v_measure_score(true_labels, clusters_ids)
-        print(f_score, v_score)
+        print(v_score, f_score)
