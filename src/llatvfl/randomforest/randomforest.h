@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include "../core/model.h"
+#include "../attack/pipe.h"
 #include "tree.h"
 using namespace std;
 
@@ -86,6 +87,12 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
             tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
+
+            if (i < 3)
+            {
+                QuickAttackPipeline qap = QuickAttackPipeline(2, -1, 1, 0, 0.0, 30, 5);
+                vector<int> estimated_clusters = qap.attack<RandomForestClassifier>(*this, parties[1].x);
+            }
         }
     }
 
