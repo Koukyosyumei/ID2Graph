@@ -150,7 +150,6 @@ inline vector<vector<float>> minmax_normaliza(vector<vector<float>> &X)
                                      { return a[c] < b[c]; }))[c];
         max_val = (*std::max_element(begin(X), end(X), [c](auto &a, auto &b)
                                      { return a[c] < b[c]; }))[c];
-        cout << min_val << " " << max_val << endl;
         den = 1 / (max_val - min_val);
 
         for (int i = 0; i < row_num; i++)
