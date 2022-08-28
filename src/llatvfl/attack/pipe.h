@@ -128,7 +128,9 @@ struct QuickAttackPipeline
     {
         prepare_graph<T>(clf);
         run_louvain();
+        cout << "P" << endl;
         vector<vector<float>> base_X_normalized = minmax_normaliza(base_X);
+        cout << "Q" << endl;
         concatenate_basex_with_one_hot_encoding_of_communities_allocation(base_X_normalized);
         vector<int> estimated_clusters = run_kmeans(base_X_normalized);
         return estimated_clusters;
