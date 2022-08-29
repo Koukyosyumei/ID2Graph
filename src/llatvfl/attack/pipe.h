@@ -125,26 +125,33 @@ struct QuickAttackPipeline
 
     vector<int> match_prior_and_estimatedclusters(vector<float> &priors, vector<int> &estimated_clusters, int target_class)
     {
+        cout << "A" << endl;
         vector<size_t> class_idx(priors.size());
         iota(class_idx.begin(), class_idx.end(), 0);
         stable_sort(class_idx.begin(), class_idx.end(),
                     [&priors](size_t i1, size_t i2)
                     { return priors[i1] < priors[i2]; });
+        cout << "B" << endl;
 
         int rank_of_target_class = class_idx[target_class];
+
+        cout << "C" << endl;
 
         vector<int> cluster_size(num_class);
         for (int c = 0; c < num_class; c++)
         {
             cluster_size[c] = count(estimated_clusters.begin(), estimated_clusters.end(), c + 1);
         }
+        cout << "D" << endl;
         vector<size_t> cluster_idx(cluster_size.size());
         iota(cluster_idx.begin(), cluster_idx.end(), 0);
         stable_sort(cluster_idx.begin(), cluster_idx.end(),
                     [&cluster_size](size_t i1, size_t i2)
                     { return cluster_size[i1] < cluster_size[i2]; });
+        cout << "E" << endl;
 
         int matched_cluster_id = cluster_ids[rank_of_target_class];
+        cout << "F" << endl;
         vector<int> matched_cluster_points;
         matched_cluster_points.reserve(cluster_size[matched_cluster_id]);
         for (int i = 0; i < estimated_clusters.size(); i++)
@@ -154,6 +161,7 @@ struct QuickAttackPipeline
                 matched_cluster_points.push_back(i);
             }
         }
+        cout << "G" << endl;
 
         return matched_cluster_points;
     }
