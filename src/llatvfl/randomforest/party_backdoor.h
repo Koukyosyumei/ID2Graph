@@ -17,12 +17,15 @@ struct RandomForestBackDoorParty : RandomForestParty
     RandomForestBackDoorParty() {}
     RandomForestBackDoorParty(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
                               int min_leaf_, float subsample_cols_,
-                              vector<int> &matched_target_labels_idxs_,
                               float subsample_ratio_for_backdoor_attack_ = 0.5,
                               int seed_ = 0) : RandomForestParty(x_, num_classes_, feature_id_, party_id_,
                                                                  min_leaf_, subsample_cols_, seed_)
     {
         subsample_ratio_for_backdoor_attack = subsample_ratio_for_backdoor_attack_;
+    }
+
+    void set_matched_target_labels_idxs_(vector<int> matched_target_labels_idxs_)
+    {
         matched_target_labels_idxs = matched_target_labels_idxs_;
     }
 
