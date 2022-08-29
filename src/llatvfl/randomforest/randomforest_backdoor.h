@@ -124,6 +124,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestBackDoorParty>
 
                 estimated_clusters = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x);
                 matched_target_labels_idxs = qap.match_prior_and_estimatedclusters(class_cnts, estimated_clusters, 1);
+                parties[1].set_matched_target_labels_idxs_(matched_target_labels_idxs);
             }
         }
     }

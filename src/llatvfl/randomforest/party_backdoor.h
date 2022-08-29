@@ -187,6 +187,7 @@ struct RandomForestBackDoorParty : RandomForestParty
 
         if (is_root)
         {
+            cout << "Try injecting a backdoor..." << endl;
             // inject a dummy split candidate for the backdoor attack
             sort(idxs.begin(), idxs.end());
             sort(matched_target_labels_idxs.begin(), matched_target_labels_idxs.end());
