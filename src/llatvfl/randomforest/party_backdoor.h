@@ -200,11 +200,13 @@ struct RandomForestBackDoorParty : RandomForestParty
             float idxs_size_for_backdoor = subsample_ratio_for_backdoor_attack * float(idxs_intersection.size());
             float temp_left_size = 0;
             vector<float> temp_left_y_class_cnt(num_classes, 0);
+            cout << "A" << endl;
             for (int i = 0; i < idxs_size_for_backdoor; i++)
             {
                 temp_left_y_class_cnt[int(y[idxs_intersection[i]])] += 1.0;
                 temp_left_size += 1.0;
             }
+            cout << "B" << endl;
             split_cancidates_leftsize_leftposcnt.push_back({make_pair(temp_left_size, temp_left_y_class_cnt)});
 
             left_idxs_for_backdoor = idxs_intersection;
