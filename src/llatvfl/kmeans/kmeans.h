@@ -197,9 +197,7 @@ public:
                 }
             }
         }
-        cout << "Clusters initialized = " << clusters.size() << endl
-             << endl;
-
+        cout << "Clusters initialized = " << clusters.size() << endl;
         cout << "Running K-Means Clustering.." << endl;
 
         int iter = 1;
