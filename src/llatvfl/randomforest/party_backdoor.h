@@ -101,7 +101,6 @@ struct RandomForestBackDoorParty : RandomForestParty
         }
         else
         {
-            cout << "detect backdoor flag" << endl;
             flag = xi[feature_id[feature_idx_for_backdoor]] <= feature_val_for_backdoor;
         }
         return flag;
