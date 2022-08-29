@@ -170,7 +170,7 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y, is_root;
+            vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y, is_root);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
