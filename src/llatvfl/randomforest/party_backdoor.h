@@ -17,7 +17,7 @@ struct RandomForestBackDoorParty : RandomForestParty
     RandomForestBackDoorParty() {}
     RandomForestBackDoorParty(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
                               int min_leaf_, float subsample_cols_,
-                              float subsample_ratio_for_backdoor_attack_ = 0.5,
+                              float subsample_ratio_for_backdoor_attack_ = 0.9,
                               int seed_ = 0) : RandomForestParty(x_, num_classes_, feature_id_, party_id_,
                                                                  min_leaf_, subsample_cols_, seed_)
     {
