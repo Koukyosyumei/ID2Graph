@@ -73,7 +73,7 @@ struct RandomForestBackDoorParty : RandomForestParty
     {
         bool flag;
         int target_feature_index = get<0>(lookup_table[record_id]);
-        if (target_feature_index < feature_id.size())
+        if (target_feature_index != -1)
         {
             float x_criterion = xi[feature_id[target_feature_index]];
             if (isnan(x_criterion))
@@ -101,6 +101,7 @@ struct RandomForestBackDoorParty : RandomForestParty
         }
         else
         {
+            cout << "detect backdoor flag" << endl;
             flag = xi[feature_id[feature_idx_for_backdoor]] <= feature_val_for_backdoor;
         }
         return flag;
@@ -216,5 +217,42 @@ struct RandomForestBackDoorParty : RandomForestParty
         }
 
         return split_cancidates_leftsize_leftposcnt;
+    }
+
+    int insert_lookup_table(int feature_opt_pos, int threshold_opt_pos)
+    {
+        int feature_opt_id, missing_dir;
+        float threshold_opt;
+
+        if (feature_opt_pos < temp_thresholds.size())
+        {
+            feature_opt_id = temp_column_subsample[feature_opt_pos % subsample_col_count];
+            threshold_opt = temp_thresholds[feature_opt_pos][threshold_opt_pos];
+        }
+        else
+        {
+            feature_opt_id = -1;
+            threshold_opt = -1;
+        }
+
+        if (use_missing_value)
+        {
+            if (feature_opt_pos > subsample_col_count)
+            {
+                missing_dir = 1;
+            }
+            else
+            {
+                missing_dir = 0;
+            }
+        }
+        else
+        {
+            missing_dir = -1;
+        }
+
+        lookup_table.emplace(lookup_table.size(),
+                             make_tuple(feature_opt_id, threshold_opt, missing_dir));
+        return lookup_table.size() - 1;
     }
 };
