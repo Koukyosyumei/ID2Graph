@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
-    vector<RandomForestParty> parties(num_party);
+    vector<RandomForestBackDoorParty> parties(num_party);
 
     int temp_count_feature = 0;
     for (int i = 0; i < num_party; i++)
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
             }
             temp_count_feature += 1;
         }
-        RandomForestParty party(x, num_classes, feature_idxs, i, min_leaf, subsample_cols);
+        RandomForestBackDoorParty party(x, num_classes, feature_idxs, i, min_leaf, subsample_cols);
         parties[i] = party;
     }
     for (int j = 0; j < num_row_train; j++)
