@@ -36,9 +36,9 @@ struct LPMST
         _fit<RandomForestClassifier, RandomForestParty>(clf, parties, y);
     }
 
-    void fit(RandomForestBackDoorClassifier &clf, vector<RandomForestParty> &parties, vector<float> &y)
+    void fit(RandomForestBackDoorClassifier &clf, vector<RandomForestBackDoorParty> &parties, vector<float> &y)
     {
-        _fit<RandomForestBackDoorClassifier, RandomForestParty>(clf, parties, y);
+        _fit<RandomForestBackDoorClassifier, RandomForestBackDoorParty>(clf, parties, y);
     }
 
     template <typename ModelType, typename PartyType>

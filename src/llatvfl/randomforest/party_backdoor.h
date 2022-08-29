@@ -11,6 +11,9 @@ struct RandomForestBackDoorParty : RandomForestParty
     vector<int> matched_target_labels_idxs;
     vector<int> left_idxs_for_backdoor;
 
+    int feature_idx_for_backdoor = 0;
+    float feature_val_for_backdoor = -99999999999;
+
     RandomForestBackDoorParty() {}
     RandomForestBackDoorParty(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
                               int min_leaf_, float subsample_cols_,
@@ -58,6 +61,43 @@ struct RandomForestBackDoorParty : RandomForestParty
         }
 
         return left_idxs;
+    }
+
+    bool is_left(int record_id, vector<float> &xi)
+    {
+        bool flag;
+        int target_feature_index = get<0>(lookup_table[record_id]);
+        if (target_feature_index < feature_id.size())
+        {
+            float x_criterion = xi[feature_id[target_feature_index]];
+            if (isnan(x_criterion))
+            {
+                try
+                {
+                    if (!use_missing_value)
+                    {
+                        throw std::runtime_error("given data contains NaN, but use_missing_value is false");
+                    }
+                    else
+                    {
+                        flag = get<2>(lookup_table[record_id]) == 0;
+                    }
+                }
+                catch (std::exception &e)
+                {
+                    std::cout << e.what() << std::endl;
+                }
+            }
+            else
+            {
+                flag = x_criterion <= get<1>(lookup_table[record_id]);
+            }
+        }
+        else
+        {
+            flag = xi[feature_id[feature_idx_for_backdoor]] <= feature_val_for_backdoor;
+        }
+        return flag;
     }
 
     vector<vector<pair<float, vector<float>>>> greedy_search_split(vector<int> &idxs, vector<float> &y, bool is_root)
