@@ -144,7 +144,6 @@ struct QuickAttackPipeline
                     [&cluster_size](size_t i1, size_t i2)
                     { return cluster_size[i1] < cluster_size[i2]; });
 
-        cout << cluster_idx.size() << " " << rank_of_target_class << endl;
         int matched_cluster_id = cluster_idx[rank_of_target_class];
 
         vector<int> matched_cluster_points;
