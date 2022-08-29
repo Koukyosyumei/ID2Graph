@@ -64,6 +64,7 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
         val = compute_weight();
 
         tuple<int, int, int> best_split = find_split();
+        cout << "S" << endl;
 
         if (is_leaf())
         {
@@ -77,9 +78,11 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
         if (is_leaf_flag == 0)
         {
             party_id = get<0>(best_split);
+            cout << "T" << endl;
             if (party_id != -1)
             {
                 record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
+                cout << "U" << endl;
                 make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
             }
             else
@@ -171,7 +174,6 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
             vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y, is_root);
-            cout << "C" << endl;
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
@@ -222,7 +224,6 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
                     }
                 }
             }
-            cout << "D" << endl;
         }
     }
 
