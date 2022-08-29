@@ -139,6 +139,24 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
 }
 
 /**
+ * @brief Update adjacency matrix with given tree.
+ *
+ * @param tree The tree to be transformed to a graph.
+ * @param adj_mat The adjancecy matrix to be updated.
+ * @param weight The weight parameter.
+ * @param target_party_id The target party id.
+ */
+inline void extract_adjacency_matrix_from_tree(RandomForestBackDoorTree *tree,
+                                               int start_depth,
+                                               SparseMatrixDOK<float> &adj_mat,
+                                               float weight,
+                                               int target_party_id)
+{
+    int num_row = tree->dtree.y.size();
+    travase_nodes_to_extract_adjacency_matrix<RandomForestBackDoorNode>(&tree->dtree, tree->dtree.depth, start_depth, adj_mat, weight, target_party_id);
+}
+
+/**
  * @brief Extract adjacency matrix from the trained model
  *
  * @param model The target tree-based model
