@@ -127,7 +127,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
                 stable_sort(class_orders.begin(), class_orders.end(),
                             [&y](size_t i1, size_t i2)
                             { return y[i1] < y[i2]; });
-                estimated_clusters = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x, class_orders, 1);
+                estimated_clusters = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x);
                 matched_target_labels_idxs = qap.match_prior_and_estimatedclusters(class_orders, estimated_clusters, 1);
             }
         }
