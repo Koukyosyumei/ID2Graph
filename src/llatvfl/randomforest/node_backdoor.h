@@ -81,6 +81,7 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
             cout << "T" << endl;
             if (party_id != -1)
             {
+                cout << "party_id is " << party_id << endl;
                 record_id = parties->at(party_id).insert_lookup_table(get<1>(best_split), get<2>(best_split));
                 cout << "U" << endl;
                 make_children_nodes(get<0>(best_split), get<1>(best_split), get<2>(best_split));
