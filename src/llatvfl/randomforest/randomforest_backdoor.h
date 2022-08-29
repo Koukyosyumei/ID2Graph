@@ -110,7 +110,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
             estimators.push_back(tree);
             seed += 1;
 
-            if (i < attack_start_round)
+            if (i == attack_start_round - 1)
             {
                 QuickAttackPipeline qap = QuickAttackPipeline(num_classes, attack_start_depth, 1, skip_round,
                                                               epsilon_random_unfolding, seconds_wait4timeout,
