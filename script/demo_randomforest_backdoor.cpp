@@ -33,13 +33,14 @@ float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
+int attack_start_round = 2;
 bool save_adj_mat = false;
 int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:x:g")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:x:y:g")) != -1)
     {
         switch (opt)
         {
@@ -81,6 +82,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'x':
             m_lpmst = stoi(string(optarg));
+            break;
+        case 'y':
+            attack_start_round = stoi(string(optarg));
             break;
         case 'g':
             save_adj_mat = true;
@@ -225,7 +229,7 @@ int main(int argc, char *argv[])
     // --- Check Initialization --- //
     RandomForestBackDoorClassifier clf = RandomForestBackDoorClassifier(num_classes, subsample_cols, depth, min_leaf,
                                                                         max_samples_ratio, num_trees,
-                                                                        mi_bound, 0, n_job, 0, 3,
+                                                                        mi_bound, 0, n_job, 0, attack_start_round,
                                                                         attack_start_depth, 1, skip_round,
                                                                         epsilon_random_unfolding,
                                                                         seconds_wait4timeout,

@@ -41,7 +41,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestBackDoorParty>
                                    float max_samples_ratio_ = 1.0, int num_trees_ = 5,
                                    float mi_bound_ = numeric_limits<float>::infinity(),
                                    int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0,
-                                   int attack_start_round_ = 3,
+                                   int attack_start_round_ = 2,
                                    int attack_start_depth_ = -1, int target_party_id_ = 1,
                                    int skip_round_ = 0, float epsilon_random_unfolding_ = 0.0,
                                    int seconds_wait4timeout_ = 10, int max_timeout_num_patience_ = 5)
