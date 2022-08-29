@@ -256,8 +256,7 @@ public:
 
             if (done || iter >= iters)
             {
-                cout << "Clustering completed in iteration : " << iter << endl
-                     << endl;
+                cout << "Clustering completed in iteration : " << iter << endl;
                 break;
             }
             iter++;

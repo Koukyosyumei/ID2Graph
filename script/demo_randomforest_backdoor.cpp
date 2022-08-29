@@ -292,5 +292,5 @@ int main(int argc, char *argv[])
 
     cl_file.close();
 
-    printf("All done!");
+    printf("All done!\n\n");
 }
