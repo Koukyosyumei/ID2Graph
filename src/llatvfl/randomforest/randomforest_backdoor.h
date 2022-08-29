@@ -7,10 +7,10 @@
 #include <algorithm>
 #include "../core/model.h"
 #include "../attack/pipe.h"
-#include "tree.h"
+#include "tree_backdoor.h"
 using namespace std;
 
-struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
+struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestBackDoorParty>
 {
     float subsample_cols;
     int num_classes;
@@ -33,7 +33,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
 
     float upsilon_Y;
 
-    vector<RandomForestTree> estimators;
+    vector<RandomForestBackDoorTree> estimators;
     vector<int> estimated_clusters;
     vector<int> matched_target_labels_idxs;
 
@@ -71,7 +71,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
         }
     }
 
-    void load_estimators(vector<RandomForestTree> &_estimators)
+    void load_estimators(vector<RandomForestBackDoorTree> &_estimators)
     {
         estimators = _estimators;
     }
@@ -81,12 +81,12 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
         estimators.clear();
     }
 
-    vector<RandomForestTree> get_estimators()
+    vector<RandomForestBackDoorTree> get_estimators()
     {
         return estimators;
     }
 
-    void fit(vector<RandomForestParty> &parties, vector<float> &y)
+    void fit(vector<RandomForestBackDoorParty> &parties, vector<float> &y)
     {
         int row_count = y.size();
 
@@ -105,7 +105,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
 
         for (int i = 0; i < num_trees; i++)
         {
-            RandomForestTree tree = RandomForestTree();
+            RandomForestBackDoorTree tree = RandomForestBackDoorTree();
             tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
@@ -121,13 +121,7 @@ struct RandomForestBackDoorClassifier : TreeModelBase<RandomForestParty>
                 {
                     class_cnts[c] = count(y.begin(), y.end(), c);
                 }
-                /*
-                vector<float> class_orders(num_classes);
-                iota(class_orders.begin(), class_orders.end(), 0);
-                stable_sort(class_orders.begin(), class_orders.end(),
-                            [&y](size_t i1, size_t i2)
-                            { return y[i1] < y[i2]; });
-                */
+
                 estimated_clusters = qap.attack<RandomForestBackDoorClassifier>(*this, parties[1].x);
                 matched_target_labels_idxs = qap.match_prior_and_estimatedclusters(class_cnts, estimated_clusters, 1);
             }
