@@ -171,7 +171,7 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
             vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y, is_root);
-
+            cout << "C" << endl;
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
             for (int j = 0; j < num_search_results; j++)
@@ -222,6 +222,7 @@ struct RandomForestBackDoorNode : Node<RandomForestBackDoorParty>
                     }
                 }
             }
+            cout << "D" << endl;
         }
     }
 

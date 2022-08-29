@@ -32,6 +32,7 @@ struct RandomForestBackDoorParty : RandomForestParty
     vector<int> split_rows(vector<int> &idxs, int feature_opt_pos, int threshold_opt_pos)
     {
         vector<int> left_idxs;
+        cout << "E" << endl;
 
         // feature_opt_idがthreshold_opt_id以下のindexを返す
         if (feature_opt_pos < temp_thresholds.size())
@@ -62,6 +63,8 @@ struct RandomForestBackDoorParty : RandomForestParty
             cout << "Successfully inject a backdoor!" << endl;
             left_idxs = left_idxs_for_backdoor;
         }
+
+        cout << "F" << endl;
 
         return left_idxs;
     }
