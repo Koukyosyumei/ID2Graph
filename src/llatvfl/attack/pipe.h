@@ -33,7 +33,6 @@ struct QuickAttackPipeline
     Graph g;
     Louvain louvain;
     KMeans kmeans;
-    vector<int> cluster_ids;
 
     QuickAttackPipeline(int num_class_, int attack_start_depth_,
                         int target_party_id_, int skip_round_,
@@ -149,8 +148,8 @@ struct QuickAttackPipeline
                     [&cluster_size](size_t i1, size_t i2)
                     { return cluster_size[i1] < cluster_size[i2]; });
         cout << "E" << endl;
-        cout << cluster_ids.size() << " " << rank_of_target_class << endl;
-        int matched_cluster_id = cluster_ids[rank_of_target_class];
+        cout << cluster_idx.size() << " " << rank_of_target_class << endl;
+        int matched_cluster_id = cluster_idx[rank_of_target_class];
         cout << "F" << endl;
         vector<int> matched_cluster_points;
         matched_cluster_points.reserve(cluster_size[matched_cluster_id]);
