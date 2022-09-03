@@ -405,9 +405,9 @@ if __name__ == "__main__":
 
     col_alloc = None
     if parsed_args.dataset_type == "dummy0":
-        col_alloc = [[0], [1]]
+        col_alloc = [[0, 1, [2, 3]]
     elif parsed_args.dataset_type == "dummy1":
-        col_alloc = [[1], [0]]
+        col_alloc = [[2, 3], [0, 1]]
 
     convert_df_to_input(
         X_train,
