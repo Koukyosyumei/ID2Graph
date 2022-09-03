@@ -241,6 +241,13 @@ if __name__ == "__main__":
         X = df[list(range(57))].values
         y = df[57].values
 
+    elif parsed_args.dataset_type in ["dummy0", "dummy1"]:
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "dummy.csv"))
+        df = sampling(df, "y", parsed_args)
+
+        X = df[["x1", "x2"]].values
+        y = df["y"].values
+
     elif parsed_args.dataset_type == "parkinson":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "parkinsons.data"))
         df = sampling(df, "status", parsed_args)
@@ -396,6 +403,12 @@ if __name__ == "__main__":
         stratify=y,
     )
 
+    col_alloc = None
+    if parsed_args.dataset_type == "dummy0":
+        col_alloc = [[0], [1]]
+    elif parsed_args.dataset_type == "dummy1":
+        col_alloc = [[1], [0]]
+
     convert_df_to_input(
         X_train,
         y_train,
@@ -404,7 +417,7 @@ if __name__ == "__main__":
         os.path.join(
             parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"
         ),
-        col_alloc=None,
+        col_alloc=col_alloc,
         feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
         feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
         parties_num=2,
