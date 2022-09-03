@@ -16,6 +16,13 @@ struct NodeAPI
 
     NodeAPI(){};
 
+    /**
+     * @brief Calculate the leaf purity within the specified node.
+     *
+     * @param node Node object
+     * @param tot_cnt Total number of data samples used to train the tree.
+     * @return float
+     */
     float get_leaf_purity(NodeType *node, int tot_cnt)
     {
         float leaf_purity = 0;
@@ -44,6 +51,15 @@ struct NodeAPI
         return leaf_purity;
     }
 
+    /**
+     * @brief Returns the string informatino of the node for print-out.
+     *
+     * @param node Node object
+     * @param show_purity Show the purity if true
+     * @param binary_color Hightlight the leaf purity if true
+     * @param target_party_id The party if of the attacker
+     * @return string
+     */
     string print(NodeType *node, bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
         pair<string, bool> result = recursive_print(node, "", false, show_purity, binary_color, target_party_id);
@@ -57,6 +73,14 @@ struct NodeAPI
         }
     }
 
+    /**
+     * @brief Returns the string information of the leaf node for print-out.
+     *
+     * @param node Node object
+     * @param show_purity Show the purity if true
+     * @param binary_color Hightlight the leaf purity if true
+     * @return string
+     */
     string print_leaf(NodeType *node, bool show_purity, bool binary_color)
     {
         string node_info = to_string(node->get_val()[0]);
@@ -141,6 +165,17 @@ struct NodeAPI
         return node_info;
     }
 
+    /**
+     * @brief Recusively search the nodes and returns the string information of these nodes.
+     *
+     * @param node
+     * @param prefix
+     * @param isleft
+     * @param show_purity
+     * @param binary_color
+     * @param target_party_id
+     * @return pair<string, bool>
+     */
     pair<string, bool> recursive_print(NodeType *node, string prefix, bool isleft, bool show_purity,
                                        bool binary_color, int target_party_id = -1)
     {
@@ -199,6 +234,13 @@ struct NodeAPI
         return make_pair(node_info, skip_flag);
     }
 
+    /**
+     * @brief Returns the prediction for a single data point.
+     *
+     * @param node
+     * @param xi
+     * @return vector<float>
+     */
     vector<float> predict_row(NodeType *node, vector<float> &xi)
     {
         queue<NodeType *> que;
@@ -231,6 +273,13 @@ struct NodeAPI
         return nan_vec;
     }
 
+    /**
+     * @brief Returns the prediction for the batched data samples.
+     *
+     * @param node
+     * @param x_new
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> predict(NodeType *node, vector<vector<float>> &x_new)
     {
         int x_new_size = x_new.size();
