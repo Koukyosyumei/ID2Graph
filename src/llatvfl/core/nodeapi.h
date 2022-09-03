@@ -28,16 +28,12 @@ struct NodeAPI
             }
             else
             {
-                int cnt_zero = 0;
+                vector<int> counter(node->num_classes, 0);
                 for (int i = 0; i < node->idxs.size(); i++)
                 {
-                    if (node->y[node->idxs[i]] == 0)
-                    {
-                        cnt_zero += 1;
-                    }
+                    counter[node->y[node->idxs[i]]] += 1;
                 }
-                leaf_purity = max(float(cnt_zero) / float(cnt_idxs),
-                                  1 - float(cnt_zero) / float(cnt_idxs));
+                leaf_purity = float(*max_element(counter.begin(), counter.end())) / float(cnt_idxs);
                 leaf_purity = leaf_purity * (float(cnt_idxs) / float(tot_cnt));
             }
         }
