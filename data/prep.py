@@ -245,7 +245,7 @@ if __name__ == "__main__":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "dummy.csv"))
         df = sampling(df, "y", parsed_args)
 
-        X = df[["x1", "x2"]].values
+        X = df[["x1", "x2", "x3", "x4"]].values
         y = df["y"].values
 
     elif parsed_args.dataset_type == "parkinson":
@@ -405,7 +405,7 @@ if __name__ == "__main__":
 
     col_alloc = None
     if parsed_args.dataset_type == "dummy0":
-        col_alloc = [[0, 1, [2, 3]]
+        col_alloc = [[0, 1], [2, 3]]
     elif parsed_args.dataset_type == "dummy1":
         col_alloc = [[2, 3], [0, 1]]
 
