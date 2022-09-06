@@ -44,7 +44,7 @@ if __name__ == "__main__":
     clustering_cls = clustering_type2cls[parsed_args.clustering_type]
 
     print(
-        "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
+        "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,baseline_a,our_c,our_h,our_v,our_p,our_ip,our_f,our_a"
     )
 
     with open(parsed_args.path_to_input_file, mode="r") as f:
@@ -87,6 +87,15 @@ if __name__ == "__main__":
     )
     cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
 
+    yt_u, yt_c = np.unique(y_train, return_counts=True)
+    bl_u, bl_c = np.unique(kmeans.labels_, return_counts=True)
+    yt_rank = np.argsort(yt_c)
+    bl_rank = np.argsort(bl_c)
+    cluster2label = {c: y for c, y in zip(yt_rank, bl_rank)}
+    a_score_baseline = metrics.accuracy_score(
+        y_train, [cluster2label[c] for c in kmeans.labels]
+    )
+
     with open(parsed_args.path_to_com_file, mode="r") as f:
         lines = f.readlines()
         comm_num = int(lines[0])
@@ -109,8 +118,15 @@ if __name__ == "__main__":
         y_train, kmeans_with_com.labels_
     )
 
+    cl_u, cl_c = np.unique(kmeans_with_com.labels_, return_counts=True)
+    cl_rank = np.argsort(cl_c)
+    cluster2label = {c: y for c, y in zip(yt_rank, cl_rank)}
+    a_score_with_com = metrics.accuracy_score(
+        y_train, [cluster2label[c] for c in kmeans_with_com.labels]
+    )
+
     print(
-        f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
+        f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{a_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com},{a_score_with_com}"
     )
 
     """
