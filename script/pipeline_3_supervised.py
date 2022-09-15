@@ -90,13 +90,15 @@ if __name__ == "__main__":
     private_idxs = list(set(list(range(num_train))) - set(public_idxs))
 
     clf_baseline = RandomForestClassifier()
-    clf_baseline.fit(X_train[public_idxs], y_train[public_idxs])
+    clf_baseline.fit(X_train.T[public_idxs], y_train[public_idxs])
 
     clf_our = RandomForestClassifier()
     clf_our.fit(X_train_with_com[public_idxs], y_train[public_idxs])
 
-    accuracy_baseline = clf_baseline.score(X_train[private_idxs], y_train[private_idxs])
-    accuracy_with_com = clf_baseline.score(
+    accuracy_baseline = clf_baseline.score(
+        X_train.T[private_idxs], y_train[private_idxs]
+    )
+    accuracy_with_com = clf_our.score(
         X_train_with_com[private_idxs], y_train[private_idxs]
     )
 
