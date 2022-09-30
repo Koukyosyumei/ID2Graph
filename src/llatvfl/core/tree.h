@@ -14,16 +14,33 @@ struct Tree
 
     Tree() {}
 
+    /**
+     * @brief Get the root node object
+     *
+     * @return NodeType&
+     */
     NodeType &get_root_node()
     {
         return *dtree;
     }
 
+    /**
+     * @brief Return the prediction of the given data
+     *
+     * @param X
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> predict(vector<vector<float>> &X)
     {
         return nodeapi.predict(&dtree, X);
     }
 
+    /**
+     * @brief Return the predictions of the training data assigned to the node
+     *
+     * @param node
+     * @return vector<pair<vector<int>, vector<vector<float>>>>
+     */
     vector<pair<vector<int>, vector<vector<float>>>> extract_train_prediction_from_node(NodeType &node)
     {
         if (node.is_leaf())
@@ -45,6 +62,11 @@ struct Tree
         }
     }
 
+    /**
+     * @brief Returns the predictions of the training dataset
+     *
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_train_prediction()
     {
         vector<pair<vector<int>, vector<vector<float>>>> result = extract_train_prediction_from_node(dtree);
@@ -60,11 +82,24 @@ struct Tree
         return y_train_pred;
     }
 
+    /**
+     * @brief Print out the structure of this tree
+     *
+     * @param show_purity show purity if true
+     * @param binary_color color each node if true
+     * @param target_party_id
+     * @return string
+     */
     string print(bool show_purity = false, bool binary_color = true, int target_party_id = -1)
     {
         return nodeapi.print(&dtree, show_purity, binary_color, target_party_id);
     }
 
+    /**
+     * @brief Get the average leaf purity of this tree
+     *
+     * @return float
+     */
     float get_leaf_purity()
     {
         return nodeapi.get_leaf_purity(&dtree, dtree.idxs.size());
