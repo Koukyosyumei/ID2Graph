@@ -22,6 +22,11 @@ struct PaillierKeyGenerator
         precision = precision_;
     }
 
+    /**
+     * @brief Generate a pair of secret and public key
+     *
+     * @return pair<PaillierPublicKey, PaillierSecretKey>
+     */
     pair<PaillierPublicKey, PaillierSecretKey> generate_keypair()
     {
         boost::random::random_device rng;
