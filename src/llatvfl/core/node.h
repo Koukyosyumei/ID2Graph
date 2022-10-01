@@ -41,21 +41,21 @@ struct Node
     Node(){};
 
     /**
-     * @brief Get the idxs object
+     * @brief Get the idxs
      *
      * @return vector<int>
      */
     virtual vector<int> get_idxs() = 0;
 
     /**
-     * @brief Get the party id object
+     * @brief Get the party id
      *
      * @return int
      */
     virtual int get_party_id() = 0;
 
     /**
-     * @brief Get the record id object
+     * @brief Get the record id
      *
      * @return int
      */

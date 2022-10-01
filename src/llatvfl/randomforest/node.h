@@ -86,46 +86,91 @@ struct RandomForestNode : Node<RandomForestParty>
         }
     }
 
+    /**
+     * @brief Get the idxs
+     *
+     * @return vector<int>
+     */
     vector<int> get_idxs()
     {
         return idxs;
     }
 
+    /**
+     * @brief Get the party id
+     *
+     * @return int
+     */
     int get_party_id()
     {
         return party_id;
     }
 
+    /**
+     * @brief Get the record id
+     *
+     * @return int
+     */
     int get_record_id()
     {
         return record_id;
     }
 
+    /**
+     * @brief Get the predicted value of this node
+     *
+     * @return vector<float>
+     */
     vector<float> get_val()
     {
         return val;
     }
 
+    /**
+     * @brief Get the gain score of this node
+     *
+     * @return float
+     */
     float get_score()
     {
         return score;
     }
 
+    /**
+     * @brief Get the pointer to left child leaf object
+     *
+     * @return RandomForestNode
+     */
     RandomForestNode get_left()
     {
         return *left;
     }
 
+    /**
+     * @brief Get the pointer to right child leaf object
+     *
+     * @return RandomForestNode
+     */
     RandomForestNode get_right()
     {
         return *right;
     }
 
+    /**
+     * @brief Get the num parties involved in this node
+     *
+     * @return int
+     */
     int get_num_parties()
     {
         return parties->size();
     }
 
+    /**
+     * @brief Compute gini impurity score
+     *
+     * @return float
+     */
     float compute_giniimp()
     {
         vector<float> temp_y_class_cnt(num_classes, 0);
@@ -145,6 +190,11 @@ struct RandomForestNode : Node<RandomForestParty>
         return giniimp;
     }
 
+    /**
+     * @brief Compute the weight of this node
+     *
+     * @return vector<float>
+     */
     vector<float> compute_weight()
     {
         // TODO: support multi class
@@ -156,6 +206,14 @@ struct RandomForestNode : Node<RandomForestParty>
         return class_ratio;
     }
 
+    /**
+     * @brief Find the best split from the specified clients
+     *
+     * @param party_id_start
+     * @param temp_num_parties
+     * @param tot_cnt
+     * @param temp_y_class_cnt
+     */
     void find_split_per_party(int party_id_start, int temp_num_parties, float tot_cnt, vector<float> &temp_y_class_cnt)
     {
         float temp_left_size, temp_right_size;
@@ -222,6 +280,11 @@ struct RandomForestNode : Node<RandomForestParty>
         }
     }
 
+    /**
+     * @brief Find the best split among all thresholds received from all clients
+     *
+     * @return tuple<int, int, int>
+     */
     tuple<int, int, int> find_split()
     {
         float temp_score;
@@ -260,6 +323,13 @@ struct RandomForestNode : Node<RandomForestParty>
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
 
+    /**
+     * @brief Attach children nodes to this node
+     *
+     * @param best_party_id
+     * @param best_col_id
+     * @param best_threshold_id
+     */
     void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id)
     {
         // TODO: remove idx with nan values from right_idxs;
@@ -284,6 +354,12 @@ struct RandomForestNode : Node<RandomForestParty>
         }
     }
 
+    /**
+     * @brief Return true if this node is a leaf
+     *
+     * @return true
+     * @return false
+     */
     bool is_leaf()
     {
         if (is_leaf_flag == -1)
@@ -296,6 +372,12 @@ struct RandomForestNode : Node<RandomForestParty>
         }
     }
 
+    /**
+     * @brief Return true if the data points assigined to this node are pure in terms of their labels.
+     *
+     * @return true
+     * @return false
+     */
     bool is_pure()
     {
         set<float> s{};
