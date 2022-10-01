@@ -97,9 +97,9 @@ if __name__ == "__main__":
     clf_our.fit(X_train_with_com[public_idxs], y_train[public_idxs])
 
     y_pred_baseline = clf_baseline.predict(X_train.T[private_idxs])
-    f1_baseline = f1_score(y_pred_baseline, y_train[private_idxs])
-    y_pred_with_com = clf_our.predict(X_train_with_com.T[private_idxs])
-    f1_with_com = f1_score(y_pred_with_com, y_train[private_idxs])
+    f1_baseline = f1_score(y_pred_baseline, y_train[private_idxs], average="micro")
+    y_pred_with_com = clf_our.predict(X_train_with_com[private_idxs])
+    f1_with_com = f1_score(y_pred_with_com, y_train[private_idxs], average="micro")
     """
     accuracy_baseline = clf_baseline.score(
         X_train.T[private_idxs], y_train[private_idxs]
