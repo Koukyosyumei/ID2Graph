@@ -9,11 +9,39 @@
 #include "tree.h"
 using namespace std;
 
+/**
+ * @brief Base struture for loss functions
+ *
+ */
 struct LossFunc
 {
     LossFunc(){};
+
+    /**
+     * @brief Get the aggregated loss value
+     *
+     * @param y_pred predicted value
+     * @param y ground-truth
+     * @return float
+     */
     virtual float get_loss(vector<vector<float>> &y_pred, vector<float> &y) = 0;
+
+    /**
+     * @brief Get the gradient of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     virtual vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y) = 0;
+
+    /**
+     * @brief Get the hessian of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     virtual vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y) = 0;
 };
 
@@ -21,6 +49,13 @@ struct BCELoss : LossFunc
 {
     BCELoss(){};
 
+    /**
+     * @brief Get the averaged binacy cross entropy loss
+     *
+     * @param y_pred predicted value
+     * @param y ground-truth
+     * @return float
+     */
     float get_loss(vector<vector<float>> &y_pred, vector<float> &y)
     {
         float loss = 0;
@@ -39,6 +74,13 @@ struct BCELoss : LossFunc
         return loss;
     }
 
+    /**
+     * @brief Get the gradient of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y)
     {
         int element_num = y_pred.size();
@@ -48,6 +90,13 @@ struct BCELoss : LossFunc
         return grad;
     }
 
+    /**
+     * @brief Get the hessian of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y)
     {
         int element_num = y_pred.size();
@@ -68,6 +117,13 @@ struct CELoss : LossFunc
     CELoss(){};
     CELoss(int num_classes_) { num_classes = num_classes_; }
 
+    /**
+     * @brief Get the averaged cross entropy loss
+     *
+     * @param y_pred predicted value
+     * @param y ground-truth
+     * @return float
+     */
     float get_loss(vector<vector<float>> &y_pred, vector<float> &y)
     {
         int n = y_pred.size();
@@ -92,6 +148,13 @@ struct CELoss : LossFunc
         return loss;
     }
 
+    /**
+     * @brief Get the gradient of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y)
     {
         int n = y_pred.size();
@@ -118,6 +181,13 @@ struct CELoss : LossFunc
         return grad;
     }
 
+    /**
+     * @brief Get the hessian of the loss w.r.t the predicted value
+     *
+     * @param y_pred
+     * @param y
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y)
     {
         int n = y_pred.size();
