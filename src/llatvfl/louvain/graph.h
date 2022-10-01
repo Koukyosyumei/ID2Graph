@@ -88,12 +88,22 @@ struct Graph
         }
     }
 
+    /**
+     * @brief Add a node
+     *
+     * @param n
+     */
     void add_nose(vector<int> &n)
     {
         nodes.push_back(n);
     }
 
-    // return pointers to the first neighbor and weight of the edge between the node and the neighbor
+    /**
+     * @brief Get pointers to the first neighbor and weight of the edge between the node and the neighbor
+     *
+     * @param node
+     * @return pair<vector<unsigned int>::iterator, vector<float>::iterator>
+     */
     pair<vector<unsigned int>::iterator, vector<float>::iterator> get_neighbors(unsigned int node)
     {
         if (node == 0)
@@ -110,7 +120,12 @@ struct Graph
         }
     }
 
-    // return the number of neighbors of the node
+    /**
+     * @brief Get the number of neighbors of the node
+     *
+     * @param node
+     * @return unsigned int
+     */
     unsigned int get_num_neighbors(unsigned int node)
     {
         if (node == 0)
@@ -123,7 +138,12 @@ struct Graph
         }
     }
 
-    // return the number or the weight of self loops of the node
+    /**
+     * @brief Get the number or the weight of self loops of the node
+     *
+     * @param node
+     * @return float
+     */
     float get_num_selfloops(unsigned int node)
     {
         bool is_weights_size_is_not_zero = weights.size() != 0;
@@ -146,7 +166,12 @@ struct Graph
         return 0.;
     }
 
-    // retrn the weighed degree of the node
+    /**
+     * @brief Get the weighed degree of the node
+     *
+     * @param node
+     * @return float
+     */
     float get_weighted_degree(unsigned int node)
     {
         if (weights.size() == 0)

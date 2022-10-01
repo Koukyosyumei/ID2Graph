@@ -59,7 +59,13 @@ struct Community
         uniform_dist_0_to_1 = uniform_real_distribution<>(0, 1);
     }
 
-    // remove the node from its current community with which it has weights_from_node_to_comm links
+    /**
+     * @brief Remove the node from its current community with which it has weights_from_node_to_comm links
+     *
+     * @param node
+     * @param comm
+     * @param weights_from_node_to_comm
+     */
     void remove(int node, int comm, float weights_from_node_to_comm)
     {
         tot[comm] -= g.get_weighted_degree(node);
@@ -67,7 +73,13 @@ struct Community
         node2community[node] = -1;
     }
 
-    // insert the node in comm with which it shares weights_from_node_to_comm links
+    /**
+     * @brief Insert the node in comm with which it shares weights_from_node_to_comm links
+     *
+     * @param node
+     * @param comm
+     * @param weights_from_node_to_comm
+     */
     void insert(int node, int comm, float weights_from_node_to_comm)
     {
         tot[comm] += g.get_weighted_degree(node);
@@ -75,8 +87,12 @@ struct Community
         node2community[node] = comm;
     }
 
-    // calculate the current modularity
-    // Note that each community consists of only ond node due to contraction
+    /**
+     * @brief Calculate the current modularity.
+     *        Note that each community consists of only ond node due to contraction.
+     *
+     * @return float
+     */
     float modularity()
     {
         float q = 0.;
@@ -92,17 +108,25 @@ struct Community
         return q;
     }
 
-    // compute the gain of modularity if node where inserted in comm
-    // given that node has weights_from_node_to_comm links to comm.  The formula is:
-    // [(In(comm)+2d(node,comm))/2m - ((tot(comm)+deg(node))/2m)^2]-
-    // [In(comm)/2m - (tot(comm)/2m)^2 - (deg(node)/2m)^2]
-    // where In(comm)    = number or total weights of half-links strictly inside comm
-    //       Tot(comm)   = number or total weights of half-links inside or outside comm (sum(degrees))
-    //       d(node,com) = number or total weights of links from node to comm
-    //       deg(node)   = node degree
-    //       m           = number or wegihts of all links
+    /**
+     * @brief Compute the gain of modularity if node where inserted in comm
+     *
+     * @param node
+     * @param comm
+     * @param weights_from_node_to_comm
+     * @param w_degree
+     * @return float
+     */
     float modularity_gain(int node, int comm, float weights_from_node_to_comm, float w_degree)
     {
+        // given that node has weights_from_node_to_comm links to comm.  The formula is:
+        // [(In(comm)+2d(node,comm))/2m - ((tot(comm)+deg(node))/2m)^2]-
+        // [In(comm)/2m - (tot(comm)/2m)^2 - (deg(node)/2m)^2]
+        // where In(comm)    = number or total weights of half-links strictly inside comm
+        //       Tot(comm)   = number or total weights of half-links inside or outside comm (sum(degrees))
+        //       d(node,com) = number or total weights of links from node to comm
+        //       deg(node)   = node degree
+        //       m           = number or wegihts of all links
         // ignore const (1/2m)
         return ((float)weights_from_node_to_comm -
                 (float)tot[comm] * (float)w_degree / (float)g.total_weight);

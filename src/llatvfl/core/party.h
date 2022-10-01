@@ -55,6 +55,15 @@ struct Party
         subsample_col_count = max(1, int(subsample_cols * float(col_count)));
     }
 
+    /**
+     * @brief check the received arguments are valid or not
+     *
+     * @param x_ 2D-matrix representing the local training dataset
+     * @param feature_id_  a vector of feature ids
+     * @param party_id_ id of the party
+     * @param min_leaf_ minimum number of samples assigned to a leaf
+     * @param subsample_cols_ subsample ratio for columns
+     */
     void validate_arguments(vector<vector<float>> &x_, vector<int> &feature_id_, int &party_id_,
                             int min_leaf_, float subsample_cols_)
     {
@@ -95,11 +104,22 @@ struct Party
         }
     }
 
+    /**
+     * @brief Get the lookup table object
+     *
+     * @return unordered_map<int, tuple<int, float, int>>
+     */
     unordered_map<int, tuple<int, float, int>> get_lookup_table()
     {
         return lookup_table;
     }
 
+    /**
+     * @brief Get the threshold candidates object
+     *
+     * @param x_col a feature vector of training dataset with a specific feature
+     * @return vector<float>
+     */
     vector<float> get_threshold_candidates(vector<float> &x_col)
     {
         vector<float> x_col_wo_duplicates = remove_duplicates<float>(x_col);
@@ -109,6 +129,14 @@ struct Party
         return thresholds;
     }
 
+    /**
+     * @brief Return true if the given data goes to left at the node with the specified record id
+     *
+     * @param record_id
+     * @param xi
+     * @return true
+     * @return false
+     */
     bool is_left(int record_id, vector<float> &xi)
     {
         bool flag;
@@ -138,6 +166,10 @@ struct Party
         return flag;
     }
 
+    /**
+     * @brief Subsample some features
+     *
+     */
     void subsample_columns()
     {
         temp_column_subsample.resize(col_count);
@@ -147,6 +179,14 @@ struct Party
         shuffle(temp_column_subsample.begin(), temp_column_subsample.end(), engine);
     }
 
+    /**
+     * @brief Split datasets with the threshold
+     *
+     * @param idxs
+     * @param feature_opt_pos
+     * @param threshold_opt_pos
+     * @return vector<int>
+     */
     vector<int> split_rows(vector<int> &idxs, int feature_opt_pos, int threshold_opt_pos)
     {
         // feature_opt_idがthreshold_opt_id以下のindexを返す
@@ -175,6 +215,13 @@ struct Party
         return left_idxs;
     }
 
+    /**
+     * @brief Insert the optimal feature id and threshold id to the lookup table
+     *
+     * @param feature_opt_pos
+     * @param threshold_opt_pos
+     * @return int
+     */
     int insert_lookup_table(int feature_opt_pos, int threshold_opt_pos)
     {
         int feature_opt_id, missing_dir;

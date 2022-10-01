@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:g OPT; do
+while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:gy OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -84,6 +84,10 @@ while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:g OPT; do
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
     ;;
+  "y")
+    FLG_Y="TRUE"
+    VALUE_Y="$OPTARG"
+    ;;
   "g")
     FLG_G="TRUE"
     VALUE_G="$OPTARG"
@@ -113,6 +117,12 @@ for TEMP_VALUE_L in ${VALUE_L} 0.1 1.0; do
   fi
 done
 
-echo "Start Clustering trial=${VALUE_S}"
-python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
-echo "Clustering is complete trial=${VALUE_S}"
+if [ "${FLG_Y}" = "TRUE" ]; then
+  echo "Start Supervised Learning trial=${VALUE_S}"
+  python3 script/pipeline_3_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+  echo "Supervised Learning is complete trial=${VALUE_S}"
+else
+  echo "Start Clustering trial=${VALUE_S}"
+  python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+  echo "Clustering is complete trial=${VALUE_S}"
+fi
