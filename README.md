@@ -11,51 +11,29 @@
 ## Usage
 
 ```
-    -d : (str) the name of dataset
-    -m : (str) type of the model
-    -r : (int) total number of rounds for training
-    -c : (int) the number of completely secure rounds
-    -a : (float) learning rate of XGBoost
-    -h : (int) depth
-    -j : (int) the number of jobs
-    -n : (int) the number of data records sampled for training
-    -f : (float) the ratio of features owned by the active party
-    -v : (float) the ratio of features owned by the passive party
-    -i : (float) the imlalance of dataset
-    -e : (float) coefficient of edge weight (tau in our paper)
-    -l : (float) epsilon of epsilon-greedy louvain
-    -o : (float) epsilon of LP-MST
-    -b : (float) bound of mutual information
-    -z : wait for timeout of louvain
-    -t : (str) the path to the folder where this script saves all results (default=`result`)
+    -d : (str) the name of dataset.
+    -m : (str) type of the model.
+    -r : (int) total number of rounds for training.
+    -c : (int) the number of completely secure rounds.
+    -a : (float) learning rate of XGBoost.
+    -h : (int) depth.
+    -j : (int) the number of jobs.
+    -n : (int) the number of data records sampled for training.
+    -f : (float) the ratio of features owned by the active party.
+    -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
+    -i : (float) the imlalance of dataset.
+    -e : (float) coefficient of edge weight (tau in our paper).
     -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means)
-    -p : (int) number of parallelly executed experiments
-    -w : (int) include from this node
-    -x : (int) M of LP-MST
-    -g : (optional) draw the extracted graph (default=false)
+    -t : (str) the path to the folder where this script saves all results (default=`result`).
+    -u :
+    -p : (int) number of parallelly executed experiments.
+    -l : (float) epsilon of epsilon-greedy louvain.
+    -z : patience for timeout of louvain.
+    -o : (float) epsilon of LP-MST.
+    -b : (float) bound of mutual information.
+    -w : (int) include from this node.
+    -x : (int) M of LP-MST.
+    -y : (optional) steal the exact label values.
+    -g : (optional) draw the extracted graph.
 ```
-
-
-## Overview of datasets
-
-|glass|heartdisease|waveform|
-|---|---|---|
-|6|5|3|
-
-|label|Give Me Some Credit|UCI Credit Card|ionospere|parkinsons|sonar|spambase|
-|---|---   | --- | --- | --- | --- | --- |
-|0  |139974|23364| 126 |48   | 111 | 2788|
-|1  |10026 |6636 | 225 |147  | 97  | 1813|
-
-### additional dataset
-
-- bankruptcy: taiwan
-- ucicreditcard
-- hcv
-- cnae9
-- spambase
-
-
-
-## Idea
 
