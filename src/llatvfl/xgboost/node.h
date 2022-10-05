@@ -21,6 +21,10 @@
 #include "../utils/utils.h"
 using namespace std;
 
+/**
+ * @brief Node structure of XGBoost
+ *
+ */
 struct XGBoostNode : Node<XGBoostParty>
 {
     vector<XGBoostParty> *parties;
@@ -109,56 +113,120 @@ struct XGBoostNode : Node<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Get the idxs
+     *
+     * @return vector<int>
+     */
     vector<int> get_idxs()
     {
         return idxs;
     }
 
+    /**
+     * @brief Get the party id
+     *
+     * @return int
+     */
     int get_party_id()
     {
         return party_id;
     }
 
+    /**
+     * @brief Get the record id
+     *
+     * @return int
+     */
     int get_record_id()
     {
         return record_id;
     }
 
+    /**
+     * @brief Get the value assigned to this node.
+     *
+     * @return float
+     */
     vector<float> get_val()
     {
         return val;
     }
 
+    /**
+     * @brief Get the evaluation score of this node.
+     *
+     * @return float
+     */
     float get_score()
     {
         return score;
     }
 
+    /**
+     * @brief Get the pointer to the left node.
+     *
+     * @return XGBoostNode
+     */
     XGBoostNode get_left()
     {
         return *left;
     }
 
+    /**
+     * @brief Get the pointer to the right node.
+     *
+     * @return XGBoostNode
+     */
     XGBoostNode get_right()
     {
         return *right;
     }
 
+    /**
+     * @brief Get the num of parties used for this node.
+     *
+     * @return int
+     */
     int get_num_parties()
     {
         return parties->size();
     }
 
+    /**
+     * @brief Compute the weight (val) of this node.
+     *
+     * @return vector<float>
+     */
     vector<float> compute_weight()
     {
         return xgboost_compute_weight(row_count, gradient, hessian, idxs, lam);
     }
 
+    /**
+     * @brief Compute gain of this node.
+     *
+     * @param left_grad
+     * @param right_grad
+     * @param left_hess
+     * @param right_hess
+     * @return float
+     */
     float compute_gain(vector<float> &left_grad, vector<float> &right_grad, vector<float> &left_hess, vector<float> &right_hess)
     {
         return xgboost_compute_gain(left_grad, right_grad, left_hess, right_hess, gamma, lam);
     }
 
+    /**
+     * @brief Find the best split from the specified clients.
+     *
+     * @param party_id_start
+     * @param temp_num_parties
+     * @param sum_grad
+     * @param sum_hess
+     * @param tot_cnt
+     * @param temp_y_class_cnt
+     */
     void find_split_per_party(int party_id_start, int temp_num_parties, vector<float> &sum_grad, vector<float> &sum_hess, float tot_cnt, vector<float> &temp_y_class_cnt)
     {
 
@@ -264,6 +332,11 @@ struct XGBoostNode : Node<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Find the best split among all thresholds received from all clients.
+     *
+     * @return tuple<int, int, int>
+     */
     tuple<int, int, int> find_split()
     {
         vector<float> sum_grad(gradient[0].size(), 0);
@@ -321,6 +394,13 @@ struct XGBoostNode : Node<XGBoostParty>
         return make_tuple(best_party_id, best_col_id, best_threshold_id);
     }
 
+    /**
+     * @brief Generate the children nodes.
+     *
+     * @param best_party_id The index of the best party.
+     * @param best_col_id The index of the best feature.
+     * @param best_threshold_id The index of the best threshold.
+     */
     void make_children_nodes(int best_party_id, int best_col_id, int best_threshold_id)
     {
         // TODO: remove idx with nan values from right_idxs;
@@ -345,6 +425,12 @@ struct XGBoostNode : Node<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Return true if this node is a leaf.
+     *
+     * @return true
+     * @return false
+     */
     bool is_leaf()
     {
         if (is_leaf_flag == -1)
@@ -357,6 +443,12 @@ struct XGBoostNode : Node<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Return true if the node is pure; the assigned labels to this node consist of a unique label.
+     *
+     * @return true
+     * @return false
+     */
     bool is_pure()
     {
         set<float> s{};

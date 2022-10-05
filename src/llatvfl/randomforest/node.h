@@ -207,7 +207,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Find the best split from the specified clients
+     * @brief Find the best split from the specified clients.
      *
      * @param party_id_start
      * @param temp_num_parties
@@ -281,7 +281,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Find the best split among all thresholds received from all clients
+     * @brief Find the best split among all thresholds received from all clients.
      *
      * @return tuple<int, int, int>
      */

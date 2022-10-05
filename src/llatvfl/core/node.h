@@ -10,7 +10,7 @@
 using namespace std;
 
 /**
- * @brief Bast structure for a node.
+ * @brief Base structure for a node.
  *
  * @tparam PartyType Type of party.
  */

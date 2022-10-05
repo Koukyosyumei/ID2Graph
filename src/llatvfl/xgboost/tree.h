@@ -6,9 +6,34 @@
 #include "../core/tree.h"
 #include "node.h"
 
+/**
+ * @brief Tree structure of XGBoost
+ *
+ */
 struct XGBoostTree : Tree<XGBoostNode>
 {
     XGBoostTree() {}
+
+    /**
+     * @brief Train a single XGBoost tree.
+     *
+     * @param parties
+     * @param y
+     * @param num_classes
+     * @param gradient
+     * @param hessian
+     * @param prior
+     * @param min_child_weight
+     * @param lam
+     * @param gamma
+     * @param eps
+     * @param min_leaf
+     * @param depth
+     * @param mi_delta
+     * @param active_party_id
+     * @param use_only_active_party
+     * @param n_job
+     */
     void fit(vector<XGBoostParty> *parties, vector<float> &y, int num_classes,
              vector<vector<float>> &gradient, vector<vector<float>> &hessian,
              vector<float> &prior, float min_child_weight, float lam,

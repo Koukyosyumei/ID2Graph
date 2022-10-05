@@ -4,6 +4,10 @@
 #include "../paillier/paillier.h"
 using namespace std;
 
+/**
+ * @brief Party structure of XGBoost
+ *
+ */
 struct XGBoostParty : Party
 {
     int num_percentile_bin;
@@ -18,6 +22,12 @@ struct XGBoostParty : Party
         num_percentile_bin = num_precentile_bin_;
     }
 
+    /**
+     * @brief Get the vector of threshold candidates
+     *
+     * @param x_col
+     * @return vector<float>
+     */
     vector<float> get_threshold_candidates(vector<float> &x_col)
     {
         if (x_col.size() > num_percentile_bin)
@@ -39,6 +49,15 @@ struct XGBoostParty : Party
         }
     }
 
+    /**
+     * @brief Greedily evaluate all threshold candidates and returns their evaluations.
+     *
+     * @param gradient
+     * @param hessian
+     * @param y
+     * @param idxs
+     * @return vector<vector<tuple<vector<float>, vector<float>, float, vector<float>>>>
+     */
     vector<vector<tuple<vector<float>, vector<float>, float, vector<float>>>> greedy_search_split(vector<vector<float>> &gradient,
                                                                                                   vector<vector<float>> &hessian,
                                                                                                   vector<float> &y,
