@@ -43,6 +43,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
 
+    random.seed(parsed_args.seed)
+    np.random.seed(parsed_args.seed)
+
     clustering_cls = clustering_type2cls[parsed_args.clustering_type]
 
     print("baseline_a,our_a")
