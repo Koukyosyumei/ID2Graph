@@ -17,7 +17,17 @@ pip install -e .
 ./script/build.sh
 ```
 
-### 2.2. Arguments
+### 2.2. Run experiments
+
+You can run all experiments conducted in the paper with [`/script/run.sh`](./script/run.sh).
+
+- Example
+
+```
+./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 300
+```
+
+- Arguments
 
 ```
     -d : (str) the name of dataset.
@@ -44,11 +54,4 @@ pip install -e .
     -x : (int) M of LP-MST.
     -y : (optional) steal the exact label values.
     -g : (optional) draw the extracted graph.
-```
-
-## 3. Examples
-
-```
-./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 300
-./mpiscript/run.sh -d givemesomecredit -m s -r 2 -c 0 -h 3 -i 1 -e 1 -n 5000 -f 0.5 -p 1 -z 300
 ```
