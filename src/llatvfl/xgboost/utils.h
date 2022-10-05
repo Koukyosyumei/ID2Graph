@@ -6,6 +6,17 @@
 #include <cmath>
 using namespace std;
 
+/**
+ * @brief Compute gain of a node from the gradients and hessians.
+ *
+ * @param left_grad
+ * @param right_grad
+ * @param left_hess
+ * @param right_hess
+ * @param gam
+ * @param lam
+ * @return float
+ */
 float inline xgboost_compute_gain(vector<float> left_grad, vector<float> right_grad,
                                   vector<float> left_hess, vector<float> right_hess,
                                   float gam, float lam)
@@ -25,6 +36,16 @@ float inline xgboost_compute_gain(vector<float> left_grad, vector<float> right_g
     return 0.5 * (left_gain + right_gain - base_gain) - gam;
 }
 
+/**
+ * @brief Compute the weight of a node.
+ *
+ * @param row_count
+ * @param gradient
+ * @param hessian
+ * @param idxs
+ * @param lam
+ * @return vector<float>
+ */
 vector<float> inline xgboost_compute_weight(int row_count,
                                             vector<vector<float>> &gradient, vector<vector<float>> &hessian,
                                             vector<int> &idxs, float lam)

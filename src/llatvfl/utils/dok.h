@@ -8,9 +8,12 @@
 #include "../tsl/robin_set.h"
 using namespace std;
 
+/**
+ * @brief Implementation of Szudzik paring.
+ *
+ */
 struct HashPairSzudzik
 {
-    // implementation of szudzik paring
     template <class T1, class T2>
     size_t operator()(const pair<T1, T2> &p) const
     {
@@ -27,6 +30,11 @@ struct HashPairSzudzik
     }
 };
 
+/**
+ * @brief Sparse matrix of DOK format.
+ *
+ * @tparam DataType
+ */
 template <typename DataType>
 struct SparseMatrixDOK
 {
@@ -68,6 +76,13 @@ struct SparseMatrixDOK
         }
     }
 
+    /**
+     * @brief Add value at position (i, j).
+     *
+     * @param i row index
+     * @param j column index
+     * @param w added value
+     */
     void add(unsigned int i, unsigned int j, DataType w)
     {
         if (is_symmetric && (i < j))
@@ -104,6 +119,11 @@ struct SparseMatrixDOK
         }
     }
 
+    /**
+     * @brief Convert a dense matrix to a sparse matrix.
+     *
+     * @param densematrix
+     */
     void from_densematrix(vector<vector<DataType>> &densematrix)
     {
         for (int i = 0; i < dim_row; i++)
@@ -123,6 +143,12 @@ struct SparseMatrixDOK
         }
     }
 
+    /**
+     * @brief Convert this sparse matrix to a dense matrix.
+     *
+     * @param init_val
+     * @return vector<vector<DataType>>
+     */
     vector<vector<DataType>> to_densematrix(DataType init_val = 0)
     {
         vector<vector<DataType>> adj_mat(dim_row, vector<DataType>(dim_column, init_val));
@@ -141,6 +167,11 @@ struct SparseMatrixDOK
         return adj_mat;
     }
 
+    /**
+     * @brief Dump this sparse matrix to a text file.
+     *
+     * @param filepath
+     */
     void save(string filepath)
     {
         ofstream adj_mat_file;

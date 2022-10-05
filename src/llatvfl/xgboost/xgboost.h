@@ -9,6 +9,10 @@
 #include "loss.h"
 using namespace std;
 
+/**
+ * @brief Base XGBoost Model
+ *
+ */
 struct XGBoostBase : TreeModelBase<XGBoostParty>
 {
     float subsample_cols;
@@ -77,24 +81,50 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Get the vector of initial predictions.
+     *
+     * @param y
+     * @return vector<vector<float>>
+     */
     virtual vector<vector<float>> get_init_pred(vector<float> &y) = 0;
 
+    /**
+     * @brief Load the pretrained estimators, a vector of fitted trees.
+     *
+     * @param _estimators
+     */
     void load_estimators(vector<XGBoostTree> &_estimators)
     {
         estimators = _estimators;
     }
 
+    /**
+     * @brief Clear estimators and logging.
+     *
+     */
     void clear()
     {
         estimators.clear();
         logging_loss.clear();
     }
 
+    /**
+     * @brief Get the vector of trained trees.
+     *
+     * @return vector<XGBoostTree>
+     */
     vector<XGBoostTree> get_estimators()
     {
         return estimators;
     }
 
+    /**
+     * @brief Fit the model on the given dataset.
+     *
+     * @param parties
+     * @param y
+     */
     void fit(vector<XGBoostParty> &parties, vector<float> &y)
     {
         int row_count = y.size();
@@ -158,6 +188,12 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         }
     }
 
+    /**
+     * @brief Return the raw predicted values.
+     *
+     * @param X
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> predict_raw(vector<vector<float>> &X)
     {
         int pred_dim;
@@ -190,16 +226,32 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     }
 };
 
+/**
+ * @brief XGBoost Classifier
+ *
+ */
 struct XGBoostClassifier : public XGBoostBase
 {
     using XGBoostBase::XGBoostBase;
 
+    /**
+     * @brief Return the initial predictions.
+     *
+     * @param y
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> get_init_pred(vector<float> &y)
     {
         vector<vector<float>> init_pred(y.size(), vector<float>(num_classes, init_value));
         return init_pred;
     }
 
+    /**
+     * @brief Predict class probailities for a given dataset.
+     *
+     * @param x
+     * @return vector<vector<float>>
+     */
     vector<vector<float>> predict_proba(vector<vector<float>> &x)
     {
         vector<vector<float>> raw_score = predict_raw(x);

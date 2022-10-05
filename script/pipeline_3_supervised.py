@@ -90,10 +90,10 @@ if __name__ == "__main__":
     public_idxs = random.sample(list(range(num_train)), num_train_aux)
     private_idxs = list(set(list(range(num_train))) - set(public_idxs))
 
-    clf_baseline = RandomForestClassifier()
+    clf_baseline = RandomForestClassifier(random_state=parsed_args.seed)
     clf_baseline.fit(X_train.T[public_idxs], y_train[public_idxs])
 
-    clf_our = RandomForestClassifier()
+    clf_our = RandomForestClassifier(random_state=parsed_args.seed)
     clf_our.fit(X_train_with_com[public_idxs], y_train[public_idxs])
 
     y_pred_baseline = clf_baseline.predict(X_train.T[private_idxs])
