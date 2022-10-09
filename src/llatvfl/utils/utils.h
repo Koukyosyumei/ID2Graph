@@ -137,7 +137,7 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
                                          vector<float> &prior,
                                          vector<int> &idxs_within_node)
 {
-    if (mi_delta < 0)
+    if (mi_delta > 0)
     {
         int num_row = y.size();
         int num_idxs_within_node = idxs_within_node.size();
@@ -158,8 +158,6 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
             out_diff = max(out_diff,
                            abs(((entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node)) - prior[c]));
         }
-
-        cout << in_diff << " " << out_diff << " " << mi_delta << endl;
 
         return max(in_diff, out_diff) <= mi_delta;
     }
