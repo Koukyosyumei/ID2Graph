@@ -140,7 +140,7 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
     if (mi_delta < 0)
     {
         int num_row = y.size();
-        int num_idxs_within_node - idxs_within_node.size();
+        int num_idxs_within_node = idxs_within_node.size();
 
         vector<float> y_class_cnt_within_node(num_classes, 0);
         for (int j = 0; j < num_idxs_within_node; j++)
