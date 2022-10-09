@@ -159,6 +159,8 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
                            abs(((entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node)) - prior[c]));
         }
 
+        cout << in_diff << " " << out_diff << " " << mi_delta << endl;
+
         return max(in_diff, out_diff) <= mi_delta;
     }
     else
