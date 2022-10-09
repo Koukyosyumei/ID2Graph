@@ -31,6 +31,6 @@ struct RandomForestTree : Tree<RandomForestNode>
         {
             parties->at(i).subsample_columns();
         }
-        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_delta, active_party_id, n_job);
+        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_delta, active_party_id, false, n_job);
     }
 };

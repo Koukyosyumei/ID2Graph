@@ -299,17 +299,6 @@ struct XGBoostNode : Node<XGBoostParty>
                         continue;
                     }
 
-                    if (is_satisfied_with_mi_bound_cond(prior, mi_delta,
-                                                        temp_left_class_cnt,
-                                                        temp_right_class_cnt,
-                                                        entire_class_cnt,
-                                                        temp_left_size,
-                                                        temp_right_size,
-                                                        entire_datasetsize))
-                    {
-                        continue;
-                    }
-
                     for (int c = 0; c < grad_dim; c++)
                     {
                         temp_right_grad[c] = sum_grad[c] - temp_left_grad[c];
@@ -411,14 +400,19 @@ struct XGBoostNode : Node<XGBoostParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
+        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_delta, y,
+                                                                        entire_class_cnt, prior, left_idxs);
+        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_delta, y,
+                                                                         entire_class_cnt, prior, right_idxs);
+
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
-                               lam, gamma, eps, depth - 1, mi_delta, active_party_id, use_only_active_party, n_job);
+                               lam, gamma, eps, depth - 1, mi_delta, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new XGBoostNode(parties, y, num_classes, gradient, hessian, right_idxs, prior, min_child_weight,
-                                lam, gamma, eps, depth - 1, mi_delta, active_party_id, use_only_active_party, n_job);
+                                lam, gamma, eps, depth - 1, mi_delta, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

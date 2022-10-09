@@ -131,34 +131,38 @@ inline vector<int> get_num_parties_per_process(int n_job, int num_parties)
     return num_parties_per_thread;
 }
 
-inline bool is_satisfied_with_mi_bound_cond(vector<float> &prior, float mi_delta,
-                                            vector<float> &temp_left_class_cnt,
-                                            vector<float> &temp_right_class_cnt,
-                                            vector<float> &entire_class_cnt,
-                                            float temp_left_size,
-                                            float temp_right_size,
-                                            float entire_datasetsize)
+inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
+                                         vector<float> &y,
+                                         vector<float> &entire_class_cnt,
+                                         vector<float> &prior,
+                                         vector<int> &idxs_within_node)
 {
-    int num_classes = temp_left_class_cnt.size();
-    if (mi_delta > 0)
+    if (mi_delta < 0)
     {
-        float left_in_diff = 0;
-        float left_out_diff = 0;
-        float right_in_diff = 0;
-        float right_out_diff = 0;
-        for (int c = 0; c < num_classes; c++)
+        int num_row = y.size();
+        int num_idxs_within_node - idxs_within_node.size();
+
+        vector<float> y_class_cnt_within_node(num_classes, 0);
+        for (int j = 0; j < num_idxs_within_node; j++)
         {
-            left_in_diff = max(left_in_diff, abs(temp_left_class_cnt[c] / temp_left_size - prior[c]));
-            left_out_diff = max(left_out_diff, (entire_class_cnt[c] - temp_left_class_cnt[c]) / (entire_datasetsize - temp_left_size));
-            right_in_diff = max(right_in_diff, abs(temp_right_class_cnt[c] / temp_right_size - prior[c]));
-            right_out_diff = max(right_out_diff, (entire_class_cnt[c] - temp_right_class_cnt[c]) / (entire_datasetsize - temp_right_size));
+            y_class_cnt_within_node[int(y[idxs_within_node[j]])] += 1;
         }
 
-        return ((left_in_diff > mi_delta) | (left_out_diff > mi_delta) |
-                (right_in_diff > mi_delta) | (right_out_diff > mi_delta));
+        float in_diff = 0;
+        float out_diff = 0;
+
+        for (int c = 0; c < num_classes; c++)
+        {
+            in_diff = max(in_diff,
+                          abs(y_class_cnt_within_node[c] / num_idxs_within_node - prior[c]));
+            out_diff = max(out_diff,
+                           abs(((entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node)) - prior[c]));
+        }
+
+        return max(in_diff, out_diff) <= mi_delta;
     }
     else
     {
-        return false;
+        return true;
     }
 }
