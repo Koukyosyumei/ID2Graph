@@ -5,6 +5,12 @@
 #include <set>
 using namespace std;
 
+/**
+ * @brief Sigmoid function
+ *
+ * @param x
+ * @return float
+ */
 inline float sigmoid(float x)
 {
     float sigmoid_range = 34.538776394910684;
@@ -16,6 +22,12 @@ inline float sigmoid(float x)
         return 1.0 / (1.0 + exp(-1 * x));
 }
 
+/**
+ * @brief Softmax function
+ *
+ * @param x
+ * @return vector<float>
+ */
 inline vector<float> softmax(vector<float> x)
 {
     int n = x.size();
@@ -38,6 +50,13 @@ inline vector<float> softmax(vector<float> x)
     return output;
 }
 
+/**
+ * @brief Return unique elements of the given vector
+ *
+ * @tparam T
+ * @param inData
+ * @return vector<T>
+ */
 template <typename T>
 inline vector<T> remove_duplicates(vector<T> &inData)
 {
@@ -59,6 +78,14 @@ static inline float Lerp(T v0, T v1, T t)
     return (1 - t) * v0 + t * v1;
 }
 
+/**
+ * @brief Return quantiles
+ *
+ * @tparam T
+ * @param inData
+ * @param probs
+ * @return std::vector<T>
+ */
 template <typename T>
 static inline std::vector<T> Quantile(const std::vector<T> &inData, const std::vector<T> &probs)
 {

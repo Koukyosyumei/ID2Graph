@@ -2,10 +2,14 @@
 #include "../core/party.h"
 using namespace std;
 
+/**
+ * @brief Party structure of Ranfom Forest
+ *
+ */
 struct RandomForestParty : Party
 {
     RandomForestParty() {}
-    RandomForestParty(vector<vector<float> > &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
+    RandomForestParty(vector<vector<float>> &x_, int num_classes_, vector<int> &feature_id_, int &party_id_,
                       int min_leaf_, float subsample_cols_,
                       int seed_ = 0) : Party(x_, num_classes_, feature_id_, party_id_,
                                              min_leaf_, subsample_cols_,
@@ -13,6 +17,12 @@ struct RandomForestParty : Party
     {
     }
 
+    /**
+     * @brief Get the vector of threshold candidates
+     *
+     * @param x_col
+     * @return vector<float>
+     */
     vector<float> get_threshold_candidates(vector<float> &x_col)
     {
         vector<float> x_col_wo_duplicates = remove_duplicates<float>(x_col);
@@ -22,13 +32,20 @@ struct RandomForestParty : Party
         return threshold_candidates;
     }
 
-    vector<vector<pair<float, vector<float> > > > greedy_search_split(vector<int> &idxs, vector<float> &y)
+    /**
+     * @brief Greedily evaluate all threshold candidates and returns their evaluations.
+     *
+     * @param idxs
+     * @param y
+     * @return vector<vector<pair<float, vector<float>>>>
+     */
+    vector<vector<pair<float, vector<float>>>> greedy_search_split(vector<int> &idxs, vector<float> &y)
     {
         // feature_id -> [(grad hess)]
         // the threshold of split_cancidates_leftsize_leftposcnt[i][j] = temp_thresholds[i][j]
         int num_thresholds = subsample_col_count;
-        vector<vector<pair<float, vector<float> > > > split_cancidates_leftsize_leftposcnt(num_thresholds);
-        temp_thresholds = vector<vector<float> >(num_thresholds);
+        vector<vector<pair<float, vector<float>>>> split_cancidates_leftsize_leftposcnt(num_thresholds);
+        temp_thresholds = vector<vector<float>>(num_thresholds);
 
         int row_count = idxs.size();
         int recoed_id = 0;
