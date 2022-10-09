@@ -345,12 +345,14 @@ struct RandomForestNode : Node<RandomForestParty>
 
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
                                     depth - 1, prior, mi_delta, active_party_id, !left_is_satisfied_lmir_cond, n_job);
+        left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond;
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, num_classes, right_idxs,
                                      depth - 1, prior, mi_delta, active_party_id, !right_is_satisfied_lmir_cond, n_job);
+        right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond;
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
