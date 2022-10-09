@@ -408,7 +408,7 @@ struct XGBoostNode : Node<XGBoostParty>
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
                                lam, gamma, eps, depth - 1, mi_delta, active_party_id,
                                (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
-        left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond;
+        left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
@@ -416,7 +416,7 @@ struct XGBoostNode : Node<XGBoostParty>
         right = new XGBoostNode(parties, y, num_classes, gradient, hessian, right_idxs, prior, min_child_weight,
                                 lam, gamma, eps, depth - 1, mi_delta, active_party_id,
                                 (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
-        right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond;
+        right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
