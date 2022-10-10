@@ -141,6 +141,7 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
 
     if (xi > 0)
     {
+        /*
         int num_row = y.size();
         int num_idxs_within_node = idxs_within_node.size();
 
@@ -157,7 +158,6 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
         float Nc_div_N;
         float Nc_m_nc_div_N_m_n;
 
-        /*
         for (int c = 0; c < num_classes; c++)
         {
             nc_div_n = y_class_cnt_within_node[c] / float(num_idxs_within_node);
@@ -167,9 +167,10 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
             in_kl_divergence += nc_div_n * log(eps + nc_div_n / Nc_div_N);
             out_kl_divergence += Nc_m_nc_div_N_m_n * log(eps + Nc_m_nc_div_N_m_n / Nc_div_N);
         }
-        */
 
         return max(in_kl_divergence, out_kl_divergence) <= xi;
+        */
+        return true;
     }
     else
     {
