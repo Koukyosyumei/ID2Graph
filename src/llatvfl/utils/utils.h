@@ -159,9 +159,9 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
 
         for (int c = 0; c < num_classes; c++)
         {
-            nc_div_n = (y_class_cnt_within_node[c] / num_idxs_within_node);
+            nc_div_n = y_class_cnt_within_node[c] / float(num_idxs_within_node);
             Nc_div_N = prior[c];
-            Nc_m_nc_div_N_m_n = (entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node);
+            Nc_m_nc_div_N_m_n = (entire_class_cnt[c] - y_class_cnt_within_node[c]) / float(num_row - num_idxs_within_node);
 
             in_kl_divergence += nc_div_n * log(eps + nc_div_n / Nc_div_N);
             out_kl_divergence += Nc_m_nc_div_N_m_n * log(eps + Nc_m_nc_div_N_m_n / Nc_div_N);
