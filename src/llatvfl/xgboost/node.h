@@ -64,6 +64,8 @@ struct XGBoostNode : Node<XGBoostParty>
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
 
+        lmir_flag_exclude_passive_parties = use_only_active_party;
+
         row_count = idxs.size();
         num_parties = parties->size();
 
@@ -407,16 +409,14 @@ struct XGBoostNode : Node<XGBoostParty>
 
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
                                lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                               (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
-        left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
+                               (use_only_active_party || (!left_is_satisfied_lmir_cond)), n_job);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new XGBoostNode(parties, y, num_classes, gradient, hessian, right_idxs, prior, min_child_weight,
                                 lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                                (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
-        right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
+                                (use_only_active_party || (!right_is_satisfied_lmir_cond)), n_job);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

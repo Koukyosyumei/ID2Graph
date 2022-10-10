@@ -46,8 +46,10 @@ struct RandomForestNode : Node<RandomForestParty>
         mi_bound = mi_bound_;
         prior = prior_;
         active_party_id = active_party_id_;
-        n_job = n_job_;
         use_only_active_party = use_only_active_party_;
+        n_job = n_job_;
+
+        lmir_flag_exclude_passive_parties = use_only_active_party;
 
         row_count = idxs.size();
         num_parties = parties->size();
@@ -345,14 +347,12 @@ struct RandomForestNode : Node<RandomForestParty>
 
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
                                     depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
-        left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, num_classes, right_idxs,
                                      depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
-        right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
