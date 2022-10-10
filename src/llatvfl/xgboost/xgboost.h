@@ -32,8 +32,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     bool save_loss;
     int num_classes;
 
-    float upsilon_Y;
-
     LossFunc *lossfunc_obj;
 
     vector<vector<float>> init_pred;

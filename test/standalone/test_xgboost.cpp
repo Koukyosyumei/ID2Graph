@@ -80,8 +80,6 @@ TEST(XGBoost, XGBoostClassifierTest)
     // --- Check Training --- //
     clf.fit(parties, y);
 
-    ASSERT_EQ(clf.upsilon_Y, 0.375);
-
     ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
     ASSERT_EQ(parties[1].get_lookup_table().size(), 2);
 

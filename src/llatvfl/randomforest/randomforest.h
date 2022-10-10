@@ -22,8 +22,6 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int n_job;
     int seed;
 
-    float upsilon_Y;
-
     vector<RandomForestTree> estimators;
 
     RandomForestClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
