@@ -140,9 +140,6 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
             prior[c] /= float(row_count);
         }
 
-        upsilon_Y = *min_element(prior.begin(), prior.end());
-        float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
-
         vector<vector<float>> base_pred;
         if (estimators.size() == 0)
         {
@@ -172,7 +169,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
 
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, y, num_classes, grad, hess, prior, min_child_weight,
-                              lam, gamma, eps, min_leaf, depth, mi_delta,
+                              lam, gamma, eps, min_leaf, depth, mi_bound,
                               active_party_id, (completelly_secure_round > i), n_job);
             vector<vector<float>> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)

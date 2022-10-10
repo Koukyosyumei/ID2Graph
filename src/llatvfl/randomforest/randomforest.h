@@ -77,13 +77,10 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
             prior[c] /= float(row_count);
         }
 
-        upsilon_Y = *min_element(prior.begin(), prior.end());
-        float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
-
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
+            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_bound, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }

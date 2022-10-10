@@ -27,7 +27,7 @@ struct RandomForestNode : Node<RandomForestParty>
     RandomForestNode *left, *right;
 
     float giniimp;
-    float mi_delta;
+    float mi_bound;
     vector<float> prior;
 
     float entire_datasetsize = 0;
@@ -35,7 +35,7 @@ struct RandomForestNode : Node<RandomForestParty>
 
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_, int num_classes_,
-                     vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_delta_,
+                     vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_bound_,
                      int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
@@ -43,7 +43,7 @@ struct RandomForestNode : Node<RandomForestParty>
         num_classes = num_classes_;
         idxs = idxs_;
         depth = depth_;
-        mi_delta = mi_delta_;
+        mi_bound = mi_bound_;
         prior = prior_;
         active_party_id = active_party_id_;
         n_job = n_job_;
@@ -338,20 +338,20 @@ struct RandomForestNode : Node<RandomForestParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_delta, y,
+        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
                                                                         entire_class_cnt, prior, left_idxs);
-        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_delta, y,
+        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
                                                                          entire_class_cnt, prior, right_idxs);
 
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
-                                    depth - 1, prior, mi_delta, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
+                                    depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
         left->lmir_flag_exclude_passive_parties = !left_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, num_classes, right_idxs,
-                                     depth - 1, prior, mi_delta, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
+                                     depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
         right->lmir_flag_exclude_passive_parties = !right_is_satisfied_lmir_cond || lmir_flag_exclude_passive_parties;
         if (right->is_leaf_flag == 1)
         {

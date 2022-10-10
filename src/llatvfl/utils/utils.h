@@ -131,13 +131,13 @@ inline vector<int> get_num_parties_per_process(int n_job, int num_parties)
     return num_parties_per_thread;
 }
 
-inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
+inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
                                          vector<float> &y,
                                          vector<float> &entire_class_cnt,
                                          vector<float> &prior,
                                          vector<int> &idxs_within_node)
 {
-    if (mi_delta > 0)
+    if (xi > 0)
     {
         int num_row = y.size();
         int num_idxs_within_node = idxs_within_node.size();
@@ -148,18 +148,24 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float mi_delta,
             y_class_cnt_within_node[int(y[idxs_within_node[j]])] += 1;
         }
 
-        float in_diff = 0;
-        float out_diff = 0;
+        float in_kl_divergence = 0;
+        float out_kl_divergence = 0;
+
+        float nc_div_n;
+        float Nc_div_N;
+        float Nc_m_nc_div_N_m_n;
 
         for (int c = 0; c < num_classes; c++)
         {
-            in_diff = max(in_diff,
-                          abs(y_class_cnt_within_node[c] / num_idxs_within_node - prior[c]));
-            out_diff = max(out_diff,
-                           abs(((entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node)) - prior[c]));
+            nc_div_n = (y_class_cnt_within_node[c] / num_idxs_within_node);
+            Nc_div_N = prior[c];
+            Nc_m_nc_div_N_m_n = (entire_class_cnt[c] - y_class_cnt_within_node[c]) / (num_row - num_idxs_within_node);
+
+            in_kl_divergence += nc_div_n * log(nc_div_n / Nc_div_N);
+            out_kl_divergence += Nc_m_nc_div_N_m_n * log(Nc_m_nc_div_N_m_n / Nc_div_N);
         }
 
-        return max(in_diff, out_diff) <= mi_delta;
+        return max(in_kl_divergence, out_kl_divergence) <= xi;
     }
     else
     {
