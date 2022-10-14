@@ -119,10 +119,10 @@ done
 
 if [ "${FLG_Y}" = "TRUE" ]; then
   echo "Start Supervised Learning trial=${VALUE_S}"
-  python3 script/pipeline_3_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+  python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Supervised Learning is complete trial=${VALUE_S}"
 else
   echo "Start Clustering trial=${VALUE_S}"
-  python3 script/pipeline_3_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+  python3 script/pipeline_2_clustering.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Clustering is complete trial=${VALUE_S}"
 fi

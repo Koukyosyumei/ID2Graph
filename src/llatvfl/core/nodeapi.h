@@ -200,6 +200,10 @@ struct NodeAPI
             node_info += to_string(node->get_party_id());
             node_info += ", ";
             node_info += to_string(node->get_record_id());
+            if (node->lmir_flag_exclude_passive_parties)
+            {
+                node_info += " *";
+            }
             node_info = prefix + "|-- " + node_info;
 
             string next_prefix = "";

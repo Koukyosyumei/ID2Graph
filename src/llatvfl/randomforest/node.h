@@ -23,10 +23,11 @@ using namespace std;
 struct RandomForestNode : Node<RandomForestParty>
 {
     vector<RandomForestParty> *parties;
+    bool use_only_active_party;
     RandomForestNode *left, *right;
 
     float giniimp;
-    float mi_delta;
+    float mi_bound;
     vector<float> prior;
 
     float entire_datasetsize = 0;
@@ -34,18 +35,21 @@ struct RandomForestNode : Node<RandomForestParty>
 
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_, int num_classes_,
-                     vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_delta_,
-                     int active_party_id_ = -1, int n_job_ = 1)
+                     vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_bound_,
+                     int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
         y = y_;
         num_classes = num_classes_;
         idxs = idxs_;
         depth = depth_;
-        mi_delta = mi_delta_;
+        mi_bound = mi_bound_;
         prior = prior_;
         active_party_id = active_party_id_;
+        use_only_active_party = use_only_active_party_;
         n_job = n_job_;
+
+        lmir_flag_exclude_passive_parties = use_only_active_party;
 
         row_count = idxs.size();
         num_parties = parties->size();
@@ -251,17 +255,6 @@ struct RandomForestNode : Node<RandomForestParty>
                         temp_right_class_cnt[c] = temp_y_class_cnt[c] - temp_left_class_cnt[c];
                     }
 
-                    if (is_satisfied_with_mi_bound_cond(prior, mi_delta,
-                                                        temp_left_class_cnt,
-                                                        temp_right_class_cnt,
-                                                        entire_class_cnt,
-                                                        temp_left_size,
-                                                        temp_right_size,
-                                                        entire_datasetsize))
-                    {
-                        continue;
-                    }
-
                     temp_left_giniimp = calc_giniimp(temp_left_size, temp_left_class_cnt);
                     temp_right_giniimp = calc_giniimp(temp_right_size, temp_right_class_cnt);
                     temp_giniimp = temp_left_giniimp * (temp_left_size / tot_cnt) +
@@ -296,27 +289,34 @@ struct RandomForestNode : Node<RandomForestParty>
             temp_y_class_cnt[int(y[idxs[r]])] += 1;
         }
 
-        if (n_job == 1)
+        if (use_only_active_party)
         {
-            find_split_per_party(0, num_parties, tot_cnt, temp_y_class_cnt);
+            find_split_per_party(active_party_id, 1, tot_cnt, temp_y_class_cnt);
         }
         else
         {
-            vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
-
-            int cnt_parties = 0;
-            vector<thread> threads_parties;
-            for (int i = 0; i < n_job; i++)
+            if (n_job == 1)
             {
-                int local_num_parties = num_parties_per_thread[i];
-                thread temp_th([this, cnt_parties, local_num_parties, tot_cnt, &temp_y_class_cnt]
-                               { this->find_split_per_party(cnt_parties, local_num_parties, tot_cnt, temp_y_class_cnt); });
-                threads_parties.push_back(move(temp_th));
-                cnt_parties += num_parties_per_thread[i];
+                find_split_per_party(0, num_parties, tot_cnt, temp_y_class_cnt);
             }
-            for (int i = 0; i < num_parties; i++)
+            else
             {
-                threads_parties[i].join();
+                vector<int> num_parties_per_thread = get_num_parties_per_process(n_job, num_parties);
+
+                int cnt_parties = 0;
+                vector<thread> threads_parties;
+                for (int i = 0; i < n_job; i++)
+                {
+                    int local_num_parties = num_parties_per_thread[i];
+                    thread temp_th([this, cnt_parties, local_num_parties, tot_cnt, &temp_y_class_cnt]
+                                   { this->find_split_per_party(cnt_parties, local_num_parties, tot_cnt, temp_y_class_cnt); });
+                    threads_parties.push_back(move(temp_th));
+                    cnt_parties += num_parties_per_thread[i];
+                }
+                for (int i = 0; i < num_parties; i++)
+                {
+                    threads_parties[i].join();
+                }
             }
         }
         score = best_score;
@@ -340,14 +340,19 @@ struct RandomForestNode : Node<RandomForestParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
+        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
+                                                                        entire_class_cnt, prior, left_idxs);
+        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
+                                                                         entire_class_cnt, prior, right_idxs);
+
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
-                                    depth - 1, prior, mi_delta, active_party_id);
+                                    depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, num_classes, right_idxs,
-                                     depth - 1, prior, mi_delta, active_party_id);
+                                     depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

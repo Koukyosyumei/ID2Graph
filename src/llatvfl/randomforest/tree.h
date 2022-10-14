@@ -13,7 +13,7 @@ struct RandomForestTree : Tree<RandomForestNode>
     RandomForestTree() {}
     void fit(vector<RandomForestParty> *parties, vector<float> &y,
              int num_classes, int min_leaf, int depth, vector<float> &prior,
-             float max_samples_ratio = 1.0, float mi_delta = 0,
+             float max_samples_ratio = 1.0, float mi_bound = 0,
              int active_party_id = -1, int n_job = 1, int seed = 0)
     {
         vector<int> idxs(y.size());
@@ -31,6 +31,6 @@ struct RandomForestTree : Tree<RandomForestNode>
         {
             parties->at(i).subsample_columns();
         }
-        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_delta, active_party_id, n_job);
+        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_bound, active_party_id, false, n_job);
     }
 };

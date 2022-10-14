@@ -55,3 +55,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -y : (optional) steal the exact label values.
     -g : (optional) draw the extracted graph.
 ```
+
+### Google colab
+
+You can run all of our experiments on Google colab. Please use a runtime with high memory.

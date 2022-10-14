@@ -45,6 +45,10 @@ struct LossFunc
     virtual vector<vector<float>> get_hess(vector<vector<float>> &y_pred, vector<float> &y) = 0;
 };
 
+/**
+ * @brief Implementation of Binary Closs Entropy Loss
+ *
+ */
 struct BCELoss : LossFunc
 {
     BCELoss(){};
@@ -110,6 +114,10 @@ struct BCELoss : LossFunc
     }
 };
 
+/**
+ * @brief Implementation of Cross Entropy Loss
+ *
+ */
 struct CELoss : LossFunc
 {
     int num_classes;
