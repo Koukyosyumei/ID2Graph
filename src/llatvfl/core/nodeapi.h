@@ -73,6 +73,18 @@ struct NodeAPI
         }
     }
 
+    string to_json(NodeType *node)
+    {
+        string res = "{name: " + to_string(node->record_id) +
+                     ", value: " + get_leaf_purity(node, node->y.size());
+        if (!node->is_leaf())
+        {
+            res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
+        }
+        res += "}";
+        return res;
+    }
+
     /**
      * @brief Returns the string information of the leaf node for print-out.
      *
@@ -93,16 +105,7 @@ struct NodeAPI
             }
             else
             {
-                int cnt_zero = 0;
-                for (int i = 0; i < node->idxs.size(); i++)
-                {
-                    if (node->y[node->idxs[i]] == 0)
-                    {
-                        cnt_zero += 1;
-                    }
-                }
-                float purity = max(float(cnt_zero) / float(cnt_idxs),
-                                   1 - float(cnt_zero) / float(cnt_idxs));
+                float purity = get_leaf_purity(node, node->y.size());
                 node_info += ", ";
 
                 if (binary_color)
@@ -120,11 +123,6 @@ struct NodeAPI
                         node_info += "\033[31m";
                     }
                     node_info += to_string(purity);
-                    node_info += " (";
-                    node_info += to_string(cnt_zero);
-                    node_info += ", ";
-                    node_info += to_string(cnt_idxs - cnt_zero);
-                    node_info += ")";
                     node_info += "\033[0m";
                 }
                 else

@@ -143,4 +143,6 @@ TEST(RandomForest, RandomForestClassifierTest)
             ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
         }
     }
+
+    cout << clf.estimators[0].to_json() << endl;
 }

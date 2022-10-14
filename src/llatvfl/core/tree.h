@@ -82,6 +82,11 @@ struct Tree
         return y_train_pred;
     }
 
+    string to_json()
+    {
+        return nodeapi.to_json(&dtree);
+    }
+
     /**
      * @brief Print out the structure of this tree
      *
