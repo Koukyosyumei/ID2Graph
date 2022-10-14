@@ -76,7 +76,7 @@ struct NodeAPI
     string to_json(NodeType *node)
     {
         string res = "{name: " + to_string(node->record_id) +
-                     ", value: " + get_leaf_purity(node, node->y.size());
+                     ", value: " + to_string(get_leaf_purity(node, node->y.size()));
         if (!node->is_leaf())
         {
             res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
