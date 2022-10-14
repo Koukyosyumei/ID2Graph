@@ -250,6 +250,7 @@ int main(int argc, char *argv[])
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
         result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+        result_file << clf.estimators[i].to_json().c_str() << "\n";
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
