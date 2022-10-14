@@ -76,7 +76,7 @@ struct NodeAPI
     string to_json(NodeType *node)
     {
         string res = "{name: " + to_string(node->record_id) +
-                     ", value: " + to_string(get_leaf_purity(node, node->y.size()));
+                     ", value: " + to_string(get_leaf_purity(node, node->idxs.size()));
         if (!node->is_leaf())
         {
             res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
@@ -105,7 +105,7 @@ struct NodeAPI
             }
             else
             {
-                float purity = get_leaf_purity(node, node->y.size());
+                float purity = get_leaf_purity(node, node->idxs.size());
                 node_info += ", ";
 
                 if (binary_color)
