@@ -75,13 +75,13 @@ struct NodeAPI
 
     string to_json(NodeType *node)
     {
-        string res;
+        string res = "";
 
         if (node->is_leaf())
         {
-            res = "{name: *" +
-                  ", value: " + to_string(node->record_id) +
-                  ", nodeSettings: {fill: am5.color('#ADE199')}";
+            res += "{name: -" +
+                   ", value: " + to_string(node->record_id) +
+                   ", nodeSettings: {fill: am5.color('#ADE199')}";
         }
         else
         {
@@ -95,8 +95,8 @@ struct NodeAPI
                 party_name = "Passive";
             }
 
-            res = "{name: " + party_name +
-                  ", value: " + to_string(node->record_id);
+            res += "{name: " + party_name +
+                   ", value: " + to_string(node->record_id);
 
             if (node->lmir_flag_exclude_passive_parties)
             {
