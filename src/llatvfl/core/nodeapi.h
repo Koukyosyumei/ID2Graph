@@ -91,7 +91,7 @@ struct NodeAPI
             }
             else
             {
-                party_name = "7Passive'";
+                party_name = "'Passive'";
             }
 
             res += "{name: " + party_name +
