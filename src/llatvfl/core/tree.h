@@ -121,6 +121,7 @@ struct Tree
                                 "valueField: 'value',\n                categoryField: 'name',\n                "
                                 "childDataField: 'children',\n                "
                                 "orientation: 'vertical'\n            })\n        );\n\n        "
+                                "series.circles.template.setAll({templateField: 'nodeSettings'});\n"
                                 "series.data.setAll(data);\n        "
                                 "series.set('selectedDataItem', series.dataItems[0]);\n\n\n        "
                                 "var exporting = am5plugins_exporting.Exporting.new(root, {\n            "

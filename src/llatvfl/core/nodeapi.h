@@ -80,11 +80,11 @@ struct NodeAPI
 
         if (node->lmir_flag_exclude_passive_parties)
         {
-            res += ", nodeSettings: {fill: am5.color(#E199AD)}";
+            res += ", nodeSettings: {fill: am5.color('#E199AD')}";
         }
         else
         {
-            res += ", nodeSettings: {fill: am5.color(#67B7DC)}";
+            res += ", nodeSettings: {fill: am5.color('#67B7DC')}";
         }
 
         if (!node->is_leaf())
