@@ -79,21 +79,12 @@ struct NodeAPI
 
         if (node->is_leaf())
         {
-            res += "{name: '*', value: " + to_string(node->record_id) +
+            res += "{name: '*', value: -1" +
                    ", nodeSettings: {fill: am5.color('#ADE199')}";
         }
         else
         {
-            string party_name;
-            if (node->party_id == 0)
-            {
-                party_name = "'Active'";
-            }
-            else
-            {
-                party_name = "'Passive'";
-            }
-
+            string party_name = to_string(node->party_id + 1);
             res += "{name: " + party_name +
                    ", value: " + to_string(node->record_id);
 
