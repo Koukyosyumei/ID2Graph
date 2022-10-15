@@ -75,16 +75,27 @@ struct NodeAPI
 
     string to_json(NodeType *node)
     {
-        string res = "{name: " + to_string(node->party_id + 1) +
-                     ", value: " + to_string(node->record_id);
+        string res;
 
-        if (node->lmir_flag_exclude_passive_parties)
+        if (node->is_leaf())
         {
-            res += ", nodeSettings: {fill: am5.color('#E199AD')}";
+            res = = "{name: *" +
+                    ", value: " + to_string(node->record_id) +
+                    ", nodeSettings: {fill: am5.color('#ADE199')}";
         }
         else
         {
-            res += ", nodeSettings: {fill: am5.color('#67B7DC')}";
+            res = = "{name: " + to_string(node->party_id + 1) +
+                    ", value: " + to_string(node->record_id);
+
+            if (node->lmir_flag_exclude_passive_parties)
+            {
+                res += ", nodeSettings: {fill: am5.color('#E199AD')}";
+            }
+            else
+            {
+                res += ", nodeSettings: {fill: am5.color('#67B7DC')}";
+            }
         }
 
         if (!node->is_leaf())
