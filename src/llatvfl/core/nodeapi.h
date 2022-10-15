@@ -79,7 +79,7 @@ struct NodeAPI
 
         if (node->is_leaf())
         {
-            res += "{name: '*', value: -1" +
+            res += "{name: '*', value: " + to_string(node->record_id) +
                    ", nodeSettings: {fill: am5.color('#ADE199')}";
         }
         else
