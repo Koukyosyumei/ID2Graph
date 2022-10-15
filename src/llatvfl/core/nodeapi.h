@@ -85,7 +85,17 @@ struct NodeAPI
         }
         else
         {
-            res = = "{name: " + to_string(node->party_id + 1) +
+            string party_name;
+            if (node->party_id == 0)
+            {
+                party_name = "Active";
+            }
+            else
+            {
+                party_name = "Passive";
+            }
+
+            res = = "{name: " + party_name +
                     ", value: " + to_string(node->record_id);
 
             if (node->lmir_flag_exclude_passive_parties)
