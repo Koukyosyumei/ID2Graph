@@ -75,8 +75,18 @@ struct NodeAPI
 
     string to_json(NodeType *node)
     {
-        string res = "{name: " + to_string(node->record_id) +
-                     ", value: " + to_string(get_leaf_purity(node, node->idxs.size()));
+        string res = "{name: " + to_string(node->party_id + 1) +
+                     ", value: " + to_string(node->record_id);
+
+        if (node->lmir_flag_exclude_passive_parties)
+        {
+            res += ", nodeSettings: {fill: am5.color(#E199AD)}";
+        }
+        else
+        {
+            res += ", nodeSettings: {fill: am5.color(#67B7DC)}";
+        }
+
         if (!node->is_leaf())
         {
             res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
