@@ -179,10 +179,13 @@ echo "Making a report ..."
 python3 script/pipeline_4_report.py -p ${TEMPD} >"${RESUD}/report.md"
 
 mv ${TEMPD}/*.ans ${RESUD}/
-# mv ${TEMPD}/*.html ${RESUD}/
 mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
+
+if [ "${FLG_Q}" = "TRUE" ]; then
+  mv ${TEMPD}/*.html ${RESUD}/
+fi
 
 for s in $(seq 1 ${NUM_TRIAL}); do
   if [ -e ${TEMPD}/${s}_adj_mat_plot.png ]; then
