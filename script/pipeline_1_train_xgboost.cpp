@@ -39,12 +39,13 @@ float mi_bound = numeric_limits<float>::infinity();
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
+bool save_tree_html = false;
 int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:w:x:g")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:z:b:w:x:gq")) != -1)
     {
         switch (opt)
         {
@@ -93,9 +94,12 @@ void parse_args(int argc, char *argv[])
         case 'g':
             save_adj_mat = true;
             break;
+        case 'q':
+            save_tree_html = true;
+            break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-c] [-j] [-m] [-w] ...\n", argv[0]);
+            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-c] [-e] [-l] [-o] [-z] [-b] [-w] [-x] [-g] [-q] ...\n", argv[0]);
             break;
         }
     }
@@ -268,11 +272,14 @@ int main(int argc, char *argv[])
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
         result_file << clf.estimators[i].print(true, true).c_str() << "\n";
 
-        std::ofstream tree_html_file;
-        string tree_html_filepath = folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
-        tree_html_file.open(tree_html_filepath, std::ios::out);
-        tree_html_file << clf.estimators[i].to_html().c_str();
-        tree_html_file.close();
+        if (save_tree_html)
+        {
+            std::ofstream tree_html_file;
+            string tree_html_filepath = folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
+            tree_html_file.open(tree_html_filepath, std::ios::out);
+            tree_html_file << clf.estimators[i].to_html().c_str();
+            tree_html_file.close();
+        }
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);

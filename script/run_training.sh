@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:gy OPT; do
+while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:gyq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -92,6 +92,10 @@ while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:gy OPT; do
     FLG_G="TRUE"
     VALUE_G="$OPTARG"
     ;;
+  "q")
+    FLG_Q="TRUE"
+    VALUE_Q="$OPTARG"
+    ;;
   esac
 done
 
@@ -108,6 +112,9 @@ for TEMP_VALUE_L in ${VALUE_L} 0.1 1.0; do
   fi
   if [ "${FLG_G}" = "TRUE" ]; then
     RUNCMD+=" -g"
+  fi
+  if [ "${FLG_Q}" = "TRUE" ]; then
+    RUNCMD+=" -q"
   fi
 
   eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"

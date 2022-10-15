@@ -54,6 +54,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -x : (int) M of LP-MST.
     -y : (optional) steal the exact label values.
     -g : (optional) draw the extracted graph.
+    -q : (optional) draw trees as html files.
 ```
 
 ### Google colab
