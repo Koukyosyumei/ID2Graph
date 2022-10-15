@@ -267,6 +267,12 @@ int main(int argc, char *argv[])
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
         result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+
+        std::ofstream tree_html_file;
+        string tree_html_filepath = folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
+        tree_html_file.open(tree_html_filepath, std::ios::out);
+        tree_html_file << clf.estimators[i].to_html().c_str();
+        tree_html_file.close();
     }
 
     vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
