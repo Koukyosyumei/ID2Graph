@@ -22,8 +22,6 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int n_job;
     int seed;
 
-    float upsilon_Y;
-
     vector<RandomForestTree> estimators;
 
     RandomForestClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
@@ -77,13 +75,10 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
             prior[c] /= float(row_count);
         }
 
-        upsilon_Y = *min_element(prior.begin(), prior.end());
-        float mi_delta = sqrt(upsilon_Y * mi_bound / 2);
-
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_delta, active_party_id, n_job, seed);
+            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_bound, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }

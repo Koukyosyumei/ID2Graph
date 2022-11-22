@@ -27,7 +27,7 @@ VALUE_O=-1
 VALUE_W=-1
 VALUE_X=2
 
-while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:x:yg OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:x:ygq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -125,6 +125,10 @@ while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:x:yg OPT; do
     FLG_G="TRUE"
     VALUE_G="$OPTARG"
     ;;
+  "q")
+    FLG_Q="TRUE"
+    VALUE_Q="$OPTARG"
+    ;;
   esac
 done
 
@@ -151,6 +155,9 @@ for s in $(seq 1 ${NUM_TRIAL}); do
   if [ "${FLG_G}" = "TRUE" ]; then
     TRAINCMD+=" -g"
   fi
+  if [ "${FLG_Q}" = "TRUE" ]; then
+    TRAINCMD+=" -q"
+  fi
   if [ ${VALUE_P} -gt 1 ]; then
     if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
       TRAINCMD+=" &"
@@ -165,16 +172,20 @@ script/run_extract_result.sh -o ${TEMPD}
 
 if [ "${FLG_G}" = "TRUE" ]; then
   echo "Drawing a network ..."
-  python3 script/pipeline_4_vis_network.py -p ${TEMPD} -e ${VALUE_E}
+  python3 script/pipeline_3_vis_network.py -p ${TEMPD} -e ${VALUE_E}
 fi
 
 echo "Making a report ..."
-python3 script/pipeline_5_report.py -p ${TEMPD} >"${RESUD}/report.md"
+python3 script/pipeline_4_report.py -p ${TEMPD} >"${RESUD}/report.md"
 
 mv ${TEMPD}/*.ans ${RESUD}/
 mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
+
+if [ "${FLG_Q}" = "TRUE" ]; then
+  mv ${TEMPD}/*.html ${RESUD}/
+fi
 
 for s in $(seq 1 ${NUM_TRIAL}); do
   if [ -e ${TEMPD}/${s}_adj_mat_plot.png ]; then

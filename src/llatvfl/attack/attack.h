@@ -40,40 +40,43 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
         temp_node = que.front();
         que.pop();
 
-        if (temp_node->is_leaf())
+        if (!temp_node->lmir_flag_exclude_passive_parties)
         {
-            skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
-            if (!skip_flag)
+            if (temp_node->is_leaf())
             {
-                temp_idxs_size = temp_node->idxs.size();
-                for (int i = 0; i < temp_idxs_size; i++)
+                skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
+                if (!skip_flag)
                 {
-                    for (int j = i + 1; j < temp_idxs_size; j++)
+                    temp_idxs_size = temp_node->idxs.size();
+                    for (int i = 0; i < temp_idxs_size; i++)
                     {
-                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                        for (int j = i + 1; j < temp_idxs_size; j++)
+                        {
+                            adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                        }
                     }
                 }
             }
-        }
-        else
-        {
-            left_skip_flag = temp_node->left->is_leaf() && temp_node->left->depth <= 0 && target_party_id != -1 && temp_node->left->party_id != target_party_id;
-            right_skip_flag = temp_node->right->is_leaf() && temp_node->right->depth <= 0 && target_party_id != -1 && temp_node->right->party_id != target_party_id;
-
-            if ((left_skip_flag && right_skip_flag) || ((start_depth > 0) && (max_depth - temp_node->depth) >= start_depth))
+            else
             {
-                temp_idxs_size = temp_node->idxs.size();
-                for (int i = 0; i < temp_idxs_size; i++)
+                left_skip_flag = temp_node->left->is_leaf() && temp_node->left->depth <= 0 && target_party_id != -1 && temp_node->left->party_id != target_party_id;
+                right_skip_flag = temp_node->right->is_leaf() && temp_node->right->depth <= 0 && target_party_id != -1 && temp_node->right->party_id != target_party_id;
+
+                if ((left_skip_flag && right_skip_flag) || ((start_depth > 0) && (max_depth - temp_node->depth) >= start_depth))
                 {
-                    for (int j = i + 1; j < temp_idxs_size; j++)
+                    temp_idxs_size = temp_node->idxs.size();
+                    for (int i = 0; i < temp_idxs_size; i++)
                     {
-                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                        for (int j = i + 1; j < temp_idxs_size; j++)
+                        {
+                            adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
+                        }
                     }
                 }
-            }
 
-            que.push(temp_node->left);
-            que.push(temp_node->right);
+                que.push(temp_node->left);
+                que.push(temp_node->right);
+            }
         }
     }
     return skip_flag;

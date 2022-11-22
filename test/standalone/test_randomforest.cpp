@@ -53,8 +53,6 @@ TEST(RandomForest, RandomForestClassifierTest)
     // --- Check Training --- //
     clf.fit(parties, y);
 
-    ASSERT_EQ(clf.upsilon_Y, 0.375);
-
     ASSERT_NEAR(clf.estimators[0].dtree.giniimp, 0.46875, 1e-6);
     ASSERT_NEAR(clf.estimators[0].dtree.score, 0.16875, 1e-6);
     ASSERT_EQ(clf.estimators[0].dtree.best_party_id, 0);
