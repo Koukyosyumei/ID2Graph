@@ -10,7 +10,7 @@
 using namespace std;
 
 /**
- * @brief Travase nodes while updating the adjacency matrix with constant weight.
+ * @brief Travases nodes while updating the adjacency matrix with constant weight.
  *
  * @tparam NodeType NodeType The type of Node.
  * @param node The node where you want to start travasing
@@ -80,7 +80,7 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
 }
 
 /**
- * @brief Update adjacency matrix with given tree.
+ * @brief Updates adjacency matrix with given tree.
  *
  * @param tree The tree to be transformed to a graph.
  * @param adj_mat The adjancecy matrix to be updated.
@@ -98,7 +98,7 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
 }
 
 /**
- * @brief Update adjacency matrix with given tree.
+ * @brief Updates adjacency matrix with given tree.
  *
  * @param tree The tree to be transformed to a graph.
  * @param adj_mat The adjancecy matrix to be updated.
@@ -116,7 +116,7 @@ inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
 }
 
 /**
- * @brief Update adjacency matrix with given tree.
+ * @brief Updates adjacency matrix with given tree.
  *
  * @param tree The tree to be transformed to a graph.
  * @param adj_mat The adjancecy matrix to be updated.
@@ -134,7 +134,7 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
 }
 
 /**
- * @brief Extract adjacency matrix from the trained model
+ * @brief Extracts adjacency matrix from the trained model
  *
  * @param model The target tree-based model
  * @param target_party_id The target party id. He cannot observe the leaf split information.
@@ -164,7 +164,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *
 }
 
 /**
- * @brief Extract adjacency matrix from the trained model
+ * @brief Extracts adjacency matrix from the trained model
  *
  * @param model The target tree-based model
  * @param target_party_id The target party id. He cannot observe the leaf split information.
@@ -194,7 +194,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBa
 }
 
 /**
- * @brief Extract adjacency matrix from the trained model
+ * @brief Extracts adjacency matrix from the trained model
  *
  * @param model The target tree-based model
  * @param target_party_id The target party id. He cannot observe the leaf split information.

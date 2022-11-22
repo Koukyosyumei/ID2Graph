@@ -60,7 +60,7 @@ struct Community
     }
 
     /**
-     * @brief Remove the node from its current community with which it has weights_from_node_to_comm links
+     * @brief Removes the node from its current community with which it has weights_from_node_to_comm links
      *
      * @param node
      * @param comm
@@ -74,7 +74,7 @@ struct Community
     }
 
     /**
-     * @brief Insert the node in comm with which it shares weights_from_node_to_comm links
+     * @brief Inserts the node in comm with which it shares weights_from_node_to_comm links
      *
      * @param node
      * @param comm
@@ -88,7 +88,7 @@ struct Community
     }
 
     /**
-     * @brief Calculate the current modularity.
+     * @brief Calculates the current modularity.
      *        Note that each community consists of only ond node due to contraction.
      *
      * @return float
@@ -109,7 +109,7 @@ struct Community
     }
 
     /**
-     * @brief Compute the gain of modularity if node where inserted in comm
+     * @brief Computes the gain of modularity if node where inserted in comm
      *
      * @param node
      * @param comm
@@ -132,8 +132,11 @@ struct Community
                 (float)tot[comm] * (float)w_degree / (float)g.total_weight);
     }
 
-    // compute the set of neighboring communities of node
-    // for each community, gives the number of links from node to comm
+    /**
+     * @brief Computes the set of neighboring communities of node for each community.
+     *
+     * @param node
+     */
     void compute_neigh_comms(unsigned int node)
     {
         // initialize neigh_weight up to the previous neigh_last

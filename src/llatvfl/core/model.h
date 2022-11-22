@@ -16,7 +16,7 @@ struct TreeModelBase
     TreeModelBase(){};
 
     /**
-     * @brief Function to train the model given the parties and ground-truth labels.
+     * @brief Trains the model given the parties and ground-truth labels.
      *
      * @param parties The vector of parties.
      * @param y The vector of ground-truth vectors
@@ -24,7 +24,7 @@ struct TreeModelBase
     virtual void fit(vector<PartyName> &parties, vector<float> &y) = 0;
 
     /**
-     * @brief Function to return the predicted scores of the given data.
+     * @brief Returns the predicted scores of the given data.
      *
      * @param X The feature matrix.
      * @return vector<float> The vector of predicted raw scores.

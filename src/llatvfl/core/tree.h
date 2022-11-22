@@ -15,7 +15,7 @@ struct Tree
     Tree() {}
 
     /**
-     * @brief Get the root node object
+     * @brief Returns the root node object
      *
      * @return NodeType&
      */
@@ -25,7 +25,7 @@ struct Tree
     }
 
     /**
-     * @brief Return the prediction of the given data
+     * @brief Returns the prediction of the given data
      *
      * @param X
      * @return vector<vector<float>>
@@ -36,7 +36,7 @@ struct Tree
     }
 
     /**
-     * @brief Return the predictions of the training data assigned to the node
+     * @brief Returns the predictions of the training data assigned to the node
      *
      * @param node
      * @return vector<pair<vector<int>, vector<vector<float>>>>
@@ -83,7 +83,7 @@ struct Tree
     }
 
     /**
-     * @brief Print out the structure of this tree
+     * @brief Prints out the structure of this tree
      *
      * @param show_purity show purity if true
      * @param binary_color color each node if true
@@ -96,7 +96,7 @@ struct Tree
     }
 
     /**
-     * @brief Get the average leaf purity of this tree
+     * @brief Returns the average leaf purity of this tree
      *
      * @return float
      */

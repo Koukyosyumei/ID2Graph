@@ -51,7 +51,7 @@ inline vector<float> softmax(vector<float> x)
 }
 
 /**
- * @brief Return unique elements of the given vector
+ * @brief Returns unique elements of the given vector
  *
  * @tparam T
  * @param inData
@@ -79,7 +79,7 @@ static inline float Lerp(T v0, T v1, T t)
 }
 
 /**
- * @brief Return quantiles
+ * @brief Returns quantiles
  *
  * @tparam T
  * @param inData

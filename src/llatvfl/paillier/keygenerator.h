@@ -23,7 +23,7 @@ struct PaillierKeyGenerator
     }
 
     /**
-     * @brief Generate a pair of secret and public key
+     * @brief Generates a pair of secret and public key
      *
      * @return pair<PaillierPublicKey, PaillierSecretKey>
      */

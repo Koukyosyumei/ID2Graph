@@ -87,7 +87,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the idxs
+     * @brief Returns the idxs
      *
      * @return vector<int>
      */
@@ -97,7 +97,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the party id
+     * @brief Returns the party id
      *
      * @return int
      */
@@ -107,7 +107,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the record id
+     * @brief Returns the record id
      *
      * @return int
      */
@@ -117,7 +117,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the predicted value of this node
+     * @brief Returns the predicted value of this node
      *
      * @return vector<float>
      */
@@ -127,7 +127,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the gain score of this node
+     * @brief Returns the gain score of this node
      *
      * @return float
      */
@@ -137,7 +137,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the pointer to left child leaf object
+     * @brief Returns the pointer to left child leaf object
      *
      * @return RandomForestNode
      */
@@ -147,7 +147,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the pointer to right child leaf object
+     * @brief Returns the pointer to right child leaf object
      *
      * @return RandomForestNode
      */
@@ -157,7 +157,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Get the num parties involved in this node
+     * @brief Returns the num parties involved in this node
      *
      * @return int
      */
@@ -167,7 +167,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Compute gini impurity score
+     * @brief Computes gini impurity score
      *
      * @return float
      */
@@ -191,7 +191,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Compute the weight of this node
+     * @brief Computes the weight of this node
      *
      * @return vector<float>
      */
@@ -207,7 +207,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Find the best split from the specified clients.
+     * @brief Finds the best split from the specified clients.
      *
      * @param party_id_start
      * @param temp_num_parties
@@ -281,7 +281,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Find the best split among all thresholds received from all clients.
+     * @brief Finds the best split among all thresholds received from all clients.
      *
      * @return tuple<int, int, int>
      */
@@ -324,7 +324,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Attach children nodes to this node
+     * @brief Attaches children nodes to this node
      *
      * @param best_party_id
      * @param best_col_id
@@ -355,7 +355,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Return true if this node is a leaf
+     * @brief Returns true if this node is a leaf
      *
      * @return true
      * @return false
@@ -373,7 +373,7 @@ struct RandomForestNode : Node<RandomForestParty>
     }
 
     /**
-     * @brief Return true if the data points assigined to this node are pure in terms of their labels.
+     * @brief Returns true if the data points assigined to this node are pure in terms of their labels.
      *
      * @return true
      * @return false

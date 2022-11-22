@@ -89,7 +89,7 @@ struct Graph
     }
 
     /**
-     * @brief Add a node
+     * @brief Adds a node
      *
      * @param n
      */
@@ -99,7 +99,7 @@ struct Graph
     }
 
     /**
-     * @brief Get pointers to the first neighbor and weight of the edge between the node and the neighbor
+     * @brief Gets pointers to the first neighbor and weight of the edge between the node and the neighbor
      *
      * @param node
      * @return pair<vector<unsigned int>::iterator, vector<float>::iterator>
@@ -121,7 +121,7 @@ struct Graph
     }
 
     /**
-     * @brief Get the number of neighbors of the node
+     * @brief Gets the number of neighbors of the node
      *
      * @param node
      * @return unsigned int
@@ -139,7 +139,7 @@ struct Graph
     }
 
     /**
-     * @brief Get the number or the weight of self loops of the node
+     * @brief Gets the number or the weight of self loops of the node
      *
      * @param node
      * @return float
@@ -167,7 +167,7 @@ struct Graph
     }
 
     /**
-     * @brief Get the weighed degree of the node
+     * @brief Gets the weighed degree of the node
      *
      * @param node
      * @return float

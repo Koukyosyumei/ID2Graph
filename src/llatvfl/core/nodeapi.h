@@ -17,7 +17,7 @@ struct NodeAPI
     NodeAPI(){};
 
     /**
-     * @brief Calculate the leaf purity within the specified node.
+     * @brief Calculates the leaf purity within the specified node.
      *
      * @param node Node object
      * @param tot_cnt Total number of data samples used to train the tree.
@@ -166,7 +166,7 @@ struct NodeAPI
     }
 
     /**
-     * @brief Recusively search the nodes and returns the string information of these nodes.
+     * @brief Recusively searches the nodes and returns the string information of these nodes.
      *
      * @param node
      * @param prefix

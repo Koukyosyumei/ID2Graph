@@ -18,7 +18,7 @@ struct RandomForestParty : Party
     }
 
     /**
-     * @brief Get the vector of threshold candidates
+     * @brief Gets the vector of threshold candidates
      *
      * @param x_col
      * @return vector<float>
@@ -33,7 +33,7 @@ struct RandomForestParty : Party
     }
 
     /**
-     * @brief Greedily evaluate all threshold candidates and returns their evaluations.
+     * @brief Greedily evaluates all threshold candidates and returns their evaluations.
      *
      * @param idxs
      * @param y

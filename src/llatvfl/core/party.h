@@ -56,7 +56,7 @@ struct Party
     }
 
     /**
-     * @brief check the received arguments are valid or not
+     * @brief Checks the received arguments are valid or not
      *
      * @param x_ 2D-matrix representing the local training dataset
      * @param feature_id_  a vector of feature ids
@@ -105,7 +105,7 @@ struct Party
     }
 
     /**
-     * @brief Get the lookup table object
+     * @brief Gets the lookup table object
      *
      * @return unordered_map<int, tuple<int, float, int>>
      */
@@ -115,7 +115,7 @@ struct Party
     }
 
     /**
-     * @brief Get the threshold candidates object
+     * @brief Gets the threshold candidates object
      *
      * @param x_col a feature vector of training dataset with a specific feature
      * @return vector<float>
@@ -130,7 +130,7 @@ struct Party
     }
 
     /**
-     * @brief Return true if the given data goes to left at the node with the specified record id
+     * @brief Returns true if the given data goes to left at the node with the specified record id
      *
      * @param record_id
      * @param xi
@@ -167,7 +167,7 @@ struct Party
     }
 
     /**
-     * @brief Subsample some features
+     * @brief Subsamples some features
      *
      */
     void subsample_columns()
@@ -180,7 +180,7 @@ struct Party
     }
 
     /**
-     * @brief Split datasets with the threshold
+     * @brief Splits datasets with the threshold
      *
      * @param idxs
      * @param feature_opt_pos
@@ -216,7 +216,7 @@ struct Party
     }
 
     /**
-     * @brief Insert the optimal feature id and threshold id to the lookup table
+     * @brief Inserts the optimal feature id and threshold id to the lookup table
      *
      * @param feature_opt_pos
      * @param threshold_opt_pos

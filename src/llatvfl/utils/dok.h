@@ -77,7 +77,7 @@ struct SparseMatrixDOK
     }
 
     /**
-     * @brief Add value at position (i, j).
+     * @brief Adds value at position (i, j).
      *
      * @param i row index
      * @param j column index
@@ -120,7 +120,7 @@ struct SparseMatrixDOK
     }
 
     /**
-     * @brief Convert a dense matrix to a sparse matrix.
+     * @brief Converts a dense matrix to a sparse matrix.
      *
      * @param densematrix
      */
@@ -144,7 +144,7 @@ struct SparseMatrixDOK
     }
 
     /**
-     * @brief Convert this sparse matrix to a dense matrix.
+     * @brief Converts this sparse matrix to a dense matrix.
      *
      * @param init_val
      * @return vector<vector<DataType>>
@@ -168,7 +168,7 @@ struct SparseMatrixDOK
     }
 
     /**
-     * @brief Dump this sparse matrix to a text file.
+     * @brief Dumps this sparse matrix to a text file.
      *
      * @param filepath
      */

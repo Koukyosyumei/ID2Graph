@@ -18,7 +18,7 @@ struct LossFunc
     LossFunc(){};
 
     /**
-     * @brief Get the aggregated loss value
+     * @brief Calculates the aggregated loss value
      *
      * @param y_pred predicted value
      * @param y ground-truth
@@ -27,7 +27,7 @@ struct LossFunc
     virtual float get_loss(vector<vector<float>> &y_pred, vector<float> &y) = 0;
 
     /**
-     * @brief Get the gradient of the loss w.r.t the predicted value
+     * @brief Calculates the gradient of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
@@ -36,7 +36,7 @@ struct LossFunc
     virtual vector<vector<float>> get_grad(vector<vector<float>> &y_pred, vector<float> &y) = 0;
 
     /**
-     * @brief Get the hessian of the loss w.r.t the predicted value
+     * @brief Calculates the hessian of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
@@ -50,7 +50,7 @@ struct BCELoss : LossFunc
     BCELoss(){};
 
     /**
-     * @brief Get the averaged binacy cross entropy loss
+     * @brief Calculates the averaged binacy cross entropy loss
      *
      * @param y_pred predicted value
      * @param y ground-truth
@@ -75,7 +75,7 @@ struct BCELoss : LossFunc
     }
 
     /**
-     * @brief Get the gradient of the loss w.r.t the predicted value
+     * @brief Calculates the gradient of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
@@ -91,7 +91,7 @@ struct BCELoss : LossFunc
     }
 
     /**
-     * @brief Get the hessian of the loss w.r.t the predicted value
+     * @brief Calculates the hessian of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
@@ -118,7 +118,7 @@ struct CELoss : LossFunc
     CELoss(int num_classes_) { num_classes = num_classes_; }
 
     /**
-     * @brief Get the averaged cross entropy loss
+     * @brief Calculates the averaged cross entropy loss
      *
      * @param y_pred predicted value
      * @param y ground-truth
@@ -149,7 +149,7 @@ struct CELoss : LossFunc
     }
 
     /**
-     * @brief Get the gradient of the loss w.r.t the predicted value
+     * @brief Calculates the gradient of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
@@ -182,7 +182,7 @@ struct CELoss : LossFunc
     }
 
     /**
-     * @brief Get the hessian of the loss w.r.t the predicted value
+     * @brief Calculates the hessian of the loss w.r.t the predicted value
      *
      * @param y_pred
      * @param y
