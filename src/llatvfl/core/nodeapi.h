@@ -94,7 +94,7 @@ struct NodeAPI
             }
             else
             {
-                res += ", nodeSettings: {fill: am5.color('#67B7DC')}";
+                res += ", nodeSettings: {fill: am5.color('#ADE199')}";
             }
         }
 
