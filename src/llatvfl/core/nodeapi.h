@@ -73,14 +73,21 @@ struct NodeAPI
         }
     }
 
-    string to_json(NodeType *node)
+    string to_json(NodeType *node, int parent_party_id = -1, int active_party_id = 0)
     {
         string res = "";
 
         if (node->is_leaf())
         {
-            res += "{name: '*', value: " + to_string(node->record_id) +
-                   ", nodeSettings: {fill: am5.color('#ADE199')}";
+            res += "{name: '*', value: " + to_string(node->record_id);
+            if (parent_party_id == active_party_id && node->depth == 0)
+            {
+                res += ", nodeSettings: {fill: am5.color('#E199AD')}";
+            }
+            else
+            {
+                res += ", nodeSettings: {fill: am5.color('#ADE199')}";
+            }
         }
         else
         {
@@ -100,7 +107,8 @@ struct NodeAPI
 
         if (!node->is_leaf())
         {
-            res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
+            res += ", children: [" + to_json(node->left, node->party_id, active_party_id) +
+                   ", " + to_json(node->right, node->party_id, active_party_id) + "]";
         }
         res += "}";
         return res;
