@@ -40,7 +40,7 @@ struct SparseMatrixDOK
 {
     size_t dim_row = 0;
     size_t dim_column = 0;
-    DataType zero_val = 0;
+    DataType zero_val;
     bool is_symmetric = false;
     bool save_row2nonzero_idx = true;
 
