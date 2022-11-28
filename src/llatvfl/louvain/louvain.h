@@ -39,15 +39,15 @@ struct Louvain
         bool improvement = true;
 
         g = gc;
-        community = Community(gc, ndp, precision, seed);
-        float mod = community.modularity(), new_mod;
+        community = Community(gc, ndp, (half)precision, seed);
+        half mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
         {
-            improvement = community.one_level(epsilon);
+            improvement = community.one_level((half)epsilon);
             new_mod = community.modularity();
             g = community.partition2graph_binary();
-            community = Community(g, -1, precision, seed);
+            community = Community(g, -1, (half)precision, seed);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)

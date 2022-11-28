@@ -4,10 +4,12 @@
 #include <vector>
 #include <queue>
 #include "../utils/dok.h"
+#include "../half/half.hpp"
 #include "../randomforest/randomforest.h"
 #include "../xgboost/xgboost.h"
 #include "../secureboost/secureboost.h"
 using namespace std;
+using half_float::half;
 
 /**
  * @brief Travases nodes while updating the adjacency matrix with constant weight.
@@ -24,8 +26,8 @@ template <typename NodeType>
 inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                       int max_depth,
                                                       int start_depth,
-                                                      SparseMatrixDOK<float> &adj_mat,
-                                                      float weight,
+                                                      SparseMatrixDOK<half> &adj_mat,
+                                                      half weight,
                                                       int target_party_id)
 {
     bool skip_flag, left_skip_flag, right_skip_flag;
@@ -92,8 +94,8 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
  */
 inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
                                                int start_depth,
-                                               SparseMatrixDOK<float> &adj_mat,
-                                               float weight,
+                                               SparseMatrixDOK<half> &adj_mat,
+                                               half weight,
                                                int target_party_id)
 {
     int num_row = tree->dtree.y.size();
@@ -110,8 +112,8 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
  */
 inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
                                                int start_depth,
-                                               SparseMatrixDOK<float> &adj_mat,
-                                               float weight,
+                                               SparseMatrixDOK<half> &adj_mat,
+                                               half weight,
                                                int target_party_id)
 {
     int num_row = tree->dtree.y.size();
@@ -128,8 +130,8 @@ inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
  */
 inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
                                                int start_depth,
-                                               SparseMatrixDOK<float> &adj_mat,
-                                               float weight,
+                                               SparseMatrixDOK<half> &adj_mat,
+                                               half weight,
                                                int target_party_id)
 {
     int num_row = tree->dtree.y.size();
@@ -143,23 +145,23 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
  * @param target_party_id The target party id. He cannot observe the leaf split information.
  * @param skip_round The number of skipped rounds.
  * @param eta The discount factor.
- * @return SparseMatrixDOK<float>
+ * @return SparseMatrixDOK<half>
  */
-inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
-                                                                   int start_depth,
-                                                                   int target_party_id = -1,
-                                                                   int skip_round = 0,
-                                                                   float eta = 0.3)
+inline SparseMatrixDOK<half> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+                                                                  int start_depth,
+                                                                  int target_party_id = -1,
+                                                                  int skip_round = 0,
+                                                                  half eta = (half)0.3)
 {
     int num_row = model->estimators[0].dtree.y.size();
-    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
+    SparseMatrixDOK<half> adj_matrix(num_row, num_row, (half)0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
             extract_adjacency_matrix_from_tree(&model->estimators[i], start_depth,
                                                adj_matrix,
-                                               pow(eta, float(i - skip_round)),
+                                               pow(eta, half(i - skip_round)),
                                                target_party_id);
         }
     }
@@ -173,23 +175,23 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *
  * @param target_party_id The target party id. He cannot observe the leaf split information.
  * @param skip_round The number of skipped rounds.
  * @param eta The discount factor.
- * @return SparseMatrixDOK<float>
+ * @return SparseMatrixDOK<half>
  */
-inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
-                                                                   int start_depth,
-                                                                   int target_party_id = -1,
-                                                                   int skip_round = 0,
-                                                                   float eta = 0.3)
+inline SparseMatrixDOK<half> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
+                                                                  int start_depth,
+                                                                  int target_party_id = -1,
+                                                                  int skip_round = 0,
+                                                                  half eta = (half)0.3)
 {
     int num_row = model->estimators[0].dtree.y.size();
-    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
+    SparseMatrixDOK<half> adj_matrix(num_row, num_row, (half)0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
             extract_adjacency_matrix_from_tree(&model->estimators[i], start_depth,
                                                adj_matrix,
-                                               pow(eta, float(i - skip_round)),
+                                               pow(eta, half(i - skip_round)),
                                                target_party_id);
         }
     }
@@ -203,22 +205,22 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBa
  * @param target_party_id The target party id. He cannot observe the leaf split information.
  * @param skip_round The number of skipped rounds.
  * @param eta The discount factor.
- * @return SparseMatrixDOK<float>
+ * @return SparseMatrixDOK<half>
  */
-inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
-                                                                   int start_depth,
-                                                                   int target_party_id = -1,
-                                                                   int skip_round = 0)
+inline SparseMatrixDOK<half> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
+                                                                  int start_depth,
+                                                                  int target_party_id = -1,
+                                                                  int skip_round = 0)
 {
     int num_row = model->estimators[0].dtree.y.size();
-    SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
+    SparseMatrixDOK<half> adj_matrix(num_row, num_row, (half)0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
             extract_adjacency_matrix_from_tree(&model->estimators[i], start_depth,
                                                adj_matrix,
-                                               1.0, target_party_id);
+                                               (half)1.0, target_party_id);
         }
     }
     return adj_matrix;

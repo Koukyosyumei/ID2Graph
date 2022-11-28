@@ -169,12 +169,12 @@ TEST(SecureBoost, SecureBoostClassifierTest)
                                           {0, 0, 0, 1.3, 0, 0, 0, 0},
                                           {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, 0, 0.3).to_densematrix();
+    vector<vector<half>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, 0, half(0.3)).to_densematrix(half(0));
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)
         {
-            ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
+            ASSERT_EQ(adj_mat[j][k], (half)test_adj_mat[j][k]);
         }
     }
 
@@ -187,12 +187,12 @@ TEST(SecureBoost, SecureBoostClassifierTest)
                                             {0, 0, 0, 1.3, 0, 0, 0, 0},
                                             {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0.3).to_densematrix();
+    vector<vector<half>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, half(0.3)).to_densematrix(half(0));
     for (int j = 0; j < test_adj_mat_1.size(); j++)
     {
         for (int k = 0; k < test_adj_mat_1[j].size(); k++)
         {
-            ASSERT_EQ(adj_mat_1[j][k], test_adj_mat_1[j][k]);
+            ASSERT_EQ(adj_mat_1[j][k], (half)test_adj_mat_1[j][k]);
         }
     }
 }

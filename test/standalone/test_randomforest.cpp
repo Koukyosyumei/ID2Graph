@@ -135,12 +135,12 @@ TEST(RandomForest, RandomForestClassifierTest)
                                           {0, 0, 0, 1, 0, 0, 0, 0},
                                           {1, 0, 1, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, false).to_densematrix();
+    vector<vector<half>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, false).to_densematrix(half(0));
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)
         {
-            ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
+            ASSERT_EQ(adj_mat[j][k], (half)test_adj_mat[j][k]);
         }
     }
 }
