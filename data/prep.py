@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 
 def add_args(parser):
@@ -290,6 +291,17 @@ if __name__ == "__main__":
         X = df[list(range(30))].values
         y = df[30].values
 
+    elif parsed_args.dataset_type == "bank":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "bank-full.csv", sep=";")
+        )
+        for c in df.columns[df.dtypes == object]:
+            le = LabelEncoder()
+            df[c] = le.fit_transform(df[c].values)
+
+        X = df.drop("y", axis=1).values
+        y = df["y"].values
+
     elif parsed_args.dataset_type == "bankruptcy":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "data.csv"))
         df = sampling(df, "Bankrupt?", parsed_args)
@@ -346,6 +358,64 @@ if __name__ == "__main__":
 
         X = df[list(range(60))].values
         y = df[60].values
+
+    elif parsed_args.dataset_type == "diabetic":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "diabetic_data.csv"))
+        for c in df.columns[df.dtypes == object]:
+            le = LabelEncoder()
+            df[c] = le.fit_transform(df[c].values)
+        X = df[
+            [
+                "race",
+                "gender",
+                "age",
+                "weight",
+                "admission_type_id",
+                "discharge_disposition_id",
+                "admission_source_id",
+                "time_in_hospital",
+                "payer_code",
+                "medical_specialty",
+                "num_lab_procedures",
+                "num_procedures",
+                "num_medications",
+                "number_outpatient",
+                "number_emergency",
+                "number_inpatient",
+                "diag_1",
+                "diag_2",
+                "diag_3",
+                "number_diagnoses",
+                "max_glu_serum",
+                "A1Cresult",
+                "metformin",
+                "repaglinide",
+                "nateglinide",
+                "chlorpropamide",
+                "glimepiride",
+                "acetohexamide",
+                "glipizide",
+                "glyburide",
+                "tolbutamide",
+                "pioglitazone",
+                "rosiglitazone",
+                "acarbose",
+                "miglitol",
+                "troglitazone",
+                "tolazamide",
+                "examide",
+                "citoglipton",
+                "insulin",
+                "glyburide-metformin",
+                "glipizide-metformin",
+                "glimepiride-pioglitazone",
+                "metformin-rosiglitazone",
+                "metformin-pioglitazone",
+                "change",
+                "diabetesMed",
+            ]
+        ].values
+        y = df["readmitted"].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
