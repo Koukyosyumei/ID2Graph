@@ -301,6 +301,13 @@ struct SecureBoostNode : Node<SecureBoostParty>
         {
             right->party_id = party_id;
         }
+
+        // Notice: this flag only supports for the case of two parties
+        if ((left->is_leaf_flag == 1) && (right->is_leaf_flag == 1) && (party_id == active_party_id))
+        {
+            left->not_splitted_flag = true;
+            right->not_splitted_flag = true;
+        }
     }
 
     bool is_leaf()

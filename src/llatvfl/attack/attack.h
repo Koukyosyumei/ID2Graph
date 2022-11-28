@@ -21,22 +21,20 @@ using namespace std;
  * @return false
  */
 template <typename NodeType>
-inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
+inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                       int max_depth,
                                                       int start_depth,
                                                       SparseMatrixDOK<float> &adj_mat,
                                                       float weight,
                                                       int target_party_id)
 {
-    bool skip_flag, left_skip_flag, right_skip_flag;
-
     queue<NodeType *> que;
     que.push(node);
     NodeType *temp_node;
     int temp_idxs_size;
     while (!que.empty())
     {
-        skip_flag = false;
+        // skip_flag = false;
         temp_node = que.front();
         que.pop();
 
@@ -44,8 +42,8 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
         {
             if (temp_node->is_leaf())
             {
-                skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
-                if (!skip_flag)
+                // skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
+                if (!temp_node->not_splitted_flag || target_party_id == -1)
                 {
                     temp_idxs_size = temp_node->idxs.size();
                     for (int i = 0; i < temp_idxs_size; i++)
@@ -59,10 +57,10 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             }
             else
             {
-                left_skip_flag = temp_node->left->is_leaf() && temp_node->left->depth <= 0 && target_party_id != -1 && temp_node->left->party_id != target_party_id;
-                right_skip_flag = temp_node->right->is_leaf() && temp_node->right->depth <= 0 && target_party_id != -1 && temp_node->right->party_id != target_party_id;
+                // left_skip_flag = temp_node->left->is_leaf() && target_party_id != -1 && temp_node->left->party_id != target_party_id;
+                // right_skip_flag = temp_node->right->is_leaf() && target_party_id != -1 && temp_node->right->party_id != target_party_id;
 
-                if ((left_skip_flag && right_skip_flag) || ((start_depth > 0) && (max_depth - temp_node->depth) >= start_depth))
+                if ((temp_node->left->not_splitted_flag && temp_node->right->not_splitted_flag) && (target_party_id != -1))
                 {
                     temp_idxs_size = temp_node->idxs.size();
                     for (int i = 0; i < temp_idxs_size; i++)
@@ -79,7 +77,6 @@ inline bool travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             }
         }
     }
-    return skip_flag;
 }
 
 /**

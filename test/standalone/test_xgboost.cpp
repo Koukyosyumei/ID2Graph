@@ -2,6 +2,7 @@
 #include <vector>
 #include "llatvfl/attack/attack.h"
 #include "gtest/gtest.h"
+#include "iostream"
 using namespace std;
 
 TEST(XGBoost, XGBoostClassifierTest)
@@ -56,7 +57,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                               boosting_rounds,
                                               lam, const_gamma, eps,
                                               numeric_limits<float>::infinity(),
-                                              -1, 0, 1.0, 1);
+                                              0, 0, 1.0, 1);
 
     vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<vector<float>> init_pred = clf.get_init_pred(y);
@@ -173,7 +174,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                             {0, 0, 0, 1.3, 0, 0, 0, 0},
                                             {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0.3).to_densematrix();
+    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat_1.size(); j++)
     {
         for (int k = 0; k < test_adj_mat_1[j].size(); k++)

@@ -39,6 +39,7 @@ struct Node
     int is_leaf_flag = -1; // -1:not calculated yer, 0: is not leaf, 1: is leaf
 
     bool lmir_flag_exclude_passive_parties = false;
+    bool not_splitted_flag = false;
 
     Node(){};
 

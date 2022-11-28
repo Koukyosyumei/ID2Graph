@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <iostream>
 #include "llatvfl/attack/attack.h"
 #include "gtest/gtest.h"
 using namespace std;

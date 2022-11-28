@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "bank":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "bank-full.csv", sep=";")
+            os.path.join(parsed_args.path_to_dir, "bank-full.csv"), sep=";"
         )
         for c in df.columns[df.dtypes == object]:
             le = LabelEncoder()
