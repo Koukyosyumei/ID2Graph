@@ -99,7 +99,7 @@ if __name__ == "__main__":
             for k in temp_nodes_in_comm:
                 X_com[int(k), i] += 1
 
-        X_com = X_com[:, X_com.sum(axis=0) != 1]
+        # X_com = X_com[:, X_com.sum(axis=0) != 1]
 
     kmeans_with_com = clustering_cls(
         n_clusters=num_classes, random_state=parsed_args.seed
