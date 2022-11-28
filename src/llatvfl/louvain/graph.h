@@ -34,7 +34,7 @@ struct Graph
             nodes.push_back(node2original_records[i]);
         }
     }
-    Graph(SparseMatrixDOK<half> sm_dok)
+    Graph(SparseMatrixDOK<half> &sm_dok)
     {
         num_nodes = sm_dok.dim_row;
         // initilize first graph without contraction

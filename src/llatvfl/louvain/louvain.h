@@ -34,7 +34,7 @@ struct Louvain
         seed = seed_;
     }
 
-    void fit(Graph gc)
+    void fit(Graph &gc)
     {
         bool improvement = true;
 
