@@ -329,7 +329,7 @@ if __name__ == "__main__":
                     os.path.join(parsed_args.path_to_dir, "adult.test"), header=None
                 ),
             ]
-        ).sample(10000)
+        )
         for c in df.columns[df.dtypes == object]:
             le = LabelEncoder()
             df[c] = le.fit_transform(df[c].values)
