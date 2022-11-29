@@ -66,6 +66,35 @@ def add_args(parser):
     return args
 
 
+def sampling_col_alloc(
+    col_num, feature_num_ratio_of_active_party, feature_num_ratio_of_passive_party
+):
+    shufled_col_indicies = random.sample(list(range(col_num)), col_num)
+    col_num_of_active_party = max(1, int(feature_num_ratio_of_active_party * col_num))
+    if feature_num_ratio_of_passive_party < 0:
+        col_alloc = [
+            shufled_col_indicies[:col_num_of_active_party],
+            shufled_col_indicies[col_num_of_active_party:],
+        ]
+    else:
+        col_num_of_passive_party = max(
+            1, int(feature_num_ratio_of_passive_party * col_num)
+        )
+        col_alloc = [
+            shufled_col_indicies[:col_num_of_active_party],
+            shufled_col_indicies[
+                col_num_of_active_party : (
+                    min(
+                        col_num_of_active_party + col_num_of_passive_party,
+                        col_num,
+                    )
+                )
+            ],
+        ]
+
+    return col_alloc
+
+
 def convert_df_to_input(
     X_train,
     y_train,
@@ -82,30 +111,11 @@ def convert_df_to_input(
     row_num_val = X_val.shape[0]
 
     if col_alloc is None:
-        shufled_col_indicies = random.sample(list(range(col_num)), col_num)
-        col_num_of_active_party = max(
-            1, int(feature_num_ratio_of_active_party * col_num)
+        col_alloc = sampling_col_alloc(
+            col_num,
+            feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party,
         )
-        if feature_num_ratio_of_passive_party < 0:
-            col_alloc = [
-                shufled_col_indicies[:col_num_of_active_party],
-                shufled_col_indicies[col_num_of_active_party:],
-            ]
-        else:
-            col_num_of_passive_party = max(
-                1, int(feature_num_ratio_of_passive_party * col_num)
-            )
-            col_alloc = [
-                shufled_col_indicies[:col_num_of_active_party],
-                shufled_col_indicies[
-                    col_num_of_active_party : (
-                        min(
-                            col_num_of_active_party + col_num_of_passive_party,
-                            col_num,
-                        )
-                    )
-                ],
-            ]
 
     with open(output_path, mode="w") as f:
         f.write(
@@ -159,6 +169,8 @@ if __name__ == "__main__":
 
     random.seed(parsed_args.seed)
     np.random.seed(parsed_args.seed)
+
+    col_alloc = None
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
@@ -295,11 +307,21 @@ if __name__ == "__main__":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "bank-full.csv"), sep=";"
         )
-        for c in df.columns[df.dtypes == object]:
-            le = LabelEncoder()
-            df[c] = le.fit_transform(df[c].values)
+        df["y"] = df["y"].apply(lambda y: 1 if y == "yes" else 0)
 
-        X = df.drop("y", axis=1).values
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("y", axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
         y = df["y"].values
 
     elif parsed_args.dataset_type == "bankruptcy":
@@ -330,24 +352,68 @@ if __name__ == "__main__":
                 ),
             ]
         )
-        for c in df.columns[df.dtypes == object]:
-            le = LabelEncoder()
-            df[c] = le.fit_transform(df[c].values)
+        df[14] = df[14].apply(lambda y: 0 if y == " <=50K" else 1)
         df = sampling(df, 14, parsed_args)
-        X = df[list(range(14))].values
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop(14, axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
         y = df[14].values
 
     elif parsed_args.dataset_type == "nursery":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "nursery.data"), header=None
         )
-        for c in df.columns[df.dtypes == object]:
-            le = LabelEncoder()
-            df[c] = le.fit_transform(df[c].values)
-        df = sampling(df, 8, parsed_args)
+        df[8] = LabelEncoder().fit_transform(df[8].values)
 
-        X = df[list(range(8))].values
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop(8, axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
         y = df[8].values
+
+    elif parsed_args.dataset_type == "packdd":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "PAKDD2010_Modeling_Data.csv"),
+            header=None,
+            sep="\t",
+        )
+        df = sampling(df, 53, parsed_args)
+        df = df.sample(10000)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop(53, axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
+        y = df[53].values
 
     elif parsed_args.dataset_type == "coupon":
         df = pd.read_csv(
@@ -356,38 +422,20 @@ if __name__ == "__main__":
             )
         )
         df = sampling(df, "Y", parsed_args)
-        for c in df.columns[df.dtypes == object]:
-            le = LabelEncoder()
-            df[c] = le.fit_transform(df[c].values)
-        X = df[
-            [
-                "destination",
-                "passanger",
-                "weather",
-                "temperature",
-                "time",
-                "coupon",
-                "expiration",
-                "gender",
-                "age",
-                "maritalStatus",
-                "has_children",
-                "education",
-                "occupation",
-                "income",
-                "car",
-                "Bar",
-                "CoffeeHouse",
-                "CarryAway",
-                "RestaurantLessThan20",
-                "Restaurant20To50",
-                "toCoupon_GEQ5min",
-                "toCoupon_GEQ15min",
-                "toCoupon_GEQ25min",
-                "direction_same",
-                "direction_opp",
-            ]
-        ].values
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("Y", axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
         y = df["Y"].values
 
     elif parsed_args.dataset_type == "hcv":
@@ -556,7 +604,6 @@ if __name__ == "__main__":
         stratify=y,
     )
 
-    col_alloc = None
     if parsed_args.dataset_type == "dummy0":
         col_alloc = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
