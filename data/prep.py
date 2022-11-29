@@ -337,6 +337,59 @@ if __name__ == "__main__":
         X = df[list(range(14))].values
         y = df[14].values
 
+    elif parsed_args.dataset_type == "nursery":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "nursery.data"), header=None
+        )
+        for c in df.columns[df.dtypes == object]:
+            le = LabelEncoder()
+            df[c] = le.fit_transform(df[c].values)
+        df = sampling(df, 8, parsed_args)
+
+        X = df[list(range(8))].values
+        y = df[8].values
+
+    elif parsed_args.dataset_type == "coupon":
+        df = pd.read_csv(
+            os.path.join(
+                parsed_args.path_to_dir, "in-vehicle-coupon-recommendation.csv"
+            )
+        )
+        df = sampling(df, "Y", parsed_args)
+        for c in df.columns[df.dtypes == object]:
+            le = LabelEncoder()
+            df[c] = le.fit_transform(df[c].values)
+        X = df[
+            [
+                "destination",
+                "passanger",
+                "weather",
+                "temperature",
+                "time",
+                "coupon",
+                "expiration",
+                "gender",
+                "age",
+                "maritalStatus",
+                "has_children",
+                "education",
+                "occupation",
+                "income",
+                "car",
+                "Bar",
+                "CoffeeHouse",
+                "CarryAway",
+                "RestaurantLessThan20",
+                "Restaurant20To50",
+                "toCoupon_GEQ5min",
+                "toCoupon_GEQ15min",
+                "toCoupon_GEQ25min",
+                "direction_same",
+                "direction_opp",
+            ]
+        ].values
+        y = df["Y"].values
+
     elif parsed_args.dataset_type == "hcv":
         cols = [
             "Age",
@@ -383,7 +436,7 @@ if __name__ == "__main__":
         )
         df = df.replace("?", -99)
         df = sampling(df, 64, parsed_args)
-        for i in range(64):
+        for i in range(65):
             df[i] = df[i].astype(float)
 
         X = df[list(range(64))].values
