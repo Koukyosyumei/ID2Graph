@@ -46,9 +46,19 @@ struct XGBoostTree : Tree<XGBoostNode>
         {
             parties->at(i).subsample_columns();
         }
-
+        num_row = y.size();
         dtree = XGBoostNode(parties, y, num_classes, gradient, hessian, idxs, prior,
                             min_child_weight, lam, gamma, eps, depth, mi_bound,
                             active_party_id, use_only_active_party, n_job);
+    }
+
+    void free_intermediate_resources()
+    {
+        dtree.y.clear();
+        dtree.y.shrink_to_fit();
+        dtree.gradient.clear();
+        dtree.gradient.shrink_to_fit();
+        dtree.hessian.clear();
+        dtree.hessian.shrink_to_fit();
     }
 };

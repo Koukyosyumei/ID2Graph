@@ -40,7 +40,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
 
         if (!temp_node->lmir_flag_exclude_passive_parties)
         {
-            if (temp_node->is_leaf())
+            if (temp_node->is_leaf_flag)
             {
                 // skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
                 if (!temp_node->not_splitted_flag || target_party_id == -1)
@@ -93,7 +93,6 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
                                                float weight,
                                                int target_party_id)
 {
-    int num_row = tree->dtree.y.size();
     travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, start_depth, adj_mat, weight, target_party_id);
 }
 
@@ -111,7 +110,6 @@ inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
                                                float weight,
                                                int target_party_id)
 {
-    int num_row = tree->dtree.y.size();
     travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, start_depth, adj_mat, weight, target_party_id);
 }
 
@@ -129,7 +127,6 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
                                                float weight,
                                                int target_party_id)
 {
-    int num_row = tree->dtree.y.size();
     travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, start_depth, adj_mat, weight, target_party_id);
 }
 
@@ -148,7 +145,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *
                                                                    int skip_round = 0,
                                                                    float eta = 0.3)
 {
-    int num_row = model->estimators[0].dtree.y.size();
+    int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
@@ -178,7 +175,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBa
                                                                    int skip_round = 0,
                                                                    float eta = 0.3)
 {
-    int num_row = model->estimators[0].dtree.y.size();
+    int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {
@@ -207,7 +204,7 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestC
                                                                    int target_party_id = -1,
                                                                    int skip_round = 0)
 {
-    int num_row = model->estimators[0].dtree.y.size();
+    int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
     for (int i = 0; i < model->estimators.size(); i++)
     {

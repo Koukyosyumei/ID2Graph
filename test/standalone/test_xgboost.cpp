@@ -156,6 +156,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                           {0, 0, 0, 1.3, 0, 0, 0, 0},
                                           {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
+    clf.free_intermediate_resources();
     vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, 0, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {

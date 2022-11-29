@@ -24,6 +24,7 @@ struct SecureBoostTree : Tree<SecureBoostNode>
         {
             parties->at(i).subsample_columns();
         }
+        num_row = y.size();
         dtree = SecureBoostNode(parties, y, num_classes, gradient, hessian, vanila_gradient,
                                 vanila_hessian, idxs, min_child_weight,
                                 lam, gamma, eps, depth, active_party_id,

@@ -292,6 +292,8 @@ int main(int argc, char *argv[])
 
     result_file.close();
 
+    clf.free_intermediate_resources();
+
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, completely_secure_round, eta);

@@ -31,6 +31,13 @@ struct RandomForestTree : Tree<RandomForestNode>
         {
             parties->at(i).subsample_columns();
         }
+        num_row = y.size();
         dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_bound, active_party_id, false, n_job);
+    }
+
+    void free_intermediate_resources()
+    {
+        dtree.y.clear();
+        dtree.y.shrink_to_fit();
     }
 };

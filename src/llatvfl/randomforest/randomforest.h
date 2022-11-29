@@ -109,4 +109,13 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     {
         return predict_raw(x);
     }
+
+    void free_intermediate_resources()
+    {
+        int estimators_num = estimators.size();
+        for (int i = 0; i < estimators_num; i++)
+        {
+            estimators[i].free_intermediate_resources();
+        }
+    }
 };
