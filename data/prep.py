@@ -398,7 +398,6 @@ if __name__ == "__main__":
             sep="\t",
         )
         df = sampling(df, 53, parsed_args)
-        df = df.sample(10000)
 
         col_alloc_origin = sampling_col_alloc(
             col_num=df.shape[1] - 1,
