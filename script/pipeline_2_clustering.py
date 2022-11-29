@@ -4,12 +4,11 @@ import numpy as np
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 
-from llatvfl.clustering import ReducedKMeans, get_f_p_r
+from llatvfl.clustering import get_f_p_r
 
 # from matplotlib import pyplot as plt
 
 label2maker = {0: "o", 1: "x"}
-clustering_type2cls = {"vanila": KMeans, "reduced": ReducedKMeans}
 
 
 def add_args(parser):
@@ -30,8 +29,9 @@ def add_args(parser):
     )
     parser.add_argument(
         "-k",
-        "--clustering_type",
-        type=str,
+        "--weight_for_community_variables",
+        type=float,
+        default=1.0,
     )
 
     args = parser.parse_args()
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
 
-    clustering_cls = clustering_type2cls[parsed_args.clustering_type]
+    clustering_cls = KMeans
 
     print(
         "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
@@ -97,9 +97,7 @@ if __name__ == "__main__":
         for i in range(comm_num):
             temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
             for k in temp_nodes_in_comm:
-                X_com[int(k), i] += 1
-
-        # X_com = X_com[:, X_com.sum(axis=0) != 1]
+                X_com[int(k), i] += parsed_args.weight_for_community_variables
 
     kmeans_with_com = clustering_cls(
         n_clusters=num_classes, random_state=parsed_args.seed
