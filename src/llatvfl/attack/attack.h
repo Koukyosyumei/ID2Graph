@@ -38,44 +38,54 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
         temp_node = que.front();
         que.pop();
 
-        if (!temp_node->lmir_flag_exclude_passive_parties)
+        if (temp_node->is_leaf_flag)
         {
-            if (temp_node->is_leaf_flag)
+            // skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
+            if (!temp_node->not_splitted_flag || target_party_id == -1)
             {
-                // skip_flag = temp_node->depth <= 0 && target_party_id != -1 && temp_node->party_id != target_party_id;
-                if (!temp_node->not_splitted_flag || target_party_id == -1)
+                temp_idxs_size = temp_node->idxs.size();
+                for (int i = 0; i < temp_idxs_size; i++)
                 {
-                    temp_idxs_size = temp_node->idxs.size();
-                    for (int i = 0; i < temp_idxs_size; i++)
+                    for (int j = i + 1; j < temp_idxs_size; j++)
                     {
-                        for (int j = i + 1; j < temp_idxs_size; j++)
-                        {
-                            adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
-                        }
+                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
                 }
             }
-            else
-            {
-                // left_skip_flag = temp_node->left->is_leaf() && target_party_id != -1 && temp_node->left->party_id != target_party_id;
-                // right_skip_flag = temp_node->right->is_leaf() && target_party_id != -1 && temp_node->right->party_id != target_party_id;
+        }
+        else
+        {
+            // left_skip_flag = temp_node->left->is_leaf() && target_party_id != -1 && temp_node->left->party_id != target_party_id;
+            // right_skip_flag = temp_node->right->is_leaf() && target_party_id != -1 && temp_node->right->party_id != target_party_id;
 
-                if ((temp_node->left->not_splitted_flag && temp_node->right->not_splitted_flag) && (target_party_id != -1))
+            if ((((temp_node->left->not_splitted_flag &&
+                   temp_node->right->not_splitted_flag)) ||
+                 (temp_node->left->lmir_flag_exclude_passive_parties &&
+                  temp_node->right->lmir_flag_exclude_passive_parties)) &&
+                (target_party_id != -1))
+            {
+                temp_idxs_size = temp_node->idxs.size();
+                for (int i = 0; i < temp_idxs_size; i++)
                 {
-                    temp_idxs_size = temp_node->idxs.size();
-                    for (int i = 0; i < temp_idxs_size; i++)
+                    for (int j = i + 1; j < temp_idxs_size; j++)
                     {
-                        for (int j = i + 1; j < temp_idxs_size; j++)
-                        {
-                            adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
-                        }
+                        adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
                 }
+            }
 
+            if (!temp_node->left->lmir_flag_exclude_passive_parties ||
+                !temp_node->right->lmir_flag_exclude_passive_parties)
+            {
                 que.push(temp_node->left);
                 que.push(temp_node->right);
             }
         }
+
+        // temp_node->idxs.clear();
+        // temp_node->idxs.shrink_to_fit();
+        temp_node->val.clear();
+        temp_node->val.shrink_to_fit();
     }
 }
 

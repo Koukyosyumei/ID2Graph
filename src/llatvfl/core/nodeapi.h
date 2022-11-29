@@ -26,7 +26,7 @@ struct NodeAPI
     float get_leaf_purity(NodeType *node, int tot_cnt)
     {
         float leaf_purity = 0;
-        if (node->is_leaf())
+        if (node->is_leaf_flag)
         {
             int cnt_idxs = node->idxs.size();
             if (cnt_idxs == 0)
@@ -77,7 +77,7 @@ struct NodeAPI
     {
         string res = "";
 
-        if (node->is_leaf())
+        if (node->is_leaf_flag)
         {
             res += "{name: '*', value: " + to_string(node->record_id) +
                    ", nodeSettings: {fill: am5.color('#ADE199')}";
@@ -98,7 +98,7 @@ struct NodeAPI
             }
         }
 
-        if (!node->is_leaf())
+        if (!node->is_leaf_flag)
         {
             res += ", children: [" + to_json(node->left) + ", " + to_json(node->right) + "]";
         }
@@ -200,7 +200,7 @@ struct NodeAPI
     {
         string node_info;
         bool skip_flag;
-        if (node->is_leaf())
+        if (node->is_leaf_flag)
         {
             skip_flag = node->depth <= 0 && target_party_id != -1 && node->party_id != target_party_id;
             if (skip_flag)
@@ -275,7 +275,7 @@ struct NodeAPI
             temp_node = que.front();
             que.pop();
 
-            if (temp_node->is_leaf())
+            if (temp_node->is_leaf_flag)
             {
                 return temp_node->val;
             }

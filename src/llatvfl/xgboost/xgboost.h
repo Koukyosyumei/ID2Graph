@@ -174,6 +174,11 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
                 for (int c = 0; c < num_classes; c++)
                     base_pred[j][c] += learning_rate * pred_temp[j][c];
 
+            grad.clear();
+            grad.shrink_to_fit();
+            hess.clear();
+            hess.shrink_to_fit();
+
             estimators.push_back(boosting_tree);
 
             if (save_loss)
