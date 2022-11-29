@@ -359,6 +359,18 @@ if __name__ == "__main__":
         X = df[list(range(60))].values
         y = df[60].values
 
+    elif parsed_args.dataset_type == "polish":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "3year.csv"), header=None
+        )
+        df = df.replace("?", -99)
+        df = sampling(df, 64, parsed_args)
+        for i in range(64):
+            df[i] = df[i].astype(float)
+
+        X = df[list(range(64))].values
+        y = df[64].values
+
     elif parsed_args.dataset_type == "diabetic":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "diabetic_data.csv"))
         for c in df.columns[df.dtypes == object]:
