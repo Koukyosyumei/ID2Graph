@@ -319,6 +319,24 @@ if __name__ == "__main__":
         X = df[list(range(1, 857))].values
         y = df[0].values
 
+    elif parsed_args.dataset_type == "adult":
+        df = pd.concat(
+            [
+                pd.read_csv(
+                    os.path.join(parsed_args.path_to_dir, "adult.data"), header=None
+                ),
+                pd.read_csv(
+                    os.path.join(parsed_args.path_to_dir, "adult.test"), header=None
+                ),
+            ]
+        ).sample(10000)
+        for c in df.columns[df.dtypes == object]:
+            le = LabelEncoder()
+            df[c] = le.fit_transform(df[c].values)
+        df = sampling(df, 14, parsed_args)
+        X = df[list(range(14))].values
+        y = df[14].values
+
     elif parsed_args.dataset_type == "hcv":
         cols = [
             "Age",
