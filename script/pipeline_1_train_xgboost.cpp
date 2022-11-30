@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 
     result_file.close();
 
-    clf.free_intermediate_resources();
+    // clf.free_intermediate_resources();
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
