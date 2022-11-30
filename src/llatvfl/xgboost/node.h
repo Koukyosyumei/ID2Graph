@@ -28,8 +28,9 @@ using namespace std;
 struct XGBoostNode : Node<XGBoostParty>
 {
     vector<XGBoostParty> *parties;
-    vector<float> prior;
-    vector<vector<float>> gradient, hessian;
+    vector<float> *y;
+    vector<float> *prior;
+    vector<vector<float>> *gradient, *hessian;
     float min_child_weight, lam, gamma, eps, mi_bound;
     float best_entropy;
     bool use_only_active_party;
@@ -41,9 +42,9 @@ struct XGBoostNode : Node<XGBoostParty>
     vector<float> entire_class_cnt;
 
     XGBoostNode() {}
-    XGBoostNode(vector<XGBoostParty> *parties_, vector<float> &y_, int num_classes_,
-                vector<vector<float>> &gradient_,
-                vector<vector<float>> &hessian_, vector<int> &idxs_, vector<float> &prior_,
+    XGBoostNode(vector<XGBoostParty> *parties_, vector<float> *y_, int num_classes_,
+                vector<vector<float>> *gradient_,
+                vector<vector<float>> *hessian_, vector<int> &idxs_, vector<float> *prior_,
                 float min_child_weight_, float lam_, float gamma_, float eps_, int depth_, float mi_bound_,
                 int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
@@ -70,10 +71,10 @@ struct XGBoostNode : Node<XGBoostParty>
         num_parties = parties->size();
 
         entire_class_cnt.resize(num_classes, 0);
-        entire_datasetsize = y.size();
+        entire_datasetsize = y->size();
         for (int i = 0; i < entire_datasetsize; i++)
         {
-            entire_class_cnt[int(y[i])] += 1.0;
+            entire_class_cnt[int(y->at(i))] += 1.0;
         }
 
         try
@@ -202,7 +203,7 @@ struct XGBoostNode : Node<XGBoostParty>
      */
     vector<float> compute_weight()
     {
-        return xgboost_compute_weight(row_count, gradient, hessian, idxs, lam);
+        return xgboost_compute_weight_from_pointer(row_count, gradient, hessian, idxs, lam);
     }
 
     /**
@@ -242,7 +243,7 @@ struct XGBoostNode : Node<XGBoostParty>
         {
 
             vector<vector<tuple<vector<float>, vector<float>, float, vector<float>>>> search_results =
-                parties->at(temp_party_id).greedy_search_split(gradient, hessian, y, idxs);
+                parties->at(temp_party_id).greedy_search_split_from_pointer(gradient, hessian, y, idxs);
 
             float temp_score, temp_entropy;
             vector<float> temp_left_grad(grad_dim, 0);
@@ -330,14 +331,14 @@ struct XGBoostNode : Node<XGBoostParty>
      */
     tuple<int, int, int> find_split()
     {
-        vector<float> sum_grad(gradient[0].size(), 0);
-        vector<float> sum_hess(hessian[0].size(), 0);
+        vector<float> sum_grad(gradient->at(0).size(), 0);
+        vector<float> sum_hess(hessian->at(0).size(), 0);
         for (int i = 0; i < row_count; i++)
         {
             for (int c = 0; c < sum_grad.size(); c++)
             {
-                sum_grad[c] += gradient[idxs[i]][c];
-                sum_hess[c] += hessian[idxs[i]][c];
+                sum_grad[c] += gradient->at(idxs[i]).at(c);
+                sum_hess[c] += hessian->at(idxs[i]).at(c);
             }
         }
 
@@ -345,7 +346,7 @@ struct XGBoostNode : Node<XGBoostParty>
         vector<float> temp_y_class_cnt(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            temp_y_class_cnt[int(y[idxs[r]])] += 1;
+            temp_y_class_cnt[int(y->at(idxs[r]))] += 1;
         }
 
         float temp_score, temp_left_grad, temp_left_hess;
@@ -402,10 +403,10 @@ struct XGBoostNode : Node<XGBoostParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
-                                                                        entire_class_cnt, prior, left_idxs);
-        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
-                                                                         entire_class_cnt, prior, right_idxs);
+        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound_from_pointer(num_classes, mi_bound, y,
+                                                                                     entire_class_cnt, prior, left_idxs);
+        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound_from_pointer(num_classes, mi_bound, y,
+                                                                                      entire_class_cnt, prior, right_idxs);
 
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
                                lam, gamma, eps, depth - 1, mi_bound, active_party_id,
@@ -471,7 +472,7 @@ struct XGBoostNode : Node<XGBoostParty>
             set<float> s{};
             for (int i = 0; i < row_count; i++)
             {
-                if (s.insert(y[idxs[i]]).second)
+                if (s.insert(y->at(idxs[i])).second)
                 {
                     if (s.size() == 2)
                     {

@@ -80,6 +80,7 @@ TEST(XGBoost, XGBoostClassifierTest)
 
     // --- Check Training --- //
     clf.fit(parties, y);
+    clf.free_intermediate_resources();
 
     ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
     ASSERT_EQ(parties[1].get_lookup_table().size(), 2);
@@ -92,6 +93,11 @@ TEST(XGBoost, XGBoostClassifierTest)
     //     ASSERT_EQ(idxs_root[i], test_idxs_root[i]);
     ASSERT_EQ(clf.estimators[0].dtree.idxs.size(), 0);
     ASSERT_EQ(clf.estimators[0].dtree.idxs.capacity(), 0);
+
+    ASSERT_EQ(clf.estimators[0].dtree.gradient->size(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.gradient->capacity(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.left->gradient->size(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.left->gradient->capacity(), 0);
 
     ASSERT_EQ(clf.estimators[0].dtree.depth, 3);
     ASSERT_EQ(get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)), 0);

@@ -7,6 +7,7 @@ using namespace std;
 struct SecureBoostNode : Node<SecureBoostParty>
 {
     vector<SecureBoostParty> *parties;
+    vector<float> *y;
     vector<vector<PaillierCipherText>> gradient, hessian;
     vector<vector<float>> vanila_gradient, vanila_hessian;
     float min_child_weight, lam, gamma, eps;
@@ -16,7 +17,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
     int num_classes;
 
     SecureBoostNode() {}
-    SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> &y_,
+    SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> *y_,
                     int num_classes_,
                     vector<vector<PaillierCipherText>> &gradient_,
                     vector<vector<PaillierCipherText>> &hessian_,
@@ -339,7 +340,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
             set<float> s{};
             for (int i = 0; i < row_count; i++)
             {
-                if (s.insert(y[idxs[i]]).second)
+                if (s.insert(y->at(idxs[i])).second)
                 {
                     if (s.size() == 2)
                     {

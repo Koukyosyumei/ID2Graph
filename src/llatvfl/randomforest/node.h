@@ -28,14 +28,15 @@ struct RandomForestNode : Node<RandomForestParty>
 
     float giniimp;
     float mi_bound;
-    vector<float> prior;
+    vector<float> *y;
+    vector<float> *prior;
 
     float entire_datasetsize = 0;
     vector<float> entire_class_cnt;
 
     RandomForestNode() {}
-    RandomForestNode(vector<RandomForestParty> *parties_, vector<float> &y_, int num_classes_,
-                     vector<int> &idxs_, int depth_, vector<float> &prior_, float mi_bound_,
+    RandomForestNode(vector<RandomForestParty> *parties_, vector<float> *y_, int num_classes_,
+                     vector<int> &idxs_, int depth_, vector<float> *prior_, float mi_bound_,
                      int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
     {
         parties = parties_;
@@ -55,10 +56,10 @@ struct RandomForestNode : Node<RandomForestParty>
         num_parties = parties->size();
 
         entire_class_cnt.resize(num_classes, 0);
-        entire_datasetsize = y.size();
+        entire_datasetsize = y->size();
         for (int i = 0; i < entire_datasetsize; i++)
         {
-            entire_class_cnt[int(y[i])] += 1.0;
+            entire_class_cnt[int(y->at(i))] += 1.0;
         }
 
         giniimp = compute_giniimp();
@@ -180,7 +181,7 @@ struct RandomForestNode : Node<RandomForestParty>
         vector<float> temp_y_class_cnt(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            temp_y_class_cnt[int(y[idxs[r]])] += 1;
+            temp_y_class_cnt[int(y->at(idxs[r]))] += 1;
         }
 
         float giniimp = 1;
@@ -205,7 +206,7 @@ struct RandomForestNode : Node<RandomForestParty>
         vector<float> class_ratio(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            class_ratio[int(y[idxs[r]])] += 1 / float(row_count);
+            class_ratio[int(y->at(idxs[r]))] += 1 / float(row_count);
         }
         return class_ratio;
     }
@@ -229,7 +230,7 @@ struct RandomForestNode : Node<RandomForestParty>
 
         for (int temp_party_id = party_id_start; temp_party_id < party_id_start + temp_num_parties; temp_party_id++)
         {
-            vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split(idxs, y);
+            vector<vector<pair<float, vector<float>>>> search_results = parties->at(temp_party_id).greedy_search_split_from_pointer(idxs, y);
 
             int num_search_results = search_results.size();
             int temp_num_search_results_j;
@@ -286,7 +287,7 @@ struct RandomForestNode : Node<RandomForestParty>
         vector<float> temp_y_class_cnt(num_classes, 0);
         for (int r = 0; r < row_count; r++)
         {
-            temp_y_class_cnt[int(y[idxs[r]])] += 1;
+            temp_y_class_cnt[int(y->at(idxs[r]))] += 1;
         }
 
         if (use_only_active_party)
@@ -340,10 +341,10 @@ struct RandomForestNode : Node<RandomForestParty>
                         { return x == idxs[i]; }))
                 right_idxs.push_back(idxs[i]);
 
-        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
-                                                                        entire_class_cnt, prior, left_idxs);
-        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound(num_classes, mi_bound, y,
-                                                                         entire_class_cnt, prior, right_idxs);
+        bool left_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound_from_pointer(num_classes, mi_bound, y,
+                                                                                     entire_class_cnt, prior, left_idxs);
+        bool right_is_satisfied_lmir_cond = is_satisfied_with_lmir_bound_from_pointer(num_classes, mi_bound, y,
+                                                                                      entire_class_cnt, prior, right_idxs);
 
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
                                     depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
@@ -407,7 +408,7 @@ struct RandomForestNode : Node<RandomForestParty>
             set<float> s{};
             for (int i = 0; i < row_count; i++)
             {
-                if (s.insert(y[idxs[i]]).second)
+                if (s.insert(y->at(idxs[i])).second)
                 {
                     if (s.size() == 2)
                     {

@@ -18,7 +18,6 @@ template <typename PartyType>
 struct Node
 {
     vector<PartyType> *parties;
-    vector<float> y;
     vector<int> idxs;
 
     int num_classes;

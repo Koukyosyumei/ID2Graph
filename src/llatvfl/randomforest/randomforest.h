@@ -78,7 +78,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, y, num_classes, min_leaf, depth, prior, max_samples_ratio, mi_bound, active_party_id, n_job, seed);
+            tree.fit(&parties, &y, num_classes, min_leaf, depth, &prior, max_samples_ratio, mi_bound, active_party_id, n_job, seed);
             estimators.push_back(tree);
             seed += 1;
         }

@@ -6,6 +6,8 @@ using namespace std;
 
 struct MPISecureBoostNode : Node<MPISecureBoostParty>
 {
+    vector<float> *y;
+
     MPISecureBoostParty *active_party;
     int parties_num, max_depth, grad_dim;
     float min_child_weight, lam, gamma, eps;
@@ -39,7 +41,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             grad_dim = active_party->num_classes;
         }
 
-        y = active_party->y;
+        y = &active_party->y;
 
         row_count = idxs.size();
         num_parties = parties_num;
@@ -386,7 +388,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             set<float> s{};
             for (int i = 0; i < row_count; i++)
             {
-                if (s.insert(y[idxs[i]]).second)
+                if (s.insert(y->at(idxs[i])).second)
                 {
                     if (s.size() == 2)
                     {

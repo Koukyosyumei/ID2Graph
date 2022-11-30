@@ -174,3 +174,47 @@ inline bool is_satisfied_with_lmir_bound(int num_classes, float xi,
         return true;
     }
 }
+
+inline bool is_satisfied_with_lmir_bound_from_pointer(int num_classes, float xi,
+                                                      vector<float> *y,
+                                                      vector<float> &entire_class_cnt,
+                                                      vector<float> *prior,
+                                                      vector<int> &idxs_within_node)
+{
+    float eps = 1e-15;
+
+    if (xi > 0)
+    {
+        int num_row = y->size();
+        int num_idxs_within_node = idxs_within_node.size();
+
+        vector<float> y_class_cnt_within_node(num_classes, 0);
+        for (int j = 0; j < num_idxs_within_node; j++)
+        {
+            y_class_cnt_within_node[int(y->at(idxs_within_node[j]))] += 1;
+        }
+
+        float in_kl_divergence = 0;
+        float out_kl_divergence = 0;
+
+        float nc_div_n;
+        float Nc_div_N;
+        float Nc_m_nc_div_N_m_n;
+
+        for (int c = 0; c < num_classes; c++)
+        {
+            nc_div_n = y_class_cnt_within_node[c] / float(num_idxs_within_node);
+            Nc_div_N = prior->at(c);
+            Nc_m_nc_div_N_m_n = (entire_class_cnt[c] - y_class_cnt_within_node[c]) / float(num_row - num_idxs_within_node);
+
+            in_kl_divergence += nc_div_n * log(eps + nc_div_n / Nc_div_N);
+            out_kl_divergence += Nc_m_nc_div_N_m_n * log(eps + Nc_m_nc_div_N_m_n / Nc_div_N);
+        }
+
+        return max(in_kl_divergence, out_kl_divergence) <= xi;
+    }
+    else
+    {
+        return true;
+    }
+}

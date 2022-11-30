@@ -38,7 +38,7 @@ struct NodeAPI
                 vector<int> counter(node->num_classes, 0);
                 for (int i = 0; i < node->idxs.size(); i++)
                 {
-                    counter[node->y[node->idxs[i]]] += 1;
+                    counter[node->y->at(node->idxs[i])] += 1;
                 }
                 leaf_purity = float(*max_element(counter.begin(), counter.end())) / float(cnt_idxs);
                 leaf_purity = leaf_purity * (float(cnt_idxs) / float(tot_cnt));
@@ -161,7 +161,7 @@ struct NodeAPI
                 temp_id = node->idxs[i];
                 if (binary_color)
                 {
-                    if (node->y[temp_id] == 0)
+                    if (node->y->at(temp_id) == 0)
                     {
                         node_info += "\033[32m";
                         node_info += to_string(temp_id);
