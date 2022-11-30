@@ -491,10 +491,7 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "diabetic":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "diabetic_data.csv"))
-        for c in df.columns[df.dtypes == object]:
-            le = LabelEncoder()
-            df[c] = le.fit_transform(df[c].values)
-        X = df[
+        df = df[
             [
                 "race",
                 "gender",
@@ -543,8 +540,25 @@ if __name__ == "__main__":
                 "metformin-pioglitazone",
                 "change",
                 "diabetesMed",
+                "readmitted",
             ]
-        ].values
+        ]
+
+        df["diabetesMed"] = LabelEncoder().fit_transform(df["diabetesMed"].values)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("readmitted", axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
         y = df["readmitted"].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
