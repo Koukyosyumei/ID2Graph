@@ -82,8 +82,8 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             }
         }
 
-        // temp_node->idxs.clear();
-        // temp_node->idxs.shrink_to_fit();
+        temp_node->idxs.clear();
+        temp_node->idxs.shrink_to_fit();
         temp_node->val.clear();
         temp_node->val.shrink_to_fit();
     }
