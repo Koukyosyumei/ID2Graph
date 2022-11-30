@@ -364,6 +364,16 @@ struct RandomForestNode : Node<RandomForestParty>
             left->not_splitted_flag = true;
             right->not_splitted_flag = true;
         }
+
+        // Clear unused index
+        if (!(((left->not_splitted_flag &&
+                right->not_splitted_flag)) ||
+              (left->lmir_flag_exclude_passive_parties &&
+               right->lmir_flag_exclude_passive_parties)))
+        {
+            idxs.clear();
+            idxs.shrink_to_fit();
+        }
     }
 
     /**
@@ -392,15 +402,26 @@ struct RandomForestNode : Node<RandomForestParty>
      */
     bool is_pure()
     {
-        set<float> s{};
-        for (int i = 0; i < row_count; i++)
+        if (is_pure_flag == -1)
         {
-            if (s.insert(y[idxs[i]]).second)
+            set<float> s{};
+            for (int i = 0; i < row_count; i++)
             {
-                if (s.size() == 2)
-                    return false;
+                if (s.insert(y[idxs[i]]).second)
+                {
+                    if (s.size() == 2)
+                    {
+                        is_pure_flag = 0;
+                        return false;
+                    }
+                }
             }
+            is_pure_flag = 1;
+            return true;
         }
-        return true;
+        else
+        {
+            return is_pure_flag == 1;
+        }
     }
 };
