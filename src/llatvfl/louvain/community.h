@@ -241,7 +241,7 @@ struct Community
         return g2;
     }
 
-    bool one_level(unsigned int maximum_sample_searched = 3000)
+    bool one_level()
     {
         bool improvement = false;
         int nb_moves;
@@ -282,17 +282,13 @@ struct Community
                 float best_nblinks = 0.;
                 float best_increase = 0.;
 
-                vector<int> neigh_candidates(neigh_last);
-                iota(neigh_candidates.begin(), neigh_candidates.end(), 0);
-                shuffle(neigh_candidates.begin(), neigh_candidates.end(), gen);
-
-                for (unsigned int i = 0; i < min(neigh_last, maximum_sample_searched); i++)
+                for (unsigned int i = 0; i < neigh_last; i++)
                 {
-                    float increase = modularity_gain(node, neigh_pos[neigh_candidates[i]], neigh_weight[neigh_pos[neigh_candidates[i]]], w_degree);
+                    float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
                     if (increase > best_increase)
                     {
-                        best_comm = neigh_pos[neigh_candidates[i]];
-                        best_nblinks = neigh_weight[neigh_pos[neigh_candidates[i]]];
+                        best_comm = neigh_pos[i];
+                        best_nblinks = neigh_weight[neigh_pos[i]];
                         best_increase = increase;
                     }
                 }

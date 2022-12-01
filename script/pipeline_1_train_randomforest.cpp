@@ -18,7 +18,6 @@ using namespace std;
 const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
-const int max_timeout_num_patience = 15;
 
 string folderpath;
 string fileprefix;
@@ -29,7 +28,7 @@ int skip_round = 0;
 float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float epsilon_ldp = -1;
-float maximum_sample_searched = 1.0;
+int maximum_nb_pass_done = 100;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
@@ -65,7 +64,7 @@ void parse_args(int argc, char *argv[])
             eta = stof(string(optarg));
             break;
         case 'l':
-            maximum_sample_searched = stoi(string(optarg));
+            maximum_nb_pass_done = stoi(string(optarg));
             break;
         case 'o':
             epsilon_ldp = stof(string(optarg));
@@ -291,8 +290,9 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
+    printf("Start community detection trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    Louvain louvain = Louvain(maximum_sample_searched);
+    Louvain louvain = Louvain(maximum_nb_pass_done);
     louvain.fit(g);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
