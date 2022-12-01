@@ -11,7 +11,7 @@ struct Community
     vector<float> neigh_weight;
     vector<unsigned int> neigh_pos;
     unsigned int neigh_last;
-    Graph g;                    // network to compute communities for
+    Graph *g;                   // network to compute communities for
     int num_nodes;              // nummber of nodes in the network and num_nodes of all vectors
     vector<int> node2community; // community to which each node belongs
     vector<float> in;           // in[c] = total weights within c-th commynity (\sum_{(i, j) \in c} w_(i, j))
@@ -31,10 +31,10 @@ struct Community
     uniform_real_distribution<> uniform_dist_0_to_1;
 
     Community(){};
-    Community(Graph &gc, int nbp, float minm, int seed = 42)
+    Community(Graph *gc, int nbp, float minm, int seed = 42)
     {
         g = gc;
-        num_nodes = g.num_nodes;
+        num_nodes = g->num_nodes;
 
         neigh_weight.resize(num_nodes, -1);
         neigh_pos.resize(num_nodes);
@@ -47,8 +47,8 @@ struct Community
         for (int i = 0; i < num_nodes; i++)
         {
             node2community[i] = i;
-            in[i] = g.get_num_selfloops(i);
-            tot[i] = g.get_weighted_degree(i);
+            in[i] = g->get_num_selfloops(i);
+            tot[i] = g->get_weighted_degree(i);
         }
 
         nb_pass = nbp;
@@ -68,8 +68,8 @@ struct Community
      */
     void remove(int node, int comm, float weights_from_node_to_comm)
     {
-        tot[comm] -= g.get_weighted_degree(node);
-        in[comm] -= 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
+        tot[comm] -= g->get_weighted_degree(node);
+        in[comm] -= 2 * weights_from_node_to_comm + g->get_num_selfloops(node);
         node2community[node] = -1;
     }
 
@@ -82,8 +82,8 @@ struct Community
      */
     void insert(int node, int comm, float weights_from_node_to_comm)
     {
-        tot[comm] += g.get_weighted_degree(node);
-        in[comm] += 2 * weights_from_node_to_comm + g.get_num_selfloops(node);
+        tot[comm] += g->get_weighted_degree(node);
+        in[comm] += 2 * weights_from_node_to_comm + g->get_num_selfloops(node);
         node2community[node] = comm;
     }
 
@@ -96,7 +96,7 @@ struct Community
     float modularity()
     {
         float q = 0.;
-        float inv_m2 = 1 / (float)g.total_weight;
+        float inv_m2 = 1 / (float)g->total_weight;
 
         for (int i = 0; i < num_nodes; i++)
         {
@@ -129,7 +129,7 @@ struct Community
         //       m           = number or wegihts of all links
         // ignore const (1/2m)
         return ((float)weights_from_node_to_comm -
-                (float)tot[comm] * (float)w_degree / (float)g.total_weight);
+                (float)tot[comm] * (float)w_degree / (float)g->total_weight);
     }
 
     // compute the set of neighboring communities of node
@@ -141,17 +141,17 @@ struct Community
             neigh_weight[neigh_pos[i]] = -1;
         neigh_last = 0;
 
-        unsigned int degree = g.get_num_neighbors(node);
+        unsigned int degree = g->get_num_neighbors(node);
         neigh_pos[0] = node2community[node];
         neigh_weight[neigh_pos[0]] = 0;
         neigh_last = 1;
 
-        pair<vector<unsigned int>::iterator, vector<float>::iterator> pointer2neigh_weight = g.get_neighbors(node);
+        pair<vector<unsigned int>::iterator, vector<float>::iterator> pointer2neigh_weight = g->get_neighbors(node);
         for (unsigned int i = 0; i < degree; i++)
         {
             unsigned int neigh = *(pointer2neigh_weight.first + i);
             unsigned int neigh_comm = node2community[neigh];
-            float neigh_w = (g.weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
+            float neigh_w = (g->weights.size() == 0) ? 1. : *(pointer2neigh_weight.second + i);
             if (neigh != node)
             {
                 if (neigh_weight[neigh_comm] == -1)
@@ -189,7 +189,7 @@ struct Community
         {
             // TODO add node handling
             vector<int> &comm = communities[renumber[node2community[node]]];
-            comm.insert(comm.end(), g.nodes[node].begin(), g.nodes[node].end());
+            comm.insert(comm.end(), g->nodes[node].begin(), g->nodes[node].end());
             comm2nodes[renumber[node2community[node]]].push_back(node);
         }
 
@@ -208,13 +208,13 @@ struct Community
             int comm_size = comm2nodes[comm].size();
             for (int node = 0; node < comm_size; node++)
             {
-                pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g.get_neighbors(comm2nodes[comm][node]);
-                int degree = g.get_num_neighbors(comm2nodes[comm][node]);
+                pair<vector<unsigned int>::iterator, vector<float>::iterator> p = g->get_neighbors(comm2nodes[comm][node]);
+                int degree = g->get_num_neighbors(comm2nodes[comm][node]);
                 for (int i = 0; i < degree; i++)
                 {
                     int neigh = *(p.first + i);
                     int neigh_comm = renumber[node2community[neigh]];
-                    float neigh_weight_i = (g.weights.size() == 0) ? 1. : *(p.second + i);
+                    float neigh_weight_i = (g->weights.size() == 0) ? 1. : *(p.second + i);
 
                     it = m.find(neigh_comm);
                     if (it == m.end())
@@ -269,7 +269,7 @@ struct Community
             {
                 int node = random_indicies_to_num_nodes[node_tmp];
                 int node_comm = node2community[node];
-                float w_degree = g.get_weighted_degree(node);
+                float w_degree = g->get_weighted_degree(node);
 
                 // computation of all neighboring communities of current node
                 compute_neigh_comms(node);
@@ -318,6 +318,8 @@ struct Community
                 improvement = true;
 
         } while (nb_moves > 0 && new_mod - cur_mod > min_modularity);
+
+        cout << "nb_pass_done is " << nb_pass_done << endl;
 
         return improvement;
     }

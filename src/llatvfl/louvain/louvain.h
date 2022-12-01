@@ -39,7 +39,7 @@ struct Louvain
         bool improvement = true;
 
         // g = gc;
-        community = Community(gc, ndp, precision, seed);
+        community = Community(&gc, ndp, precision, seed);
         float mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
@@ -47,7 +47,7 @@ struct Louvain
             improvement = community.one_level(maximum_sample_searched);
             new_mod = community.modularity();
             gc = community.partition2graph_binary();
-            community = Community(gc, ndp, precision, seed);
+            community = Community(&gc, ndp, precision, seed);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)

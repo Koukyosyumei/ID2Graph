@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
     louvain.fit(g);
     end = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Community detection is complete %f [ms] trial=%s", elapsed, fileprefix.c_str());
+    printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
     std::ofstream com_file;
