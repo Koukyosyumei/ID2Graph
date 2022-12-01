@@ -542,60 +542,38 @@ if __name__ == "__main__":
         y = df[64].values
 
     elif parsed_args.dataset_type == "diabetic":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "diabetic_data.csv"))
-        df = df[
-            [
-                "race",
-                "gender",
-                "age",
-                "weight",
-                "admission_type_id",
-                "discharge_disposition_id",
-                "admission_source_id",
-                "time_in_hospital",
-                "payer_code",
-                "medical_specialty",
-                "num_lab_procedures",
-                "num_procedures",
-                "num_medications",
-                "number_outpatient",
-                "number_emergency",
-                "number_inpatient",
-                "diag_1",
-                "diag_2",
-                "diag_3",
-                "number_diagnoses",
-                "max_glu_serum",
-                "A1Cresult",
-                "metformin",
-                "repaglinide",
-                "nateglinide",
-                "chlorpropamide",
-                "glimepiride",
-                "acetohexamide",
-                "glipizide",
-                "glyburide",
-                "tolbutamide",
-                "pioglitazone",
-                "rosiglitazone",
-                "acarbose",
-                "miglitol",
-                "troglitazone",
-                "tolazamide",
-                "examide",
-                "citoglipton",
-                "insulin",
-                "glyburide-metformin",
-                "glipizide-metformin",
-                "glimepiride-pioglitazone",
-                "metformin-rosiglitazone",
-                "metformin-pioglitazone",
-                "change",
-                "diabetesMed",
-                "readmitted",
-            ]
-        ]
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "diabetic_data_diag_encoded.csv")
+        )
 
+        df = df.drop(
+            ["encounter_id", "patient_nbr", "diag_1", "diag_2", "diag_3"], axis=1
+        )
+        df = df.replace({"No": 0, "Down": -1, "Steady": 1, "Up": 2})
+        df["gender"] = df["gender"].replace(
+            {"Female": 0, "Unknown/Invalid": 1, "Male": 2}
+        )
+        df["age"] = df["age"].apply(lambda x: int(x[1]))
+        df["weight"] = df["weight"].replace(
+            {
+                "?": 0,
+                "[0-25)": 1,
+                "[25-50)": 2,
+                "[50-75)": 3,
+                "[75-100)": 4,
+                "[100-125)": 5,
+                "[125-150)": 6,
+                "[150-175)": 7,
+                "[175-200)": 8,
+                ">200": 9,
+            }
+        )
+        df["max_glu_serum"] = df["max_glu_serum"].replace(
+            {"None": 0, "Norm": 1, ">200": 2, ">300": 3}
+        )
+        df["A1Cresult"] = df["A1Cresult"].replace(
+            {"None": 0, "Norm": 1, ">7": 2, ">8": 2}
+        )
         df["diabetesMed"] = LabelEncoder().fit_transform(df["diabetesMed"].values)
 
         col_alloc_origin = sampling_col_alloc(
