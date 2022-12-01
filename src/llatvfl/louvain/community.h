@@ -317,6 +317,8 @@ struct Community
             if (nb_moves > 0)
                 improvement = true;
 
+            cout << nb_pass_done << endl;
+
         } while (nb_moves > 0 && new_mod - cur_mod > min_modularity);
 
         cout << "nb_pass_done is " << nb_pass_done << endl;
