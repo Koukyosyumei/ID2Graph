@@ -23,7 +23,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 5;
+const int max_timeout_num_patience = 15;
 const bool use_missing_value = false;
 
 string folderpath;
@@ -305,11 +305,12 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
-    printf("Start community detection (epsilon=%f) trial=%s\n",
-           epsilon_random_unfolding, fileprefix.c_str());
-    Louvain louvain = Louvain(epsilon_random_unfolding);
-    future<void> future = async(launch::async, [&louvain, &g]()
-                                { louvain.fit(g); });
+    printf("Start community detection (trial=%s)\n", fileprefix.c_str());
+    Louvain louvain = Louvain();
+    vector<float> epsilon_random_unfolding_candidates = {epsilon_random_unfolding, 0.5, 0.1};
+    float temp_epsilon_random_unfolding = epsilon_random_unfolding;
+    future<void> future = async(launch::async, [&louvain, &g, &temp_epsilon_random_unfolding]()
+                                { louvain.reset_epsilon(temp_epsilon_random_unfolding); louvain.fit(g); });
     future_status status;
     int count_timeout = 0;
     do
@@ -318,6 +319,9 @@ int main(int argc, char *argv[])
         start = chrono::system_clock::now();
         status = future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
+
+        temp_epsilon_random_unfolding = epsilon_random_unfolding_candidates[(count_timeout - 1 / 5)];
+        printf("Set epsilon to %f (trial=%s)\n", louvain.epsilon, fileprefix.c_str());
 
         switch (status)
         {

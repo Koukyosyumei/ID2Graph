@@ -34,6 +34,11 @@ struct Louvain
         seed = seed_;
     }
 
+    void reset_epsilon(float epsilon_)
+    {
+        epsilon = epsilon_;
+    }
+
     void fit(Graph gc)
     {
         bool improvement = true;
