@@ -363,6 +363,17 @@ if __name__ == "__main__":
         X = df[list(range(1, 857))].values
         y = df[0].values
 
+    elif parsed_args.dataset_type == "drive":
+        df = pd.read_csv(
+            os.path.join(
+                parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt", sep=" "
+            ),
+            header=None,
+        )
+
+        X = df[list(range(48))].values
+        y = df[48].values
+
     elif parsed_args.dataset_type == "adult":
         df = pd.concat(
             [
@@ -373,6 +384,26 @@ if __name__ == "__main__":
                     os.path.join(parsed_args.path_to_dir, "adult.test"), header=None
                 ),
             ]
+        )
+        df[3] = df[3].replace(
+            {
+                " Preschool": 0,
+                " 1st-4th": 1,
+                " 5th-6th": 2,
+                " 7th-8th": 3,
+                " 9th": 4,
+                " 10th": 5,
+                " 11th": 6,
+                " 12th": 7,
+                " HS-grad": 8,
+                " Prof-school": 9,
+                " Assoc-acdm": 10,
+                " Assoc-voc": 11,
+                " Some-college": 12,
+                " Bachelors": 13,
+                " Masters": 14,
+                " Doctorate": 15,
+            }
         )
         df[14] = df[14].apply(lambda y: 0 if y == " <=50K" else 1)
         df = sampling(df, 14, parsed_args)
