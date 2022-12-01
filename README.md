@@ -46,7 +46,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -u : (str) the path to the folder for saving the final results.
     -t : (str) the path to the folder where this script saves temporary results (default=`result`).
     -p : (int) number of parallelly executed experiments.
-    -l : (float) epsilon of epsilon-greedy louvain.
+    -l : (int) maximum number of trials
     -z : patience for timeout of louvain.
     -o : (float) epsilon of LP-MST.
     -b : (float) bound of mutual information.

@@ -18,7 +18,7 @@ using namespace std;
 const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
-const int max_timeout_num_patience = 5;
+const float epsilon_random_unfolding = 0.0;
 
 string folderpath;
 string fileprefix;
@@ -28,8 +28,8 @@ int min_leaf = 1;
 int skip_round = 0;
 float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
-float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
+int max_timeout_num_patience = 5;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
@@ -65,7 +65,7 @@ void parse_args(int argc, char *argv[])
             eta = stof(string(optarg));
             break;
         case 'l':
-            epsilon_random_unfolding = stof(string(optarg));
+            max_timeout_num_patience = stoi(string(optarg));
             break;
         case 'o':
             epsilon_ldp = stof(string(optarg));
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
             printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
             break;
         }
-    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
+    } while (count_timeout < max_timeout_num_patience || status != future_status::ready);
 
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
