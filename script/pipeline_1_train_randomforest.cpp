@@ -325,8 +325,9 @@ int main(int argc, char *argv[])
             printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
             break;
         }
-    } while (count_timeout < max_timeout_num_patience || status != future_status::ready);
+    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
 
+    printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
     com_file.open(filepath, std::ios::out);
