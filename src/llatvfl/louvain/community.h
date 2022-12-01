@@ -241,7 +241,7 @@ struct Community
         return g2;
     }
 
-    bool one_level(float epsilon)
+    bool one_level(float epsilon = 1.0)
     {
         bool improvement = false;
         int nb_moves;
@@ -282,28 +282,18 @@ struct Community
                 float best_nblinks = 0.;
                 float best_increase = 0.;
 
-                if (epsilon > 0)
+                vector<int> neigh_candidates(neigh_last);
+                iota(neigh_candidates.begin(), neigh_candidates.end(), 0);
+                shuffle(neigh_candidates.begin(), neigh_candidates.end(), gen);
+
+                for (unsigned int i = 0; i < int(float(neigh_last) * epsilon); i++)
                 {
-                    if (epsilon > uniform_dist_0_to_1(gen))
+                    float increase = modularity_gain(node, neigh_pos[neigh_candidates[i]], neigh_weight[neigh_pos[neigh_candidates[i]]], w_degree);
+                    if (increase > best_increase)
                     {
-                        // https://arxiv.org/abs/1503.01322
-                        uniform_int_distribution<> distr(0, neigh_last - 1);
-                        int i = distr(gen);
-                        best_comm = neigh_pos[i];
-                        best_nblinks = neigh_weight[neigh_pos[i]];
-                    }
-                }
-                else
-                {
-                    for (unsigned int i = 0; i < neigh_last; i++)
-                    {
-                        float increase = modularity_gain(node, neigh_pos[i], neigh_weight[neigh_pos[i]], w_degree);
-                        if (increase > best_increase)
-                        {
-                            best_comm = neigh_pos[i];
-                            best_nblinks = neigh_weight[neigh_pos[i]];
-                            best_increase = increase;
-                        }
+                        best_comm = neigh_pos[neigh_candidates[i]];
+                        best_nblinks = neigh_weight[neigh_pos[neigh_candidates[i]]];
+                        best_increase = increase;
                     }
                 }
 
