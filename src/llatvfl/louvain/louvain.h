@@ -11,7 +11,7 @@ struct Louvain
     int maximum_sample_searched;
     int max_itr;
     float precision;
-    int ndp;
+    int nbp;
     int seed;
     int verbose;
 
@@ -19,12 +19,12 @@ struct Louvain
     // Graph g;
 
     Louvain(int maximum_sample_searched_ = 3000, int max_itr_ = 100, float precision_ = 0.000001,
-            int ndp_ = -1, int seed_ = 42, int verbose_ = -1)
+            int nbp_ = 100, int seed_ = 42, int verbose_ = -1)
     {
         maximum_sample_searched = maximum_sample_searched_;
         max_itr = max_itr_;
         precision = precision_;
-        ndp = ndp_;
+        nbp = nbp_;
         seed = seed_;
         verbose = verbose_;
     }
@@ -39,7 +39,7 @@ struct Louvain
         bool improvement = true;
 
         // g = gc;
-        community = Community(&gc, ndp, precision, seed);
+        community = Community(&gc, nbp, precision, seed);
         float mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
@@ -47,7 +47,7 @@ struct Louvain
             improvement = community.one_level(maximum_sample_searched);
             new_mod = community.modularity();
             gc = community.partition2graph_binary();
-            community = Community(&gc, ndp, precision, seed);
+            community = Community(&gc, nbp, precision, seed);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)
