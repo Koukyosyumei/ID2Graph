@@ -331,7 +331,8 @@ int main(int argc, char *argv[])
                    fileprefix.c_str());
             if (count_timeout == max_timeout_num_patience)
             {
-                throw runtime_error("Maximum number of attempts at timeout reached");
+                printf("Maximum number of attempts at timeout reached");
+                break;
             }
             louvain.reseed(louvain.seed + 1);
             break;
