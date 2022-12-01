@@ -14,8 +14,6 @@ struct Louvain
     int ndp;
     int seed;
     int verbose;
-    int cnt_trials = 0;
-    vector<float> epsilon_random_unfolding_candidates;
 
     Community community;
     Graph g;
@@ -29,10 +27,6 @@ struct Louvain
         ndp = ndp_;
         seed = seed_;
         verbose = verbose_;
-
-        epsilon_random_unfolding_candidates.push_back(epsilon_);
-        epsilon_random_unfolding_candidates.push_back(0.5);
-        epsilon_random_unfolding_candidates.push_back(0.1);
     }
 
     void reseed(int seed_)
@@ -47,10 +41,6 @@ struct Louvain
 
     void fit(Graph gc)
     {
-        reseed(seed + cnt_trials);
-        reset_epsilon(epsilon_random_unfolding_candidates[cnt_trials]);
-        cnt_trials++;
-
         bool improvement = true;
 
         g = gc;

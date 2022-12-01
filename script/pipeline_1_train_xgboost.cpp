@@ -307,18 +307,23 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
-    printf("Start community detection (trial=%s)\n", fileprefix.c_str());
     Louvain louvain = Louvain();
+    vector<float> epsilon_random_unfolding_candidates = {epsilon_random_unfolding, 0.5, 0.1};
     future_status status;
     int count_timeout = 0;
     do
     {
+        louvain.reseed(seed + count_timeout);
+        louvain.reset_epsilon(epsilon_random_unfolding_candidates[count_timeout]);
         count_timeout++;
 
-        future<void> future = async(launch::async, [&louvain, &g]()
-                                    { louvain.fit(g); });
+        printf("Start community detection (trial=%s seed=%d epsilon=%f)\n",
+               fileprefix.c_str(), louvain.seed, louvain.epsilon);
+
+        future<void> louvain_future = async(launch::async, [&louvain, &g]()
+                                            { louvain.fit(g); });
         start = chrono::system_clock::now();
-        status = future.wait_for(chrono::seconds(seconds_wait4timeout));
+        status = louvain_future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
 
         switch (status)
@@ -329,6 +334,7 @@ int main(int argc, char *argv[])
         case future_status::timeout:
             printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
                    fileprefix.c_str());
+
             if (count_timeout == max_timeout_num_patience)
             {
                 printf("%f\n", louvain.epsilon);
