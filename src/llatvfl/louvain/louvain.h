@@ -48,8 +48,7 @@ struct Louvain
     void fit(Graph gc)
     {
         reseed(seed + cnt_trials);
-        reset_epsilon(epsilon_random_unfolding_candidates[cnt_trials / 5]);
-        cnt_trials++;
+        reset_epsilon(epsilon_random_unfolding_candidates[cnt_trials]);
 
         bool improvement = true;
 

@@ -22,7 +22,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 15;
+const int max_timeout_num_patience = 3;
 const bool use_missing_value = false;
 
 string folderpath;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
     printf("Start community detection (trial=%s)\n", fileprefix.c_str());
     Louvain louvain = Louvain();
     future<void> future = async(launch::async, [&louvain, &g]()
-                                { louvain.fit(g); });
+                                { louvain.fit(g); louvain.cnt_trials++; });
     future_status status;
     int count_timeout = 0;
     do
