@@ -49,6 +49,7 @@ struct Louvain
     {
         reseed(seed + cnt_trials);
         reset_epsilon(epsilon_random_unfolding_candidates[cnt_trials]);
+        cnt_trials++;
 
         bool improvement = true;
 

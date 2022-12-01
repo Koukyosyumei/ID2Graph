@@ -309,13 +309,14 @@ int main(int argc, char *argv[])
 
     printf("Start community detection (trial=%s)\n", fileprefix.c_str());
     Louvain louvain = Louvain();
-    future<void> future = async(launch::async, [&louvain, &g]()
-                                { louvain.fit(g); louvain.cnt_trials++; });
     future_status status;
     int count_timeout = 0;
     do
     {
         count_timeout++;
+
+        future<void> future = async(launch::async, [&louvain, &g]()
+                                    { louvain.fit(g); });
         start = chrono::system_clock::now();
         status = future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
