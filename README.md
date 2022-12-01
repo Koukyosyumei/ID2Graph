@@ -42,7 +42,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
     -i : (float) the imlalance of dataset.
     -e : (float) coefficient of edge weight (tau in our paper).
-    -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means).
+    -k : (float) weight for community variables.
     -u : (str) the path to the folder for saving the final results.
     -t : (str) the path to the folder where this script saves temporary results (default=`result`).
     -p : (int) number of parallelly executed experiments.

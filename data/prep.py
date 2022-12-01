@@ -307,6 +307,28 @@ if __name__ == "__main__":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "bank-full.csv"), sep=";"
         )
+        df["education"] = df["education"].replace(
+            {"primary": 1, "secondary": 2, "tertiary": 3, "unknown": 0}
+        )
+        df["month"] = df["month"].replace(
+            {
+                "jan": 1,
+                "feb": 2,
+                "mar": 3,
+                "apr": 4,
+                "may": 5,
+                "jun": 6,
+                "jul": 7,
+                "aug": 8,
+                "sep": 9,
+                "oct": 10,
+                "nov": 11,
+                "dec": 12,
+            }
+        )
+        df["marital"] = df["marital"].replace(
+            {"single": 1, "married": 2, "divorced": 3}
+        )
         df["y"] = df["y"].apply(lambda y: 1 if y == "yes" else 0)
 
         col_alloc_origin = sampling_col_alloc(

@@ -152,6 +152,6 @@ struct Tree
      */
     float get_leaf_purity()
     {
-        return nodeapi.get_leaf_purity(&dtree, dtree.idxs.size());
+        return nodeapi.get_leaf_purity(&dtree, num_row);
     }
 };
