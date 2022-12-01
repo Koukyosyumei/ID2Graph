@@ -330,12 +330,13 @@ int main(int argc, char *argv[])
                    fileprefix.c_str());
             if (count_timeout == max_timeout_num_patience)
             {
+                printf("%f\n", louvain.epsilon);
                 throw runtime_error("Maximum number of attempts at timeout reached");
             }
             break;
         case future_status::ready:
             elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+            printf("Community detection is complete %f [ms] trial=%s epsilon=%f seed=%s\n", elapsed, fileprefix.c_str(), louvain.epsilon, louvain.seed);
             break;
         }
     } while (count_timeout < max_timeout_num_patience && status != future_status::ready);

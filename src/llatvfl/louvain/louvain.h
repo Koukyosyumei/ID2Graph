@@ -32,7 +32,7 @@ struct Louvain
 
         epsilon_random_unfolding_candidates.push_back(epsilon_);
         epsilon_random_unfolding_candidates.push_back(0.5);
-        epsilon_random_unfolding_candidates.push_back(0.3);
+        epsilon_random_unfolding_candidates.push_back(0.1);
     }
 
     void reseed(int seed_)
