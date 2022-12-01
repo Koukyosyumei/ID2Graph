@@ -308,20 +308,42 @@ int main(int argc, char *argv[])
     }
 
     Louvain louvain = Louvain();
+
+    std::ofstream cnt_file;
+    cnt_file.open(folderpath + "/" + fileprefix + ".cnt", std::ios::out);
+    cnt_file << 0 << endl;
+    cnt_file.close();
+
+    string temp_folderpath = folderpath;
+    string temp_fileprefix = fileprefix;
+
     vector<float> epsilon_random_unfolding_candidates = {epsilon_random_unfolding, 0.5, 0.1};
+    future<void> louvain_future = async(launch::async, [&louvain, &g, &epsilon_random_unfolding_candidates,
+                                                        temp_folderpath, temp_fileprefix]()
+                                        {std::ifstream in_temp_cnt_file;
+                                         in_temp_cnt_file.open(temp_folderpath + "/" + temp_fileprefix + ".cnt", std::ios::in);
+                                         int temp_cnt;
+                                         in_temp_cnt_file >> temp_cnt;
+                                         in_temp_cnt_file.close();
+
+                                         louvain.reseed(42 + temp_cnt);
+                                         louvain.reset_epsilon(epsilon_random_unfolding_candidates[temp_cnt]);
+
+                                         std::ofstream out_temp_cnt_file;
+                                         out_temp_cnt_file.open(temp_folderpath + "/" + temp_fileprefix + ".cnt", std::ios::out);
+                                         out_temp_cnt_file << temp_cnt + 1 << endl;
+                                         out_temp_cnt_file.close();
+
+                                         louvain.fit(g); });
     future_status status;
     int count_timeout = 0;
     do
     {
-        louvain.reseed(seed + count_timeout);
-        louvain.reset_epsilon(epsilon_random_unfolding_candidates[count_timeout]);
         count_timeout++;
 
         printf("Start community detection (trial=%s seed=%d epsilon=%f)\n",
                fileprefix.c_str(), louvain.seed, louvain.epsilon);
 
-        future<void> louvain_future = async(launch::async, [&louvain, &g]()
-                                            { louvain.fit(g); });
         start = chrono::system_clock::now();
         status = louvain_future.wait_for(chrono::seconds(seconds_wait4timeout));
         end = chrono::system_clock::now();
