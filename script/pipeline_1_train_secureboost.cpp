@@ -23,7 +23,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 3;
+const int max_timeout_num_patience = 15;
 const bool use_missing_value = false;
 
 string folderpath;

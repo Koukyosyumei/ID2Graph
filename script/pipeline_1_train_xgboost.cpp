@@ -22,7 +22,7 @@ const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 3;
+const int max_timeout_num_patience = 15;
 const bool use_missing_value = false;
 
 string folderpath;
@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
             break;
         case future_status::ready:
             elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] trial=%s epsilon=%f seed=%s\n", elapsed, fileprefix.c_str(), louvain.epsilon, louvain.seed);
+            printf("Community detection is complete %f [ms] trial=%s epsilon=%f seed=%d\n", elapsed, fileprefix.c_str(), louvain.epsilon, louvain.seed);
             break;
         }
     } while (count_timeout < max_timeout_num_patience && status != future_status::ready);

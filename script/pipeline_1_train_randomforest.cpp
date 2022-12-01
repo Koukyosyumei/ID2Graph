@@ -18,7 +18,7 @@ using namespace std;
 const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
-const int max_timeout_num_patience = 3;
+const int max_timeout_num_patience = 15;
 
 string folderpath;
 string fileprefix;
