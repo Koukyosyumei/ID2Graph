@@ -58,11 +58,13 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             // left_skip_flag = temp_node->left->is_leaf() && target_party_id != -1 && temp_node->left->party_id != target_party_id;
             // right_skip_flag = temp_node->right->is_leaf() && target_party_id != -1 && temp_node->right->party_id != target_party_id;
 
-            if ((((temp_node->left->not_splitted_flag &&
-                   temp_node->right->not_splitted_flag)) ||
-                 (temp_node->left->lmir_flag_exclude_passive_parties &&
-                  temp_node->right->lmir_flag_exclude_passive_parties)) &&
-                (target_party_id != -1))
+            bool not_splitted_flag = temp_node->left->not_splitted_flag &&
+                                     temp_node->right->not_splitted_flag;
+            bool lmir_exclude_flag = temp_node->left->lmir_flag_exclude_passive_parties &&
+                                     temp_node->right->lmir_flag_exclude_passive_parties;
+            bool exclude_flag = (not_splitted_flag || lmir_exclude_flag) && (target_party_id != -1);
+
+            if (exclude_flag)
             {
                 temp_idxs_size = temp_node->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)

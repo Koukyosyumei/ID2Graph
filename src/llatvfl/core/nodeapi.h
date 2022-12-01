@@ -154,31 +154,7 @@ struct NodeAPI
         }
         else
         {
-            node_info += ", [";
-            int temp_id;
-            for (int i = 0; i < node->idxs.size(); i++)
-            {
-                temp_id = node->idxs[i];
-                if (binary_color)
-                {
-                    if (node->y->at(temp_id) == 0)
-                    {
-                        node_info += "\033[32m";
-                        node_info += to_string(temp_id);
-                        node_info += "\033[0m";
-                    }
-                    else
-                    {
-                        node_info += to_string(temp_id);
-                    }
-                }
-                else
-                {
-                    node_info += to_string(temp_id);
-                }
-                node_info += ", ";
-            }
-            node_info += "]";
+            node_info += ", " + to_string(node->idxs.size());
         }
 
         return node_info;

@@ -56,9 +56,5 @@ struct XGBoostTree : Tree<XGBoostNode>
     {
         dtree.y->clear();
         dtree.y->shrink_to_fit();
-        dtree.gradient->clear();
-        dtree.gradient->shrink_to_fit();
-        dtree.hessian->clear();
-        dtree.hessian->shrink_to_fit();
     }
 };

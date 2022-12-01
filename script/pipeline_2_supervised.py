@@ -2,10 +2,11 @@ import argparse
 import random
 
 import numpy as np
-from llatvfl.clustering import ReducedKMeans
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
+
+from llatvfl.clustering import ReducedKMeans
 
 # from matplotlib import pyplot as plt
 
@@ -31,8 +32,9 @@ def add_args(parser):
     )
     parser.add_argument(
         "-k",
-        "--clustering_type",
-        type=str,
+        "--weight_for_community_variables",
+        type=float,
+        default=1.0,
     )
 
     args = parser.parse_args()
@@ -85,7 +87,7 @@ if __name__ == "__main__":
         for i in range(comm_num):
             temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
             for k in temp_nodes_in_comm:
-                X_com[int(k), i] += 1
+                X_com[int(k), i] += parsed_args.weight_for_community_variables
 
     X_train_with_com = np.hstack([X_train.T, X_com])
     num_train = X_train_with_com.shape[0]

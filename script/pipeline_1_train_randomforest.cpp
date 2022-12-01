@@ -15,7 +15,7 @@
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
-const int min_leaf = 1;
+const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
 const int max_timeout_num_patience = 5;
@@ -24,7 +24,7 @@ string folderpath;
 string fileprefix;
 int num_trees = 20;
 int depth = 3;
-int n_job = 1;
+int min_leaf = 1;
 int skip_round = 0;
 float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
@@ -56,7 +56,7 @@ void parse_args(int argc, char *argv[])
             depth = stoi(string(optarg));
             break;
         case 'j':
-            n_job = stoi(string(optarg));
+            min_leaf = stoi(string(optarg));
             break;
         case 'c':
             skip_round = stoi(string(optarg));
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < clf.estimators.size(); i++)
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
-        result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+        result_file << clf.estimators[i].print(false, true).c_str() << "\n";
 
         if (save_tree_html)
         {

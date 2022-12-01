@@ -15,7 +15,7 @@
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
-const int min_leaf = 1;
+const int n_job = 1;
 const int max_bin = 32;
 const float lam = 1.0;
 const float const_gamma = 0.0;
@@ -30,7 +30,7 @@ string fileprefix;
 int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
-int n_job = 1;
+int min_leaf = 1;
 float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_random_unfolding = 0.0;
@@ -71,7 +71,7 @@ void parse_args(int argc, char *argv[])
             depth = stoi(string(optarg));
             break;
         case 'j':
-            n_job = stoi(string(optarg));
+            min_leaf = stoi(string(optarg));
             break;
         case 'l':
             epsilon_random_unfolding = stof(string(optarg));
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < clf.estimators.size(); i++)
     {
         result_file << "Tree-" << i + 1 << ": " << clf.estimators[i].get_leaf_purity() << "\n";
-        result_file << clf.estimators[i].print(true, true).c_str() << "\n";
+        result_file << clf.estimators[i].print(false, true).c_str() << "\n";
 
         if (save_tree_html)
         {

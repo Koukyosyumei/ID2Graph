@@ -16,7 +16,7 @@
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
-const int min_leaf = 1;
+const int n_job = 1;
 const int max_bin = 32;
 const float lam = 1.0;
 const float const_gamma = 0.0;
@@ -31,7 +31,7 @@ string fileprefix;
 int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
-int n_job = 1;
+int min_leaf = 1;
 float learning_rate = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
@@ -71,7 +71,7 @@ void parse_args(int argc, char *argv[])
             depth = stoi(string(optarg));
             break;
         case 'j':
-            n_job = stoi(string(optarg));
+            min_leaf = stoi(string(optarg));
             break;
         case 'l':
             epsilon_random_unfolding = stof(string(optarg));
