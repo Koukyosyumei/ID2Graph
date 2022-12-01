@@ -241,7 +241,7 @@ struct Community
         return g2;
     }
 
-    bool one_level(float epsilon = 1.0)
+    bool one_level(unsigned int maximum_sample_searched = 3000)
     {
         bool improvement = false;
         int nb_moves;
@@ -286,7 +286,7 @@ struct Community
                 iota(neigh_candidates.begin(), neigh_candidates.end(), 0);
                 shuffle(neigh_candidates.begin(), neigh_candidates.end(), gen);
 
-                for (unsigned int i = 0; i < int(float(neigh_last) * epsilon); i++)
+                for (unsigned int i = 0; i < min(neigh_last, maximum_sample_searched); i++)
                 {
                     float increase = modularity_gain(node, neigh_pos[neigh_candidates[i]], neigh_weight[neigh_pos[neigh_candidates[i]]], w_degree);
                     if (increase > best_increase)

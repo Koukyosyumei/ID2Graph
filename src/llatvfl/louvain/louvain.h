@@ -8,7 +8,7 @@ using namespace std;
 
 struct Louvain
 {
-    float epsilon;
+    int maximum_sample_searched;
     int max_itr;
     float precision;
     int ndp;
@@ -16,12 +16,12 @@ struct Louvain
     int verbose;
 
     Community community;
-    Graph g;
+    // Graph g;
 
-    Louvain(float epsilon_ = 1.0, int max_itr_ = 100, float precision_ = 0.000001,
+    Louvain(int maximum_sample_searched_ = 3000, int max_itr_ = 100, float precision_ = 0.000001,
             int ndp_ = -1, int seed_ = 42, int verbose_ = -1)
     {
-        epsilon = epsilon_;
+        maximum_sample_searched = maximum_sample_searched_;
         max_itr = max_itr_;
         precision = precision_;
         ndp = ndp_;
@@ -34,25 +34,20 @@ struct Louvain
         seed = seed_;
     }
 
-    void reset_epsilon(float epsilon_)
-    {
-        epsilon = epsilon_;
-    }
-
-    void fit(Graph gc)
+    void fit(Graph &gc)
     {
         bool improvement = true;
 
-        g = gc;
+        // g = gc;
         community = Community(gc, ndp, precision, seed);
         float mod = community.modularity(), new_mod;
 
         for (int i = 0; i < max_itr; i++)
         {
-            improvement = community.one_level(epsilon);
+            improvement = community.one_level(maximum_sample_searched);
             new_mod = community.modularity();
-            g = community.partition2graph_binary();
-            community = Community(g, -1, precision, seed);
+            gc = community.partition2graph_binary();
+            community = Community(gc, ndp, precision, seed);
             mod = new_mod;
 
             if (verbose > 0 && i % verbose == 0)

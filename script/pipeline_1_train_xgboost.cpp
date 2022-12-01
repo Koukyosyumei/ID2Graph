@@ -35,7 +35,7 @@ float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_ldp = -1;
 float mi_bound = numeric_limits<float>::infinity();
-float epsilon_random_unfolding = 1.0;
+int maximum_sample_searched = 3000;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
@@ -74,7 +74,7 @@ void parse_args(int argc, char *argv[])
             min_leaf = stoi(string(optarg));
             break;
         case 'l':
-            epsilon_random_unfolding = stof(string(optarg));
+            maximum_sample_searched = stoi(string(optarg));
             break;
         case 'o':
             epsilon_ldp = stof(string(optarg));
@@ -307,80 +307,24 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
-    Louvain louvain = Louvain();
-
-    std::ofstream cnt_file;
-    cnt_file.open(folderpath + "/" + fileprefix + ".cnt", std::ios::out);
-    cnt_file << 0 << endl;
-    cnt_file.close();
-
-    string temp_folderpath = folderpath;
-    string temp_fileprefix = fileprefix;
-
-    vector<float> epsilon_random_unfolding_candidates = {epsilon_random_unfolding, 0.5, 0.1};
-    future<void> louvain_future = async(launch::async, [&louvain, &g, &epsilon_random_unfolding_candidates,
-                                                        temp_folderpath, temp_fileprefix]()
-                                        {std::ifstream in_temp_cnt_file;
-                                         in_temp_cnt_file.open(temp_folderpath + "/" + temp_fileprefix + ".cnt", std::ios::in);
-                                         int temp_cnt;
-                                         in_temp_cnt_file >> temp_cnt;
-                                         in_temp_cnt_file.close();
-
-                                         louvain.reseed(42 + temp_cnt);
-                                         louvain.reset_epsilon(epsilon_random_unfolding_candidates[temp_cnt]);
-
-                                         std::ofstream out_temp_cnt_file;
-                                         out_temp_cnt_file.open(temp_folderpath + "/" + temp_fileprefix + ".cnt", std::ios::out);
-                                         out_temp_cnt_file << temp_cnt + 1 << endl;
-                                         out_temp_cnt_file.close();
-
-                                         louvain.fit(g); });
-    future_status status;
-    int count_timeout = 0;
-    do
-    {
-        count_timeout++;
-
-        printf("Start community detection (trial=%s seed=%d epsilon=%f)\n",
-               fileprefix.c_str(), louvain.seed, louvain.epsilon);
-
-        start = chrono::system_clock::now();
-        status = louvain_future.wait_for(chrono::seconds(seconds_wait4timeout));
-        end = chrono::system_clock::now();
-
-        switch (status)
-        {
-        case future_status::deferred:
-            printf("deferred\n");
-            break;
-        case future_status::timeout:
-            printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
-                   fileprefix.c_str());
-
-            if (count_timeout == max_timeout_num_patience)
-            {
-                printf("%f\n", louvain.epsilon);
-                throw runtime_error("Maximum number of attempts at timeout reached");
-            }
-            break;
-        case future_status::ready:
-            elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] trial=%s epsilon=%f seed=%d\n", elapsed, fileprefix.c_str(), louvain.epsilon, louvain.seed);
-            break;
-        }
-    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
+    start = chrono::system_clock::now();
+    Louvain louvain = Louvain(maximum_sample_searched);
+    louvain.fit(g);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Community detection is complete %f [ms] trial=%s", elapsed, fileprefix.c_str());
 
     printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
     com_file.open(filepath, std::ios::out);
-    com_file << louvain.g.nodes.size() << "\n";
+    com_file << g.nodes.size() << "\n";
     com_file << g.num_nodes << "\n";
-    for (int i = 0; i < louvain.g.nodes.size(); i++)
+    for (int i = 0; i < g.nodes.size(); i++)
     {
-        for (int j = 0; j < louvain.g.nodes[i].size(); j++)
+        for (int j = 0; j < g.nodes[i].size(); j++)
         {
-            com_file << louvain.g.nodes[i][j] << " ";
+            com_file << g.nodes[i][j] << " ";
         }
         com_file << "\n";
     }

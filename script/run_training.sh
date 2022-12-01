@@ -102,26 +102,17 @@ done
 python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -s ${VALUE_S}
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
-for TEMP_VALUE_L in ${VALUE_L} 0.1 0.01; do
-  echo "epsilon=${TEMP_VALUE_L} trial=${VALUE_S}"
-
-  RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${TEMP_VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -w ${VALUE_W} -x ${VALUE_X}"
-  if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
-    RUNCMD+=" -a ${VALUE_A}"
-  fi
-  if [ "${FLG_G}" = "TRUE" ]; then
-    RUNCMD+=" -g"
-  fi
-  if [ "${FLG_Q}" = "TRUE" ]; then
-    RUNCMD+=" -q"
-  fi
-
-  eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
-
-  if [ -e "${VALUE_P}/${VALUE_S}_communities.out" ]; then
-    break
-  fi
-done
+RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -w ${VALUE_W} -x ${VALUE_X}"
+if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
+  RUNCMD+=" -a ${VALUE_A}"
+fi
+if [ "${FLG_G}" = "TRUE" ]; then
+  RUNCMD+=" -g"
+fi
+if [ "${FLG_Q}" = "TRUE" ]; then
+  RUNCMD+=" -q"
+fi
+eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
 if [ "${FLG_Y}" = "TRUE" ]; then
   echo "Start Supervised Learning trial=${VALUE_S}"
