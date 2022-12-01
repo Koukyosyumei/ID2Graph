@@ -365,14 +365,13 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
-            os.path.join(
-                parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt", sep=" "
-            ),
+            os.path.join(parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt"),
+            sep=" ",
             header=None,
         )
 
         X = df[list(range(48))].values
-        y = df[48].values
+        y = df[48].values - 1
 
     elif parsed_args.dataset_type == "adult":
         df = pd.concat(
