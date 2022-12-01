@@ -99,11 +99,8 @@ while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:w:x:gyq OPT; do
   esac
 done
 
-echo "random seed is ${VALUE_S}"
 python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -s ${VALUE_S}
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
-
-echo "trial=${VALUE_S}"
 
 RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -w ${VALUE_W} -x ${VALUE_X}"
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
