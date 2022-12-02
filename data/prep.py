@@ -477,6 +477,88 @@ if __name__ == "__main__":
                 parsed_args.path_to_dir, "in-vehicle-coupon-recommendation.csv"
             )
         )
+
+        df["destination"] = df["destination"].replace(
+            {"No Urgent Place": 0, "Home": 1, "Work": 2}
+        )
+        df["weather"] = df["weather"].replace({"Sunny": 2, "Rainy": 1, "Snowy": 0})
+        df["time"] = df["time"].replace(
+            {"2PM": 14, "10AM": 10, "6PM": 18, "7AM": 7, "10PM": 22}
+        )
+        df["expiration"] = df["expiration"].replace({"1d": 1, "2h": 0})
+        df["gender"] = df["gender"].replace({"Female": 0, "Male": 1})
+        df["age"] = df["age"].replace(
+            {
+                "below21": 0,
+                "21": 1,
+                "26": 2,
+                "31": 3,
+                "36": 4,
+                "41": 5,
+                "46": 6,
+                "50plus": 7,
+            }
+        )
+        df["income"] = df["income"].replace(
+            {
+                "Less than $12500": 0,
+                "$12500 - $24999": 1,
+                "$25000 - $37499": 2,
+                "$37500 - $49999": 3,
+                "$50000 - $62499": 4,
+                "$62500 - $74999": 5,
+                "$75000 - $87499": 6,
+                "$87500 - $99999": 7,
+                "$100000 or More": 8,
+            }
+        )
+        df["Bar"] = df["Bar"].replace(
+            {np.nan: -1, "never": 0, "less1": 1, "1~3": 2, "4~8": 3, "gt8": 4}
+        )
+        df["CoffeeHouse"] = df["CoffeeHouse"].replace(
+            {np.nan: -1, "never": 0, "less1": 1, "1~3": 2, "4~8": 3, "gt8": 4}
+        )
+        df["CarryAway"] = df["CarryAway"].replace(
+            {np.nan: -1, "never": 0, "less1": 1, "1~3": 2, "4~8": 3, "gt8": 4}
+        )
+        df["RestaurantLessThan20"] = df["RestaurantLessThan20"].replace(
+            {np.nan: -1, "never": 0, "less1": 1, "1~3": 2, "4~8": 3, "gt8": 4}
+        )
+        df["Restaurant20To50"] = df["Restaurant20To50"].replace(
+            {np.nan: -1, "never": 0, "less1": 1, "1~3": 2, "4~8": 3, "gt8": 4}
+        )
+        df["passanger"] = df["passanger"].replace(
+            {"Alone": 0, "Friend(s)": 1, "Kid(s)": 2, "Partner": 3}
+        )
+        df["maritalStatus"] = df["maritalStatus"].replace(
+            {
+                "Unmarried partner": 0,
+                "Single": 1,
+                "Married partner": 2,
+                "Divorced": 3,
+                "Widowed": 4,
+            }
+        )
+        df["education"] = df["education"].replace(
+            {
+                "Some High School": 0,
+                "High School Graduate": 1,
+                "Some college - no degree": 2,
+                "Associates degree": 3,
+                "Bachelors degree": 4,
+                "Graduate degree (Masters or Doctorate)": 5,
+            }
+        )
+        df["coupon"] = df["coupon"].replace(
+            {
+                "Carry out & Take away": 0,
+                "Coffee House": 1,
+                "Bar": 2,
+                "Restaurant(<20)": 3,
+                "Restaurant(20-50)": 4,
+            }
+        )
+
         df = sampling(df, "Y", parsed_args)
 
         col_alloc_origin = sampling_col_alloc(
@@ -538,10 +620,12 @@ if __name__ == "__main__":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "3year.csv"), header=None
         )
-        df = df.replace("?", -99)
+        df = df.replace("?", np.nan).astype(float)
+        for c in df.columns[df.isnull().sum() != 0]:
+            n_digits = len(str(abs(int(np.nanmin(df[c].values)))))
+            df[c] = df[c].fillna(float("-" + "9" * n_digits))
+        df[64] = df[64].astype(int)
         df = sampling(df, 64, parsed_args)
-        for i in range(65):
-            df[i] = df[i].astype(float)
 
         X = df[list(range(64))].values
         y = df[64].values
