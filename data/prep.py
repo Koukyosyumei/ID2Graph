@@ -574,7 +574,7 @@ if __name__ == "__main__":
         df["A1Cresult"] = df["A1Cresult"].replace(
             {"None": 0, "Norm": 1, ">7": 2, ">8": 2}
         )
-        df["diabetesMed"] = LabelEncoder().fit_transform(df["diabetesMed"].values)
+        df["readmitted"] = LabelEncoder().fit_transform(df["readmitted"].values)
 
         col_alloc_origin = sampling_col_alloc(
             col_num=df.shape[1] - 1,
