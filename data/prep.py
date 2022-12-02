@@ -174,7 +174,12 @@ if __name__ == "__main__":
 
     if parsed_args.dataset_type == "givemesomecredit":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
-        df = sampling(df, "SeriousDlqin2yrs", parsed_args)
+
+        df_pos = df[df["SeriousDlqin2yrs"] == 1]
+        df_neg = df[df["SeriousDlqin2yrs"] == 0]
+
+        n_neg = parsed_args.num_samples - df_pos.shape[0]
+        df = pd.concat([df_pos, df_neg.sample(n_neg)])
 
         X = df[
             [
