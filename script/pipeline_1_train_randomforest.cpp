@@ -33,7 +33,7 @@ int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
 bool save_tree_html = false;
-int m_lpmst = 1;
+int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
