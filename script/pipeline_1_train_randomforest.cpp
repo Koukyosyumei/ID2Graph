@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
+    vector<float> y_hat;
     vector<RandomForestParty> parties(num_party);
 
     int temp_count_feature = 0;
@@ -233,8 +234,9 @@ int main(int argc, char *argv[])
     start = chrono::system_clock::now();
     if (epsilon_ldp > 0)
     {
+        y_hat.reserve(num_row_train);
         LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
-        lp_1st.fit(clf, parties, y_train);
+        lp_1st.fit(clf, parties, y_train, y_hat);
     }
     else
     {
