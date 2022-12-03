@@ -32,7 +32,7 @@ struct Graph
             nodes.push_back(node2original_records[i]);
         }
     }
-    Graph(SparseMatrixDOK<float> sm_dok)
+    Graph(SparseMatrixDOK<float> &sm_dok)
     {
         num_nodes = sm_dok.dim_row;
         // initilize first graph without contraction
@@ -57,7 +57,14 @@ struct Graph
                 links.push_back(sm_dok.row2nonzero_idx[i][j]);
                 weights.push_back(sm_dok(i, sm_dok.row2nonzero_idx[i][j]));
             }
+
+            sm_dok.row2nonzero_idx[i].clear();
+            sm_dok.row2nonzero_idx[i].shrink_to_fit();
         }
+
+        sm_dok.row2nonzero_idx.clear();
+        sm_dok.row2nonzero_idx.shrink_to_fit();
+        sm_dok.um_ij2w.clear();
 
         // compute total weight
         for (unsigned int i = 0; i < num_nodes; i++)

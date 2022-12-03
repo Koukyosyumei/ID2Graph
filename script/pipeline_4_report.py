@@ -110,16 +110,24 @@ if __name__ == "__main__":
 
     try:
         for score_type in ["c", "h", "v", "p", "ip", "f"]:
-            baseline_mean = np.round(leak_csv[f"baseline_{score_type}"].mean(), decimals=4)
-            baseline_std = np.round(leak_csv[f"baseline_{score_type}"].std(), decimals=4)
+            baseline_mean = np.round(
+                leak_csv[f"baseline_{score_type}"].mean(), decimals=4
+            )
+            baseline_std = np.round(
+                leak_csv[f"baseline_{score_type}"].std(), decimals=4
+            )
             our_mean = np.round(leak_csv[f"our_{score_type}"].mean(), decimals=4)
             our_std = np.round(leak_csv[f"our_{score_type}"].std(), decimals=4)
             print(f"{score_type} (baseline): {baseline_mean}±{baseline_std}")
             print(f"{score_type} (our): {our_mean}±{our_std}")
     except:
         for score_type in ["a"]:
-            baseline_mean = np.round(leak_csv[f"baseline_{score_type}"].mean(), decimals=4)
-            baseline_std = np.round(leak_csv[f"baseline_{score_type}"].std(), decimals=4)
+            baseline_mean = np.round(
+                leak_csv[f"baseline_{score_type}"].mean(), decimals=4
+            )
+            baseline_std = np.round(
+                leak_csv[f"baseline_{score_type}"].std(), decimals=4
+            )
             our_mean = np.round(leak_csv[f"our_{score_type}"].mean(), decimals=4)
             our_std = np.round(leak_csv[f"our_{score_type}"].std(), decimals=4)
             print(f"{score_type} (baseline): {baseline_mean}±{baseline_std}")

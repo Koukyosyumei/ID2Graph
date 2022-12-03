@@ -16,14 +16,13 @@
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
-const int min_leaf = 1;
+const int n_job = 1;
 const int max_bin = 32;
 const float lam = 1.0;
 const float const_gamma = 0.0;
 const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
-const int max_timeout_num_patience = 5;
 const bool use_missing_value = false;
 
 string folderpath;
@@ -31,12 +30,12 @@ string fileprefix;
 int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
-int n_job = 1;
+int min_leaf = 1;
 float learning_rate = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
-float epsilon_random_unfolding = 0.0;
 float epsilon_ldp = -1;
+int maximum_nb_pass_done = 300;
 int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
@@ -71,10 +70,10 @@ void parse_args(int argc, char *argv[])
             depth = stoi(string(optarg));
             break;
         case 'j':
-            n_job = stoi(string(optarg));
+            min_leaf = stoi(string(optarg));
             break;
         case 'l':
-            epsilon_random_unfolding = stof(string(optarg));
+            maximum_nb_pass_done = stoi(string(optarg));
             break;
         case 'o':
             epsilon_ldp = stof(string(optarg));
@@ -305,51 +304,25 @@ int main(int argc, char *argv[])
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
 
-    printf("Start community detection (epsilon=%f) trial=%s\n",
-           epsilon_random_unfolding, fileprefix.c_str());
-    Louvain louvain = Louvain(epsilon_random_unfolding);
-    future<void> future = async(launch::async, [&louvain, &g]()
-                                { louvain.fit(g); });
-    future_status status;
-    int count_timeout = 0;
-    do
-    {
-        count_timeout++;
-        start = chrono::system_clock::now();
-        status = future.wait_for(chrono::seconds(seconds_wait4timeout));
-        end = chrono::system_clock::now();
+    printf("Start community detection trial=%s\n", fileprefix.c_str());
+    start = chrono::system_clock::now();
+    Louvain louvain = Louvain(maximum_nb_pass_done);
+    louvain.fit(g);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
-        switch (status)
-        {
-        case future_status::deferred:
-            printf("deferred\n");
-            break;
-        case future_status::timeout:
-            printf("\033[33mTimeout of community detection -> retry trial=%s\033[0m\n",
-                   fileprefix.c_str());
-            if (count_timeout == max_timeout_num_patience)
-            {
-                throw runtime_error("Maximum number of attempts at timeout reached");
-            }
-            louvain.reseed(louvain.seed + 1);
-            break;
-        case future_status::ready:
-            elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-            printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
-            break;
-        }
-    } while (count_timeout < max_timeout_num_patience && status != future_status::ready);
-
+    printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
     std::ofstream com_file;
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
     com_file.open(filepath, std::ios::out);
-    com_file << louvain.g.nodes.size() << "\n";
+    com_file << g.nodes.size() << "\n";
     com_file << g.num_nodes << "\n";
-    for (int i = 0; i < louvain.g.nodes.size(); i++)
+    for (int i = 0; i < g.nodes.size(); i++)
     {
-        for (int j = 0; j < louvain.g.nodes[i].size(); j++)
+        for (int j = 0; j < g.nodes[i].size(); j++)
         {
-            com_file << louvain.g.nodes[i][j] << " ";
+            com_file << g.nodes[i][j] << " ";
         }
         com_file << "\n";
     }

@@ -44,7 +44,7 @@ TEST(Louvain, DenseTest)
     ASSERT_EQ(g.get_weighted_degree(2), 2);
     ASSERT_EQ(g.total_weight, 14);
 
-    Community c = Community(g, -1, 0.000001);
+    Community c = Community(&g, -1, 0.000001);
     ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-6);
     c.compute_neigh_comms(0);
     ASSERT_EQ(c.neigh_last, 3);
@@ -80,7 +80,7 @@ TEST(Louvain, SparseTest)
     ASSERT_EQ(g.get_weighted_degree(2), 2);
     ASSERT_EQ(g.total_weight, 14);
 
-    Community c = Community(g, -1, 0.000001);
+    Community c = Community(&g, -1, 0.000001);
     ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-6);
     c.compute_neigh_comms(0);
     ASSERT_EQ(c.neigh_last, 3);

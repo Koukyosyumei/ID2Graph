@@ -2,6 +2,7 @@
 #include <vector>
 #include "llatvfl/attack/attack.h"
 #include "gtest/gtest.h"
+#include "iostream"
 using namespace std;
 
 TEST(XGBoost, XGBoostClassifierTest)
@@ -56,7 +57,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                               boosting_rounds,
                                               lam, const_gamma, eps,
                                               numeric_limits<float>::infinity(),
-                                              -1, 0, 1.0, 1);
+                                              0, 0, 1.0, 1);
 
     vector<float> test_init_pred = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     vector<vector<float>> init_pred = clf.get_init_pred(y);
@@ -79,16 +80,25 @@ TEST(XGBoost, XGBoostClassifierTest)
 
     // --- Check Training --- //
     clf.fit(parties, y);
+    clf.free_intermediate_resources();
 
     ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
     ASSERT_EQ(parties[1].get_lookup_table().size(), 2);
 
     ASSERT_EQ(clf.estimators[0].dtree.get_num_parties(), 2);
 
-    vector<int> test_idxs_root = {0, 1, 2, 3, 4, 5, 6, 7};
-    vector<int> idxs_root = clf.estimators[0].dtree.idxs;
-    for (int i = 0; i < idxs_root.size(); i++)
-        ASSERT_EQ(idxs_root[i], test_idxs_root[i]);
+    // vector<int> test_idxs_root = {0, 1, 2, 3, 4, 5, 6, 7};
+    // vector<int> idxs_root = clf.estimators[0].dtree.idxs;
+    // for (int i = 0; i < idxs_root.size(); i++)
+    //     ASSERT_EQ(idxs_root[i], test_idxs_root[i]);
+    ASSERT_EQ(clf.estimators[0].dtree.idxs.size(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.idxs.capacity(), 0);
+
+    ASSERT_EQ(clf.estimators[0].dtree.gradient->size(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.gradient->capacity(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.left->gradient->size(), 0);
+    ASSERT_EQ(clf.estimators[0].dtree.left->gradient->capacity(), 0);
+
     ASSERT_EQ(clf.estimators[0].dtree.depth, 3);
     ASSERT_EQ(get<0>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)), 0);
     ASSERT_EQ(get<1>(clf.estimators[0].dtree.parties->at(clf.estimators[0].dtree.party_id).lookup_table.at(clf.estimators[0].dtree.record_id)), 16);
@@ -102,10 +112,10 @@ TEST(XGBoost, XGBoostClassifierTest)
     ASSERT_TRUE(clf.estimators[0].dtree.left->is_leaf());
     ASSERT_NEAR(clf.estimators[0].dtree.left->val[0], 0.5074890528001861, 1e-6);
 
-    vector<int> test_idxs_right = {1, 3, 4, 5, 6};
-    vector<int> idxs_right = clf.estimators[0].dtree.right->idxs;
-    for (int i = 0; i < idxs_right.size(); i++)
-        ASSERT_EQ(idxs_right[i], test_idxs_right[i]);
+    // vector<int> test_idxs_right = {1, 3, 4, 5, 6};
+    // vector<int> idxs_right = clf.estimators[0].dtree.right->idxs;
+    // for (int i = 0; i < idxs_right.size(); i++)
+    //    ASSERT_EQ(idxs_right[i], test_idxs_right[i]);
     ASSERT_TRUE(!clf.estimators[0].dtree.right->is_pure());
     ASSERT_TRUE(!clf.estimators[0].dtree.right->is_leaf());
     ASSERT_NEAR(clf.estimators[0].dtree.right->val[0], -0.8347166357912786, 1e-6);
@@ -146,6 +156,7 @@ TEST(XGBoost, XGBoostClassifierTest)
         ASSERT_NEAR(predict_proba[i][0], 1 - test_predcit_proba[i], 1e-6);
     }
 
+    /*
     vector<vector<float>> test_adj_mat = {{0, 0, 1.3, 0, 0, 0, 0, 1.3},
                                           {0, 0, 0, 0, 0, 0, 0, 0},
                                           {1.3, 0, 0, 0, 0, 0, 0, 1.3},
@@ -155,6 +166,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                           {0, 0, 0, 1.3, 0, 0, 0, 0},
                                           {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
+    clf.free_intermediate_resources();
     vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, depth, -1, 0, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
@@ -163,6 +175,7 @@ TEST(XGBoost, XGBoostClassifierTest)
             ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
         }
     }
+    */
 
     vector<vector<float>> test_adj_mat_1 = {{0, 0, 1.3, 0, 0, 0, 0, 1.3},
                                             {0, 0, 0, 0, 1.3, 1.3, 0, 0},
@@ -173,7 +186,7 @@ TEST(XGBoost, XGBoostClassifierTest)
                                             {0, 0, 0, 1.3, 0, 0, 0, 0},
                                             {1.3, 0, 1.3, 0, 0, 0, 0, 0}};
 
-    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0.3).to_densematrix();
+    vector<vector<float>> adj_mat_1 = extract_adjacency_matrix_from_forest(&clf, depth, 1, 0, 0.3).to_densematrix();
     for (int j = 0; j < test_adj_mat_1.size(); j++)
     {
         for (int k = 0; k < test_adj_mat_1[j].size(); k++)

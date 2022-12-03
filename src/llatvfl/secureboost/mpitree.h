@@ -19,6 +19,7 @@ struct MPISecureBoostTree : Tree<MPISecureBoostNode>
         iota(idxs.begin(), idxs.end(), 0);
         active_party->set_instance_space(idxs);
         active_party->subsample_columns();
+        num_row = y.size();
         dtree = MPISecureBoostNode(active_party, parties_num, idxs,
                                    depth, min_child_weight,
                                    lam, gamma, eps, depth,

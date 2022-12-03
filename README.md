@@ -36,17 +36,17 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -c : (int) the number of completely secure rounds.
     -a : (float) learning rate of XGBoost.
     -h : (int) depth.
-    -j : (int) the number of jobs.
-    -n : (int) the number of data records sampled for training.
+    -j : (int) minimum number of samples within a leaf.
+    -n : (int) number of data records sampled for training.
     -f : (float) the ratio of features owned by the active party.
     -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
     -i : (float) the imlalance of dataset.
     -e : (float) coefficient of edge weight (tau in our paper).
-    -k : (str) type of clustering method (`vanila` = K-Means, `reduced` = Reduced K-Means).
+    -k : (float) weight for community variables.
     -u : (str) the path to the folder for saving the final results.
     -t : (str) the path to the folder where this script saves temporary results (default=`result`).
     -p : (int) number of parallelly executed experiments.
-    -l : (float) epsilon of epsilon-greedy louvain.
+    -l : (int) maximum number of trials
     -z : patience for timeout of louvain.
     -o : (float) epsilon of LP-MST.
     -b : (float) bound of mutual information.

@@ -11,6 +11,7 @@ struct Tree
 {
     NodeType dtree;
     NodeAPI<NodeType> nodeapi;
+    int num_row;
 
     Tree() {}
 
@@ -43,7 +44,7 @@ struct Tree
      */
     vector<pair<vector<int>, vector<vector<float>>>> extract_train_prediction_from_node(NodeType &node)
     {
-        if (node.is_leaf())
+        if (node.is_leaf_flag)
         {
             vector<pair<vector<int>, vector<vector<float>>>> result;
             result.push_back(make_pair(node.idxs,
@@ -70,7 +71,7 @@ struct Tree
     vector<vector<float>> get_train_prediction()
     {
         vector<pair<vector<int>, vector<vector<float>>>> result = extract_train_prediction_from_node(dtree);
-        vector<vector<float>> y_train_pred(dtree.y.size());
+        vector<vector<float>> y_train_pred(num_row);
         for (int i = 0; i < result.size(); i++)
         {
             for (int j = 0; j < result[i].first.size(); j++)
@@ -151,6 +152,6 @@ struct Tree
      */
     float get_leaf_purity()
     {
-        return nodeapi.get_leaf_purity(&dtree, dtree.idxs.size());
+        return nodeapi.get_leaf_purity(&dtree, num_row);
     }
 };

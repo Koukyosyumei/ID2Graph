@@ -69,3 +69,28 @@ vector<float> inline xgboost_compute_weight(int row_count,
     }
     return node_weigths;
 }
+
+vector<float> inline xgboost_compute_weight_from_pointer(int row_count,
+                                                         vector<vector<float>> *gradient,
+                                                         vector<vector<float>> *hessian,
+                                                         vector<int> &idxs, float lam)
+{
+    int grad_dim = gradient->at(0).size();
+    vector<float> sum_grad(grad_dim, 0);
+    vector<float> sum_hess(grad_dim, 0);
+    vector<float> node_weigths(grad_dim, 0);
+    for (int i = 0; i < row_count; i++)
+    {
+        for (int c = 0; c < grad_dim; c++)
+        {
+            sum_grad[c] += gradient->at(idxs[i]).at(c);
+            sum_hess[c] += hessian->at(idxs[i]).at(c);
+        }
+    }
+
+    for (int c = 0; c < grad_dim; c++)
+    {
+        node_weigths[c] = -1 * (sum_grad[c] / (sum_hess[c] + lam));
+    }
+    return node_weigths;
+}

@@ -17,17 +17,17 @@ VALUE_F=0.5
 VALUE_V=-1
 VALUE_I=1
 VALUE_E=0.3
-VALUE_K="vanila"
+VALUE_K=1.0
 VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
-VALUE_L=0.0
+VALUE_L=100
 VALUE_Z=300
 VALUE_O=-1
 VALUE_W=-1
 VALUE_X=2
 
-while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:x:ygq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:w:x:k:ygq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"

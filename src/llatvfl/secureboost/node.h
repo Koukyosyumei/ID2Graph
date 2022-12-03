@@ -7,6 +7,7 @@ using namespace std;
 struct SecureBoostNode : Node<SecureBoostParty>
 {
     vector<SecureBoostParty> *parties;
+    vector<float> *y;
     vector<vector<PaillierCipherText>> gradient, hessian;
     vector<vector<float>> vanila_gradient, vanila_hessian;
     float min_child_weight, lam, gamma, eps;
@@ -16,7 +17,7 @@ struct SecureBoostNode : Node<SecureBoostParty>
     int num_classes;
 
     SecureBoostNode() {}
-    SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> &y_,
+    SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> *y_,
                     int num_classes_,
                     vector<vector<PaillierCipherText>> &gradient_,
                     vector<vector<PaillierCipherText>> &hessian_,
@@ -301,6 +302,23 @@ struct SecureBoostNode : Node<SecureBoostParty>
         {
             right->party_id = party_id;
         }
+
+        // Notice: this flag only supports for the case of two parties
+        if ((left->is_leaf_flag == 1) && (right->is_leaf_flag == 1) && (party_id == active_party_id))
+        {
+            left->not_splitted_flag = true;
+            right->not_splitted_flag = true;
+        }
+
+        // Clear unused index
+        if (!(((left->not_splitted_flag &&
+                right->not_splitted_flag)) ||
+              (left->lmir_flag_exclude_passive_parties &&
+               right->lmir_flag_exclude_passive_parties)))
+        {
+            idxs.clear();
+            idxs.shrink_to_fit();
+        }
     }
 
     bool is_leaf()
@@ -317,15 +335,26 @@ struct SecureBoostNode : Node<SecureBoostParty>
 
     bool is_pure()
     {
-        set<float> s{};
-        for (int i = 0; i < row_count; i++)
+        if (is_pure_flag == -1)
         {
-            if (s.insert(y[idxs[i]]).second)
+            set<float> s{};
+            for (int i = 0; i < row_count; i++)
             {
-                if (s.size() == 2)
-                    return false;
+                if (s.insert(y->at(idxs[i])).second)
+                {
+                    if (s.size() == 2)
+                    {
+                        is_pure_flag = 0;
+                        return false;
+                    }
+                }
             }
+            is_pure_flag = 1;
+            return true;
         }
-        return true;
+        else
+        {
+            return is_pure_flag == 1;
+        }
     }
 };

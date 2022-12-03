@@ -6,6 +6,8 @@ using namespace std;
 
 struct MPISecureBoostNode : Node<MPISecureBoostParty>
 {
+    vector<float> *y;
+
     MPISecureBoostParty *active_party;
     int parties_num, max_depth, grad_dim;
     float min_child_weight, lam, gamma, eps;
@@ -39,7 +41,7 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
             grad_dim = active_party->num_classes;
         }
 
-        y = active_party->y;
+        y = &active_party->y;
 
         row_count = idxs.size();
         num_parties = parties_num;
@@ -348,6 +350,23 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
         {
             right->party_id = party_id;
         }
+
+        // Notice: this flag only supports for the case of two parties
+        if ((left->is_leaf_flag == 1) && (right->is_leaf_flag == 1) && (party_id == active_party_id))
+        {
+            left->not_splitted_flag = true;
+            right->not_splitted_flag = true;
+        }
+
+        // Clear unused index
+        if (!(((left->not_splitted_flag &&
+                right->not_splitted_flag)) ||
+              (left->lmir_flag_exclude_passive_parties &&
+               right->lmir_flag_exclude_passive_parties)))
+        {
+            idxs.clear();
+            idxs.shrink_to_fit();
+        }
     }
 
     bool is_leaf()
@@ -364,15 +383,26 @@ struct MPISecureBoostNode : Node<MPISecureBoostParty>
 
     bool is_pure()
     {
-        set<float> s{};
-        for (int i = 0; i < row_count; i++)
+        if (is_pure_flag == -1)
         {
-            if (s.insert(active_party->y[idxs[i]]).second)
+            set<float> s{};
+            for (int i = 0; i < row_count; i++)
             {
-                if (s.size() == 2)
-                    return false;
+                if (s.insert(y->at(idxs[i])).second)
+                {
+                    if (s.size() == 2)
+                    {
+                        is_pure_flag = 0;
+                        return false;
+                    }
+                }
             }
+            is_pure_flag = 1;
+            return true;
         }
-        return true;
+        else
+        {
+            return is_pure_flag == 1;
+        }
     }
 };
