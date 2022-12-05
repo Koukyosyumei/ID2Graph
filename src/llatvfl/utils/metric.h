@@ -93,6 +93,7 @@ inline float ovr_roc_auc_score(vector<vector<float>> y_pred, vector<int> y_true)
     else
     {
         float ovr_average_score = 0;
+        float tmp_roc_auc_score = 0;
         for (int c = 0; c < num_classes; c++)
         {
             vector<float> y_pred_c(num_elements, 0);
@@ -105,8 +106,11 @@ inline float ovr_roc_auc_score(vector<vector<float>> y_pred, vector<int> y_true)
                     y_true_c[i] = 1;
                 }
             }
-
-            ovr_average_score += roc_auc_score(y_pred_c, y_true_c) / num_classes;
+            tmp_roc_auc_score = roc_auc_score(y_pred_c, y_true_c) / num_classes;
+            if (!isnan(tmp_roc_auc_score))
+            {
+                ovr_average_score += tmp_roc_auc_score;
+            }
         }
         return ovr_average_score;
     }
