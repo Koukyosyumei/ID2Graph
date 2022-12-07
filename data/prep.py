@@ -1,12 +1,10 @@
 import argparse
 import os
 import random
-import string
-from email.policy import default
-from enum import unique
 
 import numpy as np
 import pandas as pd
+from sklearn import datasets
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -520,6 +518,17 @@ if __name__ == "__main__":
         ]
         X = pd.concat([X_a, X_p], axis=1).values
         y = df["Y"].values
+
+    elif parsed_args.dataset_type == "dummy":
+        X, y = datasets.make_classification(
+            n_samples=30000,
+            n_features=10,
+            n_informative=10,
+            n_redundant=0,
+            n_repeated=0,
+            n_classes=2,
+            random_state=42,
+        )
 
     elif parsed_args.dataset_type == "hcv":
         cols = [
