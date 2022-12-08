@@ -29,7 +29,6 @@ float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float epsilon_ldp = -1;
 int maximum_nb_pass_done = 100;
-int seconds_wait4timeout = 300;
 int attack_start_depth = -1;
 bool save_adj_mat = false;
 bool save_tree_html = false;
@@ -38,7 +37,7 @@ int m_lpmst = 2;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:x:gq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:x:gq")) != -1)
     {
         switch (opt)
         {
@@ -68,9 +67,6 @@ void parse_args(int argc, char *argv[])
             break;
         case 'o':
             epsilon_ldp = stof(string(optarg));
-            break;
-        case 'z':
-            seconds_wait4timeout = stoi(string(optarg));
             break;
         case 'b':
             mi_bound = stof(string(optarg));
