@@ -298,15 +298,16 @@ int main(int argc, char *argv[])
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, completely_secure_round, eta);
-    Graph g = Graph(adj_matrix);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     if (save_adj_mat)
     {
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
+
+    Graph g = Graph(adj_matrix);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     printf("Start community detection trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
@@ -321,7 +322,7 @@ int main(int argc, char *argv[])
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
     com_file.open(filepath, std::ios::out);
     com_file << g.nodes.size() << "\n";
-    com_file << g.num_nodes << "\n";
+    com_file << num_row_train << "\n";
     for (int i = 0; i < g.nodes.size(); i++)
     {
         for (int j = 0; j < g.nodes[i].size(); j++)
