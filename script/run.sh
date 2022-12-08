@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# constant values
-NUM_TRIAL=5
-
 # default values
 VALUE_D="breastcancer"
 VALUE_M="xgboost"
@@ -22,7 +19,7 @@ VALUE_T="result/temp"
 VALUE_U="result"
 VALUE_P=1
 VALUE_L=100
-VALUE_Z=300
+VALUE_Z=5
 VALUE_O=-1
 VALUE_W=-1
 VALUE_X=2
@@ -147,8 +144,8 @@ else
   echo "m=${VALUE_M} is not supported"
 fi
 
-for s in $(seq 1 ${NUM_TRIAL}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -z ${VALUE_Z} -k ${VALUE_K} -w ${VALUE_W} -x ${VALUE_X}"
+for s in $(seq 1 ${VALUE_Z}); do
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -w ${VALUE_W} -x ${VALUE_X}"
   if [ "${FLG_Y}" = "TRUE" ]; then
     TRAINCMD+=" -y"
   fi
@@ -159,7 +156,7 @@ for s in $(seq 1 ${NUM_TRIAL}); do
     TRAINCMD+=" -q"
   fi
   if [ ${VALUE_P} -gt 1 ]; then
-    if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${NUM_TRIAL} ]; then
+    if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${VALUE_Z} ]; then
       TRAINCMD+=" &"
     else
       TRAINCMD+=" & wait"
@@ -187,7 +184,7 @@ if [ "${FLG_Q}" = "TRUE" ]; then
   mv ${TEMPD}/*.html ${RESUD}/
 fi
 
-for s in $(seq 1 ${NUM_TRIAL}); do
+for s in $(seq 1 ${VALUE_Z}); do
   if [ -e ${TEMPD}/${s}_adj_mat_plot.png ]; then
     mv ${TEMPD}/${s}_adj_mat_plot.png ${RESUD}/
   fi
