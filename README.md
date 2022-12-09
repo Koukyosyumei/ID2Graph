@@ -24,35 +24,40 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
 - Example
 
 ```
-./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 300
+./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 5
 ```
 
 - Arguments
 
 ```
+    -u : (str) the path to the folder for saving the final results.
+    -t : (str) the path to the folder where this script saves temporary results (default=`result`).
+    -y : (optional) steal the exact label values.
+    -z : (int) number of trials.
+    -p : (int) number of parallelly executed experiments.
+
     -d : (str) the name of dataset.
-    -m : (str) type of the model.
-    -r : (int) total number of rounds for training.
-    -c : (int) the number of completely secure rounds.
-    -a : (float) learning rate of XGBoost.
-    -h : (int) depth.
-    -j : (int) minimum number of samples within a leaf.
     -n : (int) number of data records sampled for training.
     -f : (float) the ratio of features owned by the active party.
     -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
     -i : (float) the imlalance of dataset.
+
+    -m : (str) type of the model.
+    -r : (int) total number of rounds for training.
+    -j : (int) minimum number of samples within a leaf.
+    -h : (int) depth.
+    -a : (float) learning rate of XGBoost.
+
     -e : (float) coefficient of edge weight (tau in our paper).
     -k : (float) weight for community variables.
-    -u : (str) the path to the folder for saving the final results.
-    -t : (str) the path to the folder where this script saves temporary results (default=`result`).
-    -p : (int) number of parallelly executed experiments.
-    -l : (int) maximum number of trials
-    -z : patience for timeout of louvain.
-    -o : (float) epsilon of LP-MST.
-    -b : (float) bound of mutual information.
+    -l : (int) maximum number of iterations of Louvain
     -w : (int) include from this node.
+
+    -b : (float) bound of mutual information.
+    -c : (int) the number of completely secure rounds.
     -x : (int) M of LP-MST.
-    -y : (optional) steal the exact label values.
+    -o : (float) epsilon of LP-MST.
+
     -g : (optional) draw the extracted graph.
     -q : (optional) draw trees as html files.
 ```

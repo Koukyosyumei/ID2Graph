@@ -1,12 +1,10 @@
 import argparse
 import os
 import random
-import string
-from email.policy import default
-from enum import unique
 
 import numpy as np
 import pandas as pd
+from sklearn import datasets
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -471,6 +469,33 @@ if __name__ == "__main__":
         X = pd.concat([X_a, X_p], axis=1).values
         y = df[53].values
 
+    elif parsed_args.dataset_type == "credit":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "credit_risk_dataset.csv")
+        )
+        df["cb_person_default_on_file"] = df["cb_person_default_on_file"].replace(
+            {"Y": 1, "N": 0}
+        )
+        df["loan_grade"] = df["loan_grade"].replace(
+            {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6}
+        )
+        df = sampling(df, "loan_status", parsed_args)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("loan_status", axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
+        y = df["loan_status"].values
+
     elif parsed_args.dataset_type == "coupon":
         df = pd.read_csv(
             os.path.join(
@@ -493,6 +518,17 @@ if __name__ == "__main__":
         ]
         X = pd.concat([X_a, X_p], axis=1).values
         y = df["Y"].values
+
+    elif parsed_args.dataset_type == "dummy":
+        X, y = datasets.make_classification(
+            n_samples=30000,
+            n_features=10,
+            n_informative=10,
+            n_redundant=0,
+            n_repeated=0,
+            n_classes=2,
+            random_state=42,
+        )
 
     elif parsed_args.dataset_type == "hcv":
         cols = [

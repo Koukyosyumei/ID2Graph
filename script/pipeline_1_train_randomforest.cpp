@@ -18,6 +18,7 @@ using namespace std;
 const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
+const int attack_start_depth = -1;
 
 string folderpath;
 string fileprefix;
@@ -29,16 +30,14 @@ float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float epsilon_ldp = -1;
 int maximum_nb_pass_done = 100;
-int seconds_wait4timeout = 300;
-int attack_start_depth = -1;
 bool save_adj_mat = false;
 bool save_tree_html = false;
-int m_lpmst = 1;
+int m_lpmst = 2;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:z:b:w:x:gq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:x:gq")) != -1)
     {
         switch (opt)
         {
@@ -69,14 +68,11 @@ void parse_args(int argc, char *argv[])
         case 'o':
             epsilon_ldp = stof(string(optarg));
             break;
-        case 'z':
-            seconds_wait4timeout = stoi(string(optarg));
-            break;
         case 'b':
             mi_bound = stof(string(optarg));
             break;
         case 'w':
-            attack_start_depth = stoi(string(optarg));
+            // attack_start_depth = stoi(string(optarg));
             break;
         case 'x':
             m_lpmst = stoi(string(optarg));
@@ -114,6 +110,7 @@ int main(int argc, char *argv[])
     }
     vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
     vector<float> y_train(num_row_train);
+    vector<float> y_hat;
     vector<RandomForestParty> parties(num_party);
 
     int temp_count_feature = 0;
@@ -233,8 +230,9 @@ int main(int argc, char *argv[])
     start = chrono::system_clock::now();
     if (epsilon_ldp > 0)
     {
+        y_hat.reserve(num_row_train);
         LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
-        lp_1st.fit(clf, parties, y_train);
+        lp_1st.fit(clf, parties, y_train, y_hat);
     }
     else
     {
@@ -279,16 +277,17 @@ int main(int argc, char *argv[])
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, skip_round);
-    printf("Graph construction.... trial==%s\n", fileprefix.c_str());
-    Graph g = Graph(adj_matrix);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     if (save_adj_mat)
     {
         adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
     }
+
+    printf("Graph construction.... trial==%s\n", fileprefix.c_str());
+    Graph g = Graph(adj_matrix);
+    end = chrono::system_clock::now();
+    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
 
     printf("Start community detection trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
@@ -303,7 +302,7 @@ int main(int argc, char *argv[])
     string filepath = folderpath + "/" + fileprefix + "_communities.out";
     com_file.open(filepath, std::ios::out);
     com_file << g.nodes.size() << "\n";
-    com_file << g.num_nodes << "\n";
+    com_file << num_row_train << "\n";
     for (int i = 0; i < g.nodes.size(); i++)
     {
         for (int j = 0; j < g.nodes[i].size(); j++)

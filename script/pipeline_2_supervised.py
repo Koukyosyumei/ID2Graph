@@ -6,12 +6,9 @@ from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 
-from llatvfl.clustering import ReducedKMeans
-
 # from matplotlib import pyplot as plt
 
 label2maker = {0: "o", 1: "x"}
-clustering_type2cls = {"vanila": KMeans, "reduced": ReducedKMeans}
 
 
 def add_args(parser):
@@ -48,7 +45,7 @@ if __name__ == "__main__":
     random.seed(parsed_args.seed)
     np.random.seed(parsed_args.seed)
 
-    clustering_cls = clustering_type2cls[parsed_args.clustering_type]
+    clustering_cls = KMeans
 
     print("baseline_a,our_a")
 
@@ -91,7 +88,7 @@ if __name__ == "__main__":
 
     X_train_with_com = np.hstack([X_train.T, X_com])
     num_train = X_train_with_com.shape[0]
-    num_train_aux = int(num_train * 0.1)
+    num_train_aux = int(num_train * 0.01)
     public_idxs = random.sample(list(range(num_train)), num_train_aux)
     private_idxs = list(set(list(range(num_train))) - set(public_idxs))
 
