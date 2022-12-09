@@ -134,7 +134,7 @@ inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *nod
             if (!temp_node->left->is_leaf_flag && !temp_node->right->is_leaf_flag){
                 que.push(temp_node=>left);
                 que.push(temp_node=>right);
-            } else if (!temp_node->left_is_leaf_flag && temp_node->right_is_leaf_flag){
+            } else if (!temp_node->left->is_leaf_flag && temp_node->right_is_leaf_flag){
                 temp_idxs_size = temp_node->right->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)
                 {
@@ -144,7 +144,7 @@ inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *nod
                     }
                 }
                 que.push(temp_node=>left);
-            } else if (temp_node->left_is_leaf_flag && !temp_node->right_is_leaf_flag) {
+            } else if (temp_node->left->is_leaf_flag && !temp_node->right_is_leaf_flag) {
                 temp_idxs_size = temp_node->left->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)
                 {
