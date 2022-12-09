@@ -24,6 +24,7 @@ const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
 const bool use_missing_value = false;
+const int attack_start_depth = -1;
 
 string folderpath;
 string fileprefix;
@@ -36,7 +37,6 @@ float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
 float epsilon_ldp = -1;
 int maximum_nb_pass_done = 300;
-int attack_start_depth = -1;
 bool save_adj_mat = false;
 int m_lpmst = 2;
 
@@ -81,7 +81,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'w':
-            attack_start_depth = stoi(string(optarg));
+            // attack_start_depth = stoi(string(optarg));
             break;
         case 'x':
             m_lpmst = stoi(string(optarg));
