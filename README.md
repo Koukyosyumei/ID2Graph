@@ -64,4 +64,4 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
 
 ### Google colab
 
-You can run all of our experiments on Google colab. Please use a runtime with high memory.
+You can run most of our experiments on Google colab. Please use a runtime with high memory. You may encounter memory leakage for some experiments with relatively large datasets.
