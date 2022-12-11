@@ -131,7 +131,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nw,${FLG_W}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nx,${VALUE_X}\nj,${VALUE_J}\nz,${VALUE_Z}\ny,${FLG_Y}\nw,${FLG_W}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nx,${VALUE_X}\nj,${VALUE_J}\nz,${VALUE_Z}\ny,${FLG_Y}\nw,${FLG_W}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
