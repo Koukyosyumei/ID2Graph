@@ -89,48 +89,33 @@ if __name__ == "__main__":
     )
     cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
 
+    with open(parsed_args.path_to_com_file, mode="r") as f:
+        lines = f.readlines()
+        comm_num = int(lines[0])
+        node_num = int(lines[1])
+        X_com = np.zeros((num_row, comm_num))
+
+        for i in range(comm_num):
+            temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
+            for k in temp_nodes_in_comm:
+                X_com[int(k), i] += parsed_args.weight_for_community_variables
+
     if parsed_args.freerider_flag:
-        with open(parsed_args.path_to_com_file, mode="r") as f:
-            lines = f.readlines()
-            comm_num = int(lines[0])
-            node_num = int(lines[1])
-            X_com = np.zeros(num_row)
-
-            for i in range(comm_num):
-                temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
-                for k in temp_nodes_in_comm:
-                    X_com[int(k)] += i
-
-        c_score_with_com = metrics.completeness_score(y_train, X_com)
-        h_score_with_com = metrics.homogeneity_score(y_train, X_com)
-        v_score_with_com = metrics.v_measure_score(y_train, X_com)
-
-        f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
-            y_train, X_com
-        )
-
+        kmeans_with_com = clustering_cls(
+            n_clusters=num_classes, random_state=parsed_args.seed
+        ).fit(np.hstack([X_com]))
     else:
-        with open(parsed_args.path_to_com_file, mode="r") as f:
-            lines = f.readlines()
-            comm_num = int(lines[0])
-            node_num = int(lines[1])
-            X_com = np.zeros((num_row, comm_num))
-
-            for i in range(comm_num):
-                temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
-                for k in temp_nodes_in_comm:
-                    X_com[int(k), i] += parsed_args.weight_for_community_variables
-
         kmeans_with_com = clustering_cls(
             n_clusters=num_classes, random_state=parsed_args.seed
         ).fit(np.hstack([X_train_minmax, X_com]))
-        c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
-        h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
-        v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-        f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
-            y_train, kmeans_with_com.labels_
-        )
+    c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
+    h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
+    v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
+
+    f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
+        y_train, kmeans_with_com.labels_
+    )
 
     print(
         f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
