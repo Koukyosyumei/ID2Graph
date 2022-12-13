@@ -11,10 +11,9 @@ class KMeansClassifier(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         self.min_max_scaler = preprocessing.MinMaxScaler()
-        X = self.min_max_scaler.fit_transform(X)
-        self.km = KMeans(n_clusters=self.n_classes, random_state=self.random_state).fit(
-            X
-        )
+        self.km = KMeans(n_clusters=self.n_classes, random_state=self.random_state)
+        X_minmax = self.min_max_scaler.fit_transform(X)
+        self.km.fit(X_minmax)
         return self
 
     def predict(self, X):
@@ -25,11 +24,13 @@ class KMeansClassifier(BaseEstimator, ClassifierMixin):
 
 
 def calculate_permutation_importance_for_kmeans_clustering(
-    X, y, n_repeat=30, random_state=42
+    X_train, y_train, X_val, y_val, n_classes=2, n_repeat=30, random_state=42
 ):
-    kmc = KMeansClassifier()
+    kmc = KMeansClassifier(n_classes=n_classes, random_state=random_state)
+    kmc.fit(X_train, y_train)
+    print("Calculating feature importance ...")
     result = permutation_importance(
-        kmc, X, y, n_repeats=n_repeat, random_state=random_state
+        kmc, X_val, y_val, n_repeats=n_repeat, random_state=random_state
     )
 
     return result["importances_mean"]
