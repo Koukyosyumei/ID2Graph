@@ -24,13 +24,13 @@ class KMeansClassifier(BaseEstimator, ClassifierMixin):
 
 
 def calculate_permutation_importance_for_kmeans_clustering(
-    X_train, y_train, X_val, y_val, n_classes=2, n_repeat=30, random_state=42
+    X, y, n_classes=2, n_repeat=30, random_state=42
 ):
     kmc = KMeansClassifier(n_classes=n_classes, random_state=random_state)
-    kmc.fit(X_train, y_train)
+    kmc.fit(X, y)
     print("Calculating feature importance ...")
     result = permutation_importance(
-        kmc, X_val, y_val, n_repeats=n_repeat, random_state=random_state
+        kmc, X, y, n_repeats=n_repeat, random_state=random_state
     )
 
     return result["importances_mean"]
