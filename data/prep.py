@@ -5,7 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 from sklearn import datasets
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_breast_cancer, make_blobs
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -516,16 +516,26 @@ if __name__ == "__main__":
         y = df["Y"].values
 
     elif parsed_args.dataset_type == "dummy":
-        n = 20000
-        m = 10
+        n_samples = 20000
+        n_features = 10
+        n_classes = 2
+        feature_ratio = 0.5
 
-        y = np.random.binomial(1, 0.5, n)
-        X = np.stack([y + np.random.random(size=n) * (i + 1) for i in range(m)]).T
+        X, y = make_blobs(
+            n_samples=n_samples,
+            centers=n_classes,
+            n_features=n_features,
+            random_state=0,
+            center_box=(-2, 2),
+        )
 
         active_col = [
-            i for i in range(int(m * parsed_args.feature_num_ratio_of_active_party))
+            i
+            for i in range(
+                int(n_features * parsed_args.feature_num_ratio_of_active_party)
+            )
         ]
-        passive_col = list(set(range(m)) - set(active_col))
+        passive_col = list(set(range(n_features)) - set(active_col))
         col_alloc = [active_col, passive_col]
 
     elif parsed_args.dataset_type == "hcv":
