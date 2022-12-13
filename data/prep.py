@@ -702,14 +702,19 @@ if __name__ == "__main__":
         clf_rf = RandomForestClassifier(random_state=parsed_args.seed)
         clf_rf.fit(X_val, y_val)
         fti = clf_rf.feature_importances_
-        print(fti)
-        fti_idx = np.argsort(fti)
+        fti_idx = np.argsort(fti * -1).tolist()
         col_alloc = [
             fti_idx[
-                : int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party)
+                : min(
+                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
+                    X_val.shape[1] - 1,
+                )
             ],
             fti_idx[
-                int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party) :
+                min(
+                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
+                    X_val.shape[1] - 1,
+                ) :
             ],
         ]
 

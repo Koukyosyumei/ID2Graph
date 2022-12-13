@@ -103,7 +103,7 @@ PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N
 if [ "${FLG_I}" = "TRUE" ]; then
   PREPCMD+=" -i"
 fi
-eval PREPCMD
+eval ${PREPCMD}
 
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
