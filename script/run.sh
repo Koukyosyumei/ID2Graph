@@ -12,7 +12,6 @@ VALUE_J=1
 VALUE_N=20000
 VALUE_F=0.5
 VALUE_V=-1
-VALUE_I=1
 VALUE_E=0.3
 VALUE_K=1.0
 VALUE_T="result/temp"
@@ -23,7 +22,7 @@ VALUE_Z=5
 VALUE_O=-1
 VALUE_X=2
 
-while getopts d:m:r:c:a:h:j:n:f:v:i:e:l:o:z:t:u:p:b:x:k:wygq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:x:k:iwygq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -144,7 +143,7 @@ else
 fi
 
 for s in $(seq 1 ${VALUE_Z}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -x ${VALUE_X}"
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -x ${VALUE_X}"
   if [ "${FLG_Y}" = "TRUE" ]; then
     TRAINCMD+=" -y"
   fi
@@ -156,6 +155,9 @@ for s in $(seq 1 ${VALUE_Z}); do
   fi
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
+  fi
+  if [ "${FLG_I}" = "TRUE" ]; then
+    TRAINCMD+=" -i"
   fi
   if [ ${VALUE_P} -gt 1 ]; then
     if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${VALUE_Z} ]; then

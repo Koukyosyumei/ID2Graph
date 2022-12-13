@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn import datasets
 from sklearn.datasets import load_breast_cancer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
@@ -47,18 +48,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "-i",
-        "--imbalance",
-        type=float,
-        default=1.0,
-    )
-
-    parser.add_argument(
         "-s",
         "--seed",
         type=int,
         default=42,
     )
+
+    parser.add_argument("-i", "--feature_importance", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -153,7 +149,7 @@ def sampling(df, yname, parsed_args):
     else:
         pos_df = df[df[yname] == 1]
         neg_df = df[df[yname] == 0]
-        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+        pos_num = int(parsed_args.num_samples / 2)
         neg_num = parsed_args.num_samples - pos_num
         pos_df = pos_df.sample(pos_num)
         neg_df = neg_df.sample(neg_num)
@@ -520,11 +516,11 @@ if __name__ == "__main__":
         y = df["Y"].values
 
     elif parsed_args.dataset_type == "dummy":
-        n = 30000
+        n = 20000
         m = 10
 
         y = np.random.binomial(1, 0.5, n)
-        X = np.stack([y + np.random.normal(size=n) * (i + 1) for i in range(m)]).T
+        X = np.stack([y + np.random.random(size=n) * (i + 1) for i in range(m)]).T
 
         active_col = [
             i for i in range(int(m * parsed_args.feature_num_ratio_of_active_party))
@@ -699,6 +695,22 @@ if __name__ == "__main__":
         col_alloc = [
             [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        ]
+
+    if parsed_args.feature_importance:
+        # calculate the feature importance
+        clf_rf = RandomForestClassifier(random_state=parsed_args.seed)
+        clf_rf.fit(X_val, y_val)
+        fti = clf_rf.feature_importances_
+        print(fti)
+        fti_idx = np.argsort(fti)
+        col_alloc = [
+            fti_idx[
+                : int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party)
+            ],
+            fti_idx[
+                int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party) :
+            ],
         ]
 
     convert_df_to_input(

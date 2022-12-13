@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:x:wgyq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:x:iwgyq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -99,7 +99,12 @@ while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:x:wgyq OPT; do
   esac
 done
 
-python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -s ${VALUE_S}
+PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -s ${VALUE_S}"
+if [ "${FLG_I}" = "TRUE" ]; then
+  PREPCMD+=" -i"
+fi
+eval PREPCMD
+
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
 RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -x ${VALUE_X}"
