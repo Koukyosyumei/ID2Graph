@@ -520,15 +520,17 @@ if __name__ == "__main__":
         y = df["Y"].values
 
     elif parsed_args.dataset_type == "dummy":
-        X, y = datasets.make_classification(
-            n_samples=30000,
-            n_features=10,
-            n_informative=10,
-            n_redundant=0,
-            n_repeated=0,
-            n_classes=2,
-            random_state=42,
-        )
+        n = 30000
+        m = 10
+
+        y = np.random.binomial(1, 0.5, n)
+        X = np.stack([y + np.random.normal(size=n) * (i + 1) for i in range(m)]).T
+
+        active_col = [
+            i for i in range(10 * parsed_args.feature_num_ratio_of_active_party)
+        ]
+        passive_col = list(set(range(m)) - set(active_col))
+        col_alloc = [active_col, passive_col]
 
     elif parsed_args.dataset_type == "hcv":
         cols = [
