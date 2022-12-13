@@ -51,7 +51,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -e : (float) coefficient of edge weight (tau in our paper).
     -k : (float) weight for community variables.
     -l : (int) maximum number of iterations of Louvain
-    -w : (int) include from this node.
+    -w : (optional) if specified, simulate free-rider setting.
 
     -b : (float) bound of mutual information.
     -c : (int) the number of completely secure rounds.
@@ -64,4 +64,4 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
 
 ### Google colab
 
-You can run all of our experiments on Google colab. Please use a runtime with high memory.
+You can run most of our experiments on Google colab. Please use a runtime with high memory. You may encounter memory leakage for some experiments with relatively large datasets.

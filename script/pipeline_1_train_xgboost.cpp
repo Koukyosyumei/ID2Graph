@@ -23,7 +23,6 @@ const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
 const bool use_missing_value = false;
-const int attack_start_depth = -1;
 
 string folderpath;
 string fileprefix;
@@ -39,11 +38,12 @@ int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
 bool save_tree_html = false;
 int m_lpmst = 2;
+bool is_freerider = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:w:x:gq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:x:wgq")) != -1)
     {
         switch (opt)
         {
@@ -81,7 +81,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'w':
-            // attack_start_depth = stoi(string(optarg));
+            is_freerider = true;
             break;
         case 'x':
             m_lpmst = stoi(string(optarg));
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, attack_start_depth, 1, completely_secure_round, eta);
+    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta);
 
     if (save_adj_mat)
     {
