@@ -527,7 +527,7 @@ if __name__ == "__main__":
         X = np.stack([y + np.random.normal(size=n) * (i + 1) for i in range(m)]).T
 
         active_col = [
-            i for i in range(10 * parsed_args.feature_num_ratio_of_active_party)
+            i for i in range(int(m * parsed_args.feature_num_ratio_of_active_party))
         ]
         passive_col = list(set(range(m)) - set(active_col))
         col_alloc = [active_col, passive_col]
