@@ -20,6 +20,7 @@ VALUE_P=1
 VALUE_L=100
 VALUE_Z=5
 VALUE_O=-1
+VALUE_I=-1
 
 while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:x:k:iwygq OPT; do
   case $OPT in
@@ -129,7 +130,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}\ny,${FLG_Y}\nw,${FLG_W}\ni,${FLG_I}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}\ny,${FLG_Y}\nw,${FLG_W}\ni,${VALUE_I}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
@@ -142,7 +143,7 @@ else
 fi
 
 for s in $(seq 1 ${VALUE_Z}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K}"
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -i ${VALUE_I}"
   if [ "${FLG_X}" = "TRUE" ]; then
     TRAINCMD+=" -x"
   fi
@@ -157,9 +158,6 @@ for s in $(seq 1 ${VALUE_Z}); do
   fi
   if [ "${FLG_W}" = "TRUE" ]; then
     TRAINCMD+=" -w"
-  fi
-  if [ "${FLG_I}" = "TRUE" ]; then
-    TRAINCMD+=" -i"
   fi
   if [ ${VALUE_P} -gt 1 ]; then
     if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${VALUE_Z} ]; then

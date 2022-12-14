@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:xiwgyq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xwgyq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -99,10 +99,7 @@ while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:xiwgyq OPT; do
   esac
 done
 
-PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -s ${VALUE_S}"
-if [ "${FLG_I}" = "TRUE" ]; then
-  PREPCMD+=" -i"
-fi
+PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -s ${VALUE_S} -i ${VALUE_I}"
 eval ${PREPCMD}
 
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
