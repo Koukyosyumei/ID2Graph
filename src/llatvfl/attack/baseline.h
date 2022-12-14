@@ -103,14 +103,20 @@ inline void travase_nodes_to_extract_uniontree(NodeType *node,
 }
 
 inline void extract_uniontree_from_tree(
-    XGBoostTree *tree, UnionTree &uinontree int target_party_id) {
+    XGBoostTree *tree, UnionTree &uinontree, int target_party_id) {
   travase_nodes_to_extract_uniontree<XGBoostNode>(&tree->dtree, uinontree,
                                                   target_party_id);
 }
 
 inline void extract_uniontree_from_tree(
-    RandomForestTree *tree, UnionTree &uinontree int target_party_id) {
+    RandomForestTree *tree, UnionTree &uinontree, int target_party_id) {
   travase_nodes_to_extract_uniontree<RandomForestNode>(&tree->dtree, uinontree,
+                                                  target_party_id);
+}
+
+inline void extract_uniontree_from_tree(
+    SecureBoostTree *tree, UnionTree &uinontree, int target_party_id) {
+  travase_nodes_to_extract_uniontree<SecureBoostNode>(&tree->dtree, uinontree,
                                                   target_party_id);
 }
 
@@ -125,7 +131,7 @@ inline vector<int> extract_uniontree_from_forest(ModelType *model,
     {
         if (i >= skip_round)
         {
-            extract_uniontree_from_tree((&model->estimators[i], uniontree, target_party_id);
+            extract_uniontree_from_tree(&model->estimators[i], uniontree, target_party_id);
         }
     }
 

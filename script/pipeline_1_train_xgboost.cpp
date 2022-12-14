@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
     // clf.free_intermediate_resources();
 
     if (use_uniontree){
-        vector<int> result = extract_uniontree_from_forest<RandomForestClassifier>(&clf, 1, skip_round);
+        vector<int> result = extract_uniontree_from_forest<XGBoostClassifier>(&clf, 1, completely_secure_round);
         std::ofstream union_file;
         string filepath = folderpath + "/" + fileprefix + "_union.out";
         union_file.open(filepath, std::ios::out);
