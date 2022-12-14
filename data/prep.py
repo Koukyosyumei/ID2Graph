@@ -10,8 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import \
-    calculate_permutation_importance_for_kmeans_clustering
+from llatvfl.clustering import calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -717,7 +716,7 @@ if __name__ == "__main__":
             n_classes=np.unique(y).shape[0],
             random_state=parsed_args.seed,
         )
-        fti_idx = np.argsort(fti * -1).tolist()
+        fti_idx = np.argsort(fti).tolist()
         col_alloc = [
             fti_idx[
                 : min(
