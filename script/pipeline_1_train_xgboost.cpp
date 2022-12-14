@@ -23,6 +23,7 @@ const float eps = 1.0;
 const float min_child_weight = -1 * numeric_limits<float>::infinity();
 const float subsample_cols = 0.8;
 const bool use_missing_value = false;
+const int m_lpmst = 2;
 
 string folderpath;
 string fileprefix;
@@ -37,13 +38,13 @@ float mi_bound = numeric_limits<float>::infinity();
 int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
 bool save_tree_html = false;
-int m_lpmst = 2;
 bool is_freerider = false;
+bool use_uniontree = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:x:wgq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:xwgq")) != -1)
     {
         switch (opt)
         {
@@ -84,7 +85,7 @@ void parse_args(int argc, char *argv[])
             is_freerider = true;
             break;
         case 'x':
-            m_lpmst = stoi(string(optarg));
+            use_uniontree = true;
             break;
         case 'g':
             save_adj_mat = true;

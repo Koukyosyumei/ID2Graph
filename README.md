@@ -40,7 +40,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -n : (int) number of data records sampled for training.
     -f : (float) the ratio of features owned by the active party.
     -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
-    -i : (float) the imlalance of dataset.
+    -i : (optional) specify feature importance
 
     -m : (str) type of the model.
     -r : (int) total number of rounds for training.

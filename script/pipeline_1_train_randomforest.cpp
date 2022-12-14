@@ -18,6 +18,7 @@ using namespace std;
 const int n_job = 1;
 const float subsample_cols = 0.8;
 const float max_samples_ratio = 0.8;
+const int m_lpmst = 2;
 
 string folderpath;
 string fileprefix;
@@ -31,13 +32,13 @@ float epsilon_ldp = -1;
 int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
 bool save_tree_html = false;
-int m_lpmst = 2;
 bool is_freerider = false;
+bool use_uniontree = false;
 
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:x:wgq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:xwgq")) != -1)
     {
         switch (opt)
         {
@@ -75,7 +76,7 @@ void parse_args(int argc, char *argv[])
             is_freerider =true;
             break;
         case 'x':
-            m_lpmst = stoi(string(optarg));
+            use_uniontree = true;
             break;
         case 'g':
             save_adj_mat = true;
@@ -274,42 +275,55 @@ int main(int argc, char *argv[])
 
     clf.free_intermediate_resources();
 
-    printf("Start graph extraction trial=%s\n", fileprefix.c_str());
-    start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, skip_round);
-
-    if (save_adj_mat)
-    {
-        adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
-    }
-
-    printf("Graph construction.... trial==%s\n", fileprefix.c_str());
-    Graph g = Graph(adj_matrix);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
-
-    printf("Start community detection trial=%s\n", fileprefix.c_str());
-    start = chrono::system_clock::now();
-    Louvain louvain = Louvain(maximum_nb_pass_done);
-    louvain.fit(g);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
-
-    printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
-    std::ofstream com_file;
-    string filepath = folderpath + "/" + fileprefix + "_communities.out";
-    com_file.open(filepath, std::ios::out);
-    com_file << g.nodes.size() << "\n";
-    com_file << num_row_train << "\n";
-    for (int i = 0; i < g.nodes.size(); i++)
-    {
-        for (int j = 0; j < g.nodes[i].size(); j++)
+    if (use_uniontree){
+        vector<int> result = extract_uniontree_from_forest<RandomForestClassifier>(&clf, 1, skip_round);
+        std::ofstream union_file;
+        string filepath = folderpath + "/" + fileprefix + "_union.out";
+        union_file.open(filepath, std::ios::out);
+        for (int i = 0; i < num_row_train; i++)
         {
-            com_file << g.nodes[i][j] << " ";
+            union_file << result[i] << " ";
         }
-        com_file << "\n";
+        union_file.close();
     }
-    com_file.close();
+    else {
+        printf("Start graph extraction trial=%s\n", fileprefix.c_str());
+        start = chrono::system_clock::now();
+        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, skip_round);
+
+        if (save_adj_mat)
+        {
+            adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
+        }
+
+        printf("Graph construction.... trial==%s\n", fileprefix.c_str());
+        Graph g = Graph(adj_matrix);
+        end = chrono::system_clock::now();
+        elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+        printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+
+        printf("Start community detection trial=%s\n", fileprefix.c_str());
+        start = chrono::system_clock::now();
+        Louvain louvain = Louvain(maximum_nb_pass_done);
+        louvain.fit(g);
+        end = chrono::system_clock::now();
+        elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+        printf("Community detection is complete %f [ms] trial=%s\n", elapsed, fileprefix.c_str());
+
+        printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
+        std::ofstream com_file;
+        string filepath = folderpath + "/" + fileprefix + "_communities.out";
+        com_file.open(filepath, std::ios::out);
+        com_file << g.nodes.size() << "\n";
+        com_file << num_row_train << "\n";
+        for (int i = 0; i < g.nodes.size(); i++)
+        {
+            for (int j = 0; j < g.nodes[i].size(); j++)
+            {
+                com_file << g.nodes[i][j] << " ";
+            }
+            com_file << "\n";
+        }
+        com_file.close();
+    }
 }
