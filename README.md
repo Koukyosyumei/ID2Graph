@@ -52,10 +52,10 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -k : (float) weight for community variables.
     -l : (int) maximum number of iterations of Louvain
     -w : (optional) if specified, simulate free-rider setting.
+    -x : (optional) baseline union attack
 
     -b : (float) bound of mutual information.
     -c : (int) the number of completely secure rounds.
-    -x : (int) M of LP-MST.
     -o : (float) epsilon of LP-MST.
 
     -g : (optional) draw the extracted graph.
