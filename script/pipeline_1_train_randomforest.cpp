@@ -10,6 +10,7 @@
 #include <chrono>
 #include <unistd.h>
 #include "llatvfl/attack/attack.h"
+#include "llatvfl/attack/baseline.h"
 #include "llatvfl/lpmst/lpmst.h"
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/utils/metric.h"
