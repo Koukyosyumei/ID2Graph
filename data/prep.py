@@ -717,14 +717,9 @@ if __name__ == "__main__":
     if parsed_args.feature_importance == -1:
         pass
     else:
-        fti = calculate_permutation_importance_for_kmeans_clustering(
-            X_train,
-            y_train,
-            X_val,
-            y_val,
-            n_classes=np.unique(y).shape[0],
-            random_state=parsed_args.seed,
-        )
+        clf = RandomForestClassifier(random_state=parsed_args.seed)
+        clf.fit(X_val, y_val)
+        fti = clf.feature_importances_
         if parsed_args.feature_importance == 1:
             fti_idx = np.argsort(fti).tolist()
         else:
