@@ -10,7 +10,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import calculate_permutation_importance_for_kmeans_clustering
+from llatvfl.clustering import \
+    calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -499,6 +500,14 @@ if __name__ == "__main__":
         X = pd.concat([X_a, X_p], axis=1).values
         y = df["loan_status"].values
 
+    elif parsed_args.dataset_type == "fraud":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
+        )
+        
+        X = df[[f"col_{i}" for i in range(112)]].values
+        y = df["targets"].values
+
     elif parsed_args.dataset_type == "car":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "train.csv"))
         df = df.drop("policy_id", axis=1)
@@ -508,32 +517,27 @@ if __name__ == "__main__":
         df["segment"] = df["segment"].replace(
             {"A": 0, "B1": 1, "B2": 2, "C1": 3, "C2": 4, "Utility": 5}
         )
-        df["max_torque"] = df["max_torque"].replace(
-            {
-                "250Nm@2750rpm": 0,
-                "200Nm@3000rpm": 1,
-                "200Nm@1750rpm": 2,
-                "170Nm@4000rpm": 3,
-                "113Nm@4400rpm": 4,
-                "91Nm@4250rpm": 5,
-                "85Nm@3000rpm": 6,
-                "82.1Nm@3400rpm": 7,
-                "60Nm@3500rpm": 8,
-            }
+        df["max_torque_Nm"] = (
+            df["max_torque"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*Nm)")
+            .astype("float64")
         )
-        df["max_power"] = df["max_power"].replace(
-            {
-                "118.36bhp@5500rpm": 0,
-                "113.45bhp@4000rpm": 1,
-                "97.89bhp@3600rpm": 2,
-                "88.77bhp@4000rpm": 3,
-                "88.50bhp@6000rpm": 4,
-                "67.06bhp@5500rpm": 5,
-                "61.68bhp@6000rpm": 6,
-                "55.92bhp@5300rpm": 7,
-                "40.36bhp@6000rpm": 8,
-            }
+        df["max_torque_rpm"] = (
+            df["max_torque"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*rpm)")
+            .astype("float64")
         )
+        df["max_power_bhp"] = (
+            df["max_power"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*bhp)")
+            .astype("float64")
+        )
+        df["max_power_rpm"] = (
+            df["max_power"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*rpm)")
+            .astype("float64")
+        )
+        df = df.drop(["max_torque", "max_power"], axis=1)
 
         df = sampling(df, "is_claim", parsed_args)
 
