@@ -53,7 +53,7 @@ struct Louvain
                 cout << i << ": " << mod << endl;
             }
 
-            if (!improvement)
+            if (!improvement || gc.nodes.size() == 2)
             {
                 break;
             }
