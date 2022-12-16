@@ -124,6 +124,7 @@ eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
 if [ "${FLG_X}" = "TRUE" ]; then
   echo "Start Union Tree Attack trial=${VALUE_S}"
+  python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" >"${VALUE_P}/${VALUE_S}_leak.csv"
 elif [ "${FLG_Y}" = "TRUE" ]; then
   echo "Start Supervised Learning trial=${VALUE_S}"
   python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
