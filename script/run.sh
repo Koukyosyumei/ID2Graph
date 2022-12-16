@@ -22,7 +22,7 @@ VALUE_Z=5
 VALUE_O=-1
 VALUE_I=-1
 
-while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:x:k:i:wygq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xwygq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
