@@ -5,8 +5,6 @@ from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import get_f_p_r
-
 # from matplotlib import pyplot as plt
 
 label2maker = {0: "o", 1: "x"}
@@ -33,9 +31,7 @@ if __name__ == "__main__":
 
     clustering_cls = KMeans
 
-    print(
-        "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
-    )
+    print("baseline_v,baseline_f,our_v,our_f")
 
     with open(parsed_args.path_to_input_file, mode="r") as f:
         lines = f.readlines()
@@ -57,14 +53,7 @@ if __name__ == "__main__":
 
     union_clusters = LabelEncoder().fit_transform(union_clusters)
 
-    c_score_baseline = metrics.completeness_score(y_train, union_clusters)
-    h_score_baseline = metrics.homogeneity_score(y_train, union_clusters)
     v_score_baseline = metrics.v_measure_score(y_train, union_clusters)
+    f_score_baseline = metrics.fowlkes_mallows_score(y_train, union_clusters)
 
-    f_score_baseline, p_score_baseline, ip_score_baseline = get_f_p_r(
-        y_train, union_clusters
-    )
-
-    print(
-        f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline}"
-    )
+    print(f"{v_score_baseline},{f_score_baseline}")

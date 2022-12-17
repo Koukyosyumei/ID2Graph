@@ -4,8 +4,6 @@ import numpy as np
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 
-from llatvfl.clustering import get_f_p_r
-
 # from matplotlib import pyplot as plt
 
 label2maker = {0: "o", 1: "x"}
@@ -45,9 +43,7 @@ if __name__ == "__main__":
 
     clustering_cls = KMeans
 
-    print(
-        "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
-    )
+    print("baseline_v,baseline_f,our_v,our_f")
 
     with open(parsed_args.path_to_input_file, mode="r") as f:
         lines = f.readlines()
@@ -80,14 +76,9 @@ if __name__ == "__main__":
     kmeans = clustering_cls(n_clusters=num_classes, random_state=parsed_args.seed).fit(
         X_train_minmax
     )
-    c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
-    h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
-    v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
 
-    f_score_baseline, p_score_baseline, ip_score_baseline = get_f_p_r(
-        y_train, kmeans.labels_
-    )
-    cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
+    v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
+    f_score_baseline = metrics.fowlkes_mallows_score(y_train, kmeans.labels_)
 
     if parsed_args.freerider_flag:
         with open(parsed_args.path_to_com_file, mode="r") as f:
@@ -101,13 +92,8 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k)] += i
 
-        c_score_with_com = metrics.completeness_score(y_train, X_com)
-        h_score_with_com = metrics.homogeneity_score(y_train, X_com)
         v_score_with_com = metrics.v_measure_score(y_train, X_com)
-
-        f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
-            y_train, X_com
-        )
+        f_score_with_com = metrics.fowlkes_mallows_score(y_train, X_com)
 
     else:
         with open(parsed_args.path_to_com_file, mode="r") as f:
@@ -124,14 +110,12 @@ if __name__ == "__main__":
         kmeans_with_com = clustering_cls(
             n_clusters=num_classes, random_state=parsed_args.seed
         ).fit(np.hstack([X_train_minmax, X_com]))
-        c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
-        h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
-        v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-        f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
+        v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
+        f_score_with_com = metrics.fowlkes_mallows_score(
             y_train, kmeans_with_com.labels_
         )
 
     print(
-        f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
+        f"{v_score_baseline},{f_score_baseline},{v_score_with_com},{f_score_with_com}"
     )

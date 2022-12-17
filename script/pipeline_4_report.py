@@ -109,7 +109,7 @@ if __name__ == "__main__":
     leak_csv.to_csv(os.path.join(parsed_args.path_to_dir, "leak.csv"))
 
     try:
-        for score_type in ["c", "h", "v", "p", "ip", "f"]:
+        for score_type in ["v", "f"]:
             baseline_mean = np.round(
                 leak_csv[f"baseline_{score_type}"].mean(), decimals=4
             )
