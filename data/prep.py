@@ -5,9 +5,13 @@ import random
 import numpy as np
 import pandas as pd
 from sklearn import datasets
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_breast_cancer, make_blobs
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+
+from llatvfl.clustering import \
+    calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -47,17 +51,17 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "-i",
-        "--imbalance",
-        type=float,
-        default=1.0,
-    )
-
-    parser.add_argument(
         "-s",
         "--seed",
         type=int,
         default=42,
+    )
+
+    parser.add_argument(
+        "-i",
+        "--feature_importance",
+        type=int,
+        default=-1,
     )
 
     args = parser.parse_args()
@@ -153,7 +157,7 @@ def sampling(df, yname, parsed_args):
     else:
         pos_df = df[df[yname] == 1]
         neg_df = df[df[yname] == 0]
-        pos_num = int(parsed_args.num_samples / (1 + parsed_args.imbalance))
+        pos_num = int(parsed_args.num_samples / 2)
         neg_num = parsed_args.num_samples - pos_num
         pos_df = pos_df.sample(pos_num)
         neg_df = neg_df.sample(neg_num)
@@ -496,6 +500,62 @@ if __name__ == "__main__":
         X = pd.concat([X_a, X_p], axis=1).values
         y = df["loan_status"].values
 
+    elif parsed_args.dataset_type == "fraud":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
+        )
+        
+        X = df[[f"col_{i}" for i in range(112)]].values
+        y = df["targets"].values
+
+    elif parsed_args.dataset_type == "car":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "train.csv"))
+        df = df.drop("policy_id", axis=1)
+        df = df.replace({"No": 0, "Yes": 1})
+        df["area_cluster"] = df["area_cluster"].apply(lambda x: int(x[1:]))
+        df["model"] = df["model"].apply(lambda x: int(x[1:]))
+        df["segment"] = df["segment"].replace(
+            {"A": 0, "B1": 1, "B2": 2, "C1": 3, "C2": 4, "Utility": 5}
+        )
+        df["max_torque_Nm"] = (
+            df["max_torque"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*Nm)")
+            .astype("float64")
+        )
+        df["max_torque_rpm"] = (
+            df["max_torque"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*rpm)")
+            .astype("float64")
+        )
+        df["max_power_bhp"] = (
+            df["max_power"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*bhp)")
+            .astype("float64")
+        )
+        df["max_power_rpm"] = (
+            df["max_power"]
+            .str.extract(r"([-+]?[0-9]*\.?[0-9]+)(?=\s*rpm)")
+            .astype("float64")
+        )
+        df = df.drop(["max_torque", "max_power"], axis=1)
+
+        df = sampling(df, "is_claim", parsed_args)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("is_claim", axis=1)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
+        y = df["is_claim"].values
+
     elif parsed_args.dataset_type == "coupon":
         df = pd.read_csv(
             os.path.join(
@@ -520,15 +580,27 @@ if __name__ == "__main__":
         y = df["Y"].values
 
     elif parsed_args.dataset_type == "dummy":
-        X, y = datasets.make_classification(
-            n_samples=30000,
-            n_features=10,
-            n_informative=10,
-            n_redundant=0,
-            n_repeated=0,
-            n_classes=2,
-            random_state=42,
+        n_samples = 20000
+        n_features = 10
+        n_classes = 2
+        feature_ratio = 0.5
+
+        X, y = make_blobs(
+            n_samples=n_samples,
+            centers=n_classes,
+            n_features=n_features,
+            random_state=0,
+            center_box=(-2, 2),
         )
+
+        active_col = [
+            i
+            for i in range(
+                int(n_features * parsed_args.feature_num_ratio_of_active_party)
+            )
+        ]
+        passive_col = list(set(range(n_features)) - set(active_col))
+        col_alloc = [active_col, passive_col]
 
     elif parsed_args.dataset_type == "hcv":
         cols = [
@@ -697,6 +769,31 @@ if __name__ == "__main__":
         col_alloc = [
             [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        ]
+
+    if parsed_args.feature_importance == -1:
+        pass
+    else:
+        clf = RandomForestClassifier(random_state=parsed_args.seed)
+        clf.fit(X_val, y_val)
+        fti = clf.feature_importances_
+        if parsed_args.feature_importance == 1:
+            fti_idx = np.argsort(fti).tolist()
+        else:
+            fti_idx = np.argsort(fti * -1).tolist()
+        col_alloc = [
+            fti_idx[
+                : min(
+                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
+                    X_val.shape[1] - 1,
+                )
+            ],
+            fti_idx[
+                min(
+                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
+                    X_val.shape[1] - 1,
+                ) :
+            ],
         ]
 
     convert_df_to_input(

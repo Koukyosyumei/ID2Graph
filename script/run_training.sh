@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:x:wgyq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xwgyq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -99,10 +99,12 @@ while getopts d:m:p:n:f:v:i:r:c:a:h:b:j:e:l:o:z:k:s:x:wgyq OPT; do
   esac
 done
 
-python3 ./data/prep.py -d ${VALUE_D} -p "./data/${VALUE_D}/" -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -i ${VALUE_I} -s ${VALUE_S}
+PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -s ${VALUE_S} -i ${VALUE_I}"
+eval ${PREPCMD}
+
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
-RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -x ${VALUE_X}"
+RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O}"
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
@@ -115,9 +117,15 @@ fi
 if [ "${FLG_W}" = "TRUE" ]; then
   RUNCMD+=" -w"
 fi
+if [ "${FLG_X}" = "TRUE" ]; then
+  RUNCMD+=" -x"
+fi
 eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
-if [ "${FLG_Y}" = "TRUE" ]; then
+if [ "${FLG_X}" = "TRUE" ]; then
+  echo "Start Union Tree Attack trial=${VALUE_S}"
+  python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" >"${VALUE_P}/${VALUE_S}_leak.csv"
+elif [ "${FLG_Y}" = "TRUE" ]; then
   echo "Start Supervised Learning trial=${VALUE_S}"
   python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Supervised Learning is complete trial=${VALUE_S}"
