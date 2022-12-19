@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn import datasets
 from sklearn.datasets import load_breast_cancer, make_blobs
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
@@ -504,7 +505,7 @@ if __name__ == "__main__":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
         )
-        
+
         X = df[[f"col_{i}" for i in range(112)]].values
         y = df["targets"].values
 
@@ -776,7 +777,10 @@ if __name__ == "__main__":
     else:
         clf = RandomForestClassifier(random_state=parsed_args.seed)
         clf.fit(X_val, y_val)
-        fti = clf.feature_importances_
+        result = permutation_importance(
+            clf, X_val, y_val, n_repeats=30, random_state=parsed_args.seed
+        )
+        fti = result.importances_mean  # clf.feature_importances_
         if parsed_args.feature_importance == 1:
             fti_idx = np.argsort(fti).tolist()
         else:
