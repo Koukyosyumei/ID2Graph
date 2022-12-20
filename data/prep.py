@@ -11,8 +11,7 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import \
-    calculate_permutation_importance_for_kmeans_clustering
+from llatvfl.clustering import calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -781,24 +780,49 @@ if __name__ == "__main__":
             clf, X_val, y_val, n_repeats=30, random_state=parsed_args.seed
         )
         fti = result.importances_mean  # clf.feature_importances_
+
         if parsed_args.feature_importance == 1:
             fti_idx = np.argsort(fti).tolist()
-        else:
-            fti_idx = np.argsort(fti * -1).tolist()
-        col_alloc = [
-            fti_idx[
+            active_col = fti_idx[
                 : min(
                     int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
                     X_val.shape[1] - 1,
                 )
-            ],
-            fti_idx[
+            ].tolist()
+        elif parsed_args.feature_importance == 0:
+            fti_idx = np.argsort(fti * -1).tolist()
+            active_col = fti_idx[
                 min(
                     int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
                     X_val.shape[1] - 1,
                 ) :
-            ],
-        ]
+            ].tolist()
+        else:
+            fti_idx = np.argsort(fti).tolist()
+            active_col = (
+                fti_idx[
+                    : min(
+                        int(
+                            X_val.shape[1]
+                            * parsed_args.feature_num_ratio_of_active_party
+                            * 0.5
+                        ),
+                        X_val.shape[1] - 1,
+                    )
+                ].tolist()
+                + fti_idx[
+                    min(
+                        int(
+                            X_val.shape[1]
+                            * parsed_args.feature_num_ratio_of_active_party
+                            * 0.5
+                        ),
+                        X_val.shape[1] - 1,
+                    ) :
+                ].tolist()
+            )
+
+        col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
 
     convert_df_to_input(
         X_train,
