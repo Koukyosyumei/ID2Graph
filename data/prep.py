@@ -792,10 +792,10 @@ if __name__ == "__main__":
         elif parsed_args.feature_importance == 0:
             fti_idx = np.argsort(fti * -1).tolist()
             active_col = fti_idx[
-                min(
+                : min(
                     int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
                     X_val.shape[1] - 1,
-                ) :
+                )
             ].tolist()
         else:
             fti_idx = np.argsort(fti).tolist()
