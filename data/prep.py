@@ -788,7 +788,7 @@ if __name__ == "__main__":
                     int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
                     X_val.shape[1] - 1,
                 )
-            ].tolist()
+            ]
         elif parsed_args.feature_importance == 0:
             fti_idx = np.argsort(fti * -1).tolist()
             active_col = fti_idx[
@@ -796,11 +796,12 @@ if __name__ == "__main__":
                     int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
                     X_val.shape[1] - 1,
                 )
-            ].tolist()
+            ]
         else:
-            fti_idx = np.argsort(fti).tolist()
+            fti_idx_f = np.argsort(fti).tolist()
+            fti_idx_b = np.argsort(fti * -1).tolist()
             active_col = (
-                fti_idx[
+                fti_idx_f[
                     : min(
                         int(
                             X_val.shape[1]
@@ -809,17 +810,17 @@ if __name__ == "__main__":
                         ),
                         X_val.shape[1] - 1,
                     )
-                ].tolist()
-                + fti_idx[
-                    min(
+                ]
+                + fti_idx_b[
+                    : min(
                         int(
                             X_val.shape[1]
                             * parsed_args.feature_num_ratio_of_active_party
                             * 0.5
                         ),
                         X_val.shape[1] - 1,
-                    ) :
-                ].tolist()
+                    )
+                ]
             )
 
         col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
