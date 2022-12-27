@@ -45,7 +45,7 @@ bool use_uniontree = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:xwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:k:xwg")) != -1)
     {
         switch (opt)
         {
@@ -81,6 +81,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'b':
             mi_bound = stof(string(optarg));
+            break;
+        case 'k':
+            min_leaf = stoi(string(optarg));
             break;
         case 'w':
             is_freerider = true;
@@ -291,7 +294,8 @@ int main(int argc, char *argv[])
 
     result_file.close();
 
-    if (use_uniontree){
+    if (use_uniontree)
+    {
         vector<int> result = extract_uniontree_from_forest<SecureBoostClassifier>(&clf, 1, completely_secure_round);
         std::ofstream union_file;
         string filepath = folderpath + "/" + fileprefix + "_union.out";
@@ -302,7 +306,8 @@ int main(int argc, char *argv[])
         }
         union_file.close();
     }
-    else {
+    else
+    {
         printf("Start graph extraction trial=%s\n", fileprefix.c_str());
         start = chrono::system_clock::now();
         SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta);

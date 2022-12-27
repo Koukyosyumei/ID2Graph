@@ -104,7 +104,7 @@ eval ${PREPCMD}
 
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
-RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O}"
+RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K}"
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
@@ -127,11 +127,11 @@ if [ "${FLG_X}" = "TRUE" ]; then
   python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" >"${VALUE_P}/${VALUE_S}_leak.csv"
 elif [ "${FLG_Y}" = "TRUE" ]; then
   echo "Start Supervised Learning trial=${VALUE_S}"
-  python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+  python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Supervised Learning is complete trial=${VALUE_S}"
 else
   echo "Start Clustering trial=${VALUE_S}"
-  CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -s ${VALUE_S}"
+  CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -s ${VALUE_S}"
   if [ "${FLG_W}" = "TRUE" ]; then
     CLSCMD+=" -w"
   fi
