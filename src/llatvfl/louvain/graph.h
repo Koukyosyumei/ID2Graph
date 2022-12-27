@@ -18,8 +18,8 @@ struct Graph
     vector<unsigned int> links;
     vector<float> weights; // TODO check if `float` works or not
 
-    Graph(){};
-    Graph(vector<vector<int>> &node2original_records)
+    Graph() {};
+    Graph(vector<vector<int>>& node2original_records)
     {
         num_nodes = 0;
         num_links = 0;
@@ -32,7 +32,7 @@ struct Graph
             nodes.push_back(node2original_records[i]);
         }
     }
-    Graph(SparseMatrixDOK<float> &sm_dok)
+    Graph(SparseMatrixDOK<float>& sm_dok)
     {
         num_nodes = sm_dok.dim_row;
         // initilize first graph without contraction
@@ -72,8 +72,8 @@ struct Graph
             total_weight += (float)get_weighted_degree(i);
         }
     }
-    Graph(unsigned long num_nodes_, vector<unsigned long> &degrees_,
-          vector<unsigned int> &links_, vector<float> &weights_)
+    Graph(unsigned long num_nodes_, vector<unsigned long>& degrees_,
+        vector<unsigned int>& links_, vector<float>& weights_)
     {
         num_nodes = num_nodes_;
         degrees = degrees_;
@@ -100,7 +100,7 @@ struct Graph
      *
      * @param n
      */
-    void add_nose(vector<int> &n)
+    void add_nose(vector<int>& n)
     {
         nodes.push_back(n);
     }

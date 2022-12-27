@@ -18,7 +18,7 @@ struct Louvain
     // Graph g;
 
     Louvain(int nbp_ = 100, int max_itr_ = 100, float precision_ = 0.000001,
-            int seed_ = 42, int verbose_ = -1)
+        int seed_ = 42, int verbose_ = -1)
     {
         max_itr = max_itr_;
         precision = precision_;
@@ -32,7 +32,7 @@ struct Louvain
         seed = seed_;
     }
 
-    void fit(Graph &gc)
+    void fit(Graph& gc)
     {
         bool improvement = true;
 

@@ -26,6 +26,7 @@ string fileprefix;
 int num_trees = 20;
 int depth = 3;
 int min_leaf = 1;
+int attack_min_sample = 1;
 int skip_round = 0;
 float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
@@ -39,7 +40,7 @@ bool use_uniontree = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:xwgq")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:k:xwgq")) != -1)
     {
         switch (opt)
         {
@@ -73,8 +74,11 @@ void parse_args(int argc, char *argv[])
         case 'b':
             mi_bound = stof(string(optarg));
             break;
+        case 'k':
+            attack_min_sample = stoi(string(optarg));
+            break;
         case 'w':
-            is_freerider =true;
+            is_freerider = true;
             break;
         case 'x':
             use_uniontree = true;
@@ -276,7 +280,8 @@ int main(int argc, char *argv[])
 
     clf.free_intermediate_resources();
 
-    if (use_uniontree){
+    if (use_uniontree)
+    {
         vector<int> result = extract_uniontree_from_forest<RandomForestClassifier>(&clf, 1, skip_round);
         std::ofstream union_file;
         string filepath = folderpath + "/" + fileprefix + "_union.out";
@@ -287,10 +292,11 @@ int main(int argc, char *argv[])
         }
         union_file.close();
     }
-    else {
+    else
+    {
         printf("Start graph extraction trial=%s\n", fileprefix.c_str());
         start = chrono::system_clock::now();
-        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, skip_round);
+        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, skip_round, attack_min_sample);
 
         if (save_adj_mat)
         {

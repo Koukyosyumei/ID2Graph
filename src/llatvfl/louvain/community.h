@@ -11,7 +11,7 @@ struct Community
     vector<float> neigh_weight;
     vector<unsigned int> neigh_pos;
     unsigned int neigh_last;
-    Graph *g;                   // network to compute communities for
+    Graph* g;                   // network to compute communities for
     int num_nodes;              // nummber of nodes in the network and num_nodes of all vectors
     vector<int> node2community; // community to which each node belongs
     vector<float> in;           // in[c] = total weights within c-th commynity (\sum_{(i, j) \in c} w_(i, j))
@@ -30,8 +30,8 @@ struct Community
     mt19937 gen;
     uniform_real_distribution<> uniform_dist_0_to_1;
 
-    Community(){};
-    Community(Graph *gc, int nbp, float minm, int seed = 42)
+    Community() {};
+    Community(Graph* gc, int nbp, float minm, int seed = 42)
     {
         g = gc;
         num_nodes = g->num_nodes;
@@ -129,7 +129,7 @@ struct Community
         //       m           = number or wegihts of all links
         // ignore const (1/2m)
         return ((float)weights_from_node_to_comm -
-                (float)tot[comm] * (float)w_degree / (float)g->total_weight);
+            (float)tot[comm] * (float)w_degree / (float)g->total_weight);
     }
 
     // compute the set of neighboring communities of node
@@ -188,7 +188,7 @@ struct Community
         for (int node = 0; node < num_nodes; node++)
         {
             // TODO add node handling
-            vector<int> &comm = communities[renumber[node2community[node]]];
+            vector<int>& comm = communities[renumber[node2community[node]]];
             comm.insert(comm.end(), g->nodes[node].begin(), g->nodes[node].end());
             comm2nodes[renumber[node2community[node]]].push_back(node);
         }
@@ -314,7 +314,7 @@ struct Community
                 improvement = true;
 
         } while ((nb_moves > 0) &&
-                 (nb_pass_done < maximum_nb_pass_done));
+            (nb_pass_done < maximum_nb_pass_done));
 
         return improvement;
     }

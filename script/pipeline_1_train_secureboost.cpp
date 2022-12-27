@@ -33,6 +33,7 @@ int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
 int min_leaf = 1;
+int attack_min_sample = 1;
 float learning_rate = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;
@@ -45,7 +46,7 @@ bool use_uniontree = false;
 void parse_args(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:xwg")) != -1)
+    while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:k:xwg")) != -1)
     {
         switch (opt)
         {
@@ -81,6 +82,9 @@ void parse_args(int argc, char *argv[])
             break;
         case 'b':
             mi_bound = stof(string(optarg));
+            break;
+        case 'k':
+            attack_min_sample = stoi(string(optarg));
             break;
         case 'w':
             is_freerider = true;
@@ -305,7 +309,7 @@ int main(int argc, char *argv[])
     else {
         printf("Start graph extraction trial=%s\n", fileprefix.c_str());
         start = chrono::system_clock::now();
-        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta);
+        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta, attack_min_sample);
 
         if (save_adj_mat)
         {
