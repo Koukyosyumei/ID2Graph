@@ -63,7 +63,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
             bool lmir_exclude_flag = temp_node->left->lmir_flag_exclude_passive_parties &&
                                      temp_node->right->lmir_flag_exclude_passive_parties;
             bool exclude_flag = (not_splitted_flag || lmir_exclude_flag) && (target_party_id != -1);
-            bool min_sample_flag = temp_node->idx.size() <= min_sample;
+            bool min_sample_flag = temp_node->idxs.size() <= min_sample;
 
             if (exclude_flag || min_sample_flag)
             {
@@ -77,9 +77,8 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                 }
             }
 
-            if ((!temp_node->left->lmir_flag_exclude_passive_parties ||
-                 !temp_node->right->lmir_flag_exclude_passive_parties)
-                 && !min_sample_flag)
+            if (!temp_node->left->lmir_flag_exclude_passive_parties ||
+                !temp_node->right->lmir_flag_exclude_passive_parties)
             {
                 que.push(temp_node->left);
                 que.push(temp_node->right);
@@ -106,10 +105,10 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
  */
 template <typename NodeType>
 inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *node,
-                                                      int max_depth,
-                                                      SparseMatrixDOK<float> &adj_mat,
-                                                      float weight,
-                                                      int target_party_id)
+                                                                   int max_depth,
+                                                                   SparseMatrixDOK<float> &adj_mat,
+                                                                   float weight,
+                                                                   int target_party_id)
 {
     queue<NodeType *> que;
     que.push(node);
@@ -134,10 +133,13 @@ inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *nod
         }
         else
         {
-            if (!temp_node->left->is_leaf_flag && !temp_node->right->is_leaf_flag){
+            if (!temp_node->left->is_leaf_flag && !temp_node->right->is_leaf_flag)
+            {
                 que.push(temp_node->left);
                 que.push(temp_node->right);
-            } else if (!temp_node->left->is_leaf_flag && temp_node->right->is_leaf_flag){
+            }
+            else if (!temp_node->left->is_leaf_flag && temp_node->right->is_leaf_flag)
+            {
                 temp_idxs_size = temp_node->right->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)
                 {
@@ -147,7 +149,9 @@ inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *nod
                     }
                 }
                 que.push(temp_node->left);
-            } else if (temp_node->left->is_leaf_flag && !temp_node->right->is_leaf_flag) {
+            }
+            else if (temp_node->left->is_leaf_flag && !temp_node->right->is_leaf_flag)
+            {
                 temp_idxs_size = temp_node->left->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)
                 {
@@ -157,7 +161,9 @@ inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *nod
                     }
                 }
                 que.push(temp_node->right);
-            } else {
+            }
+            else
+            {
                 temp_idxs_size = temp_node->idxs.size();
                 for (int i = 0; i < temp_idxs_size; i++)
                 {
@@ -190,12 +196,15 @@ inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
                                                SparseMatrixDOK<float> &adj_mat,
                                                float weight,
                                                int target_party_id,
-                                               int min_sample=1)
+                                               int min_sample)
 {
-    if (is_freerider){
-    travase_nodes_to_extract_adjacency_matrix_as_freerider<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
-    } else {
-    travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
+    if (is_freerider)
+    {
+        travase_nodes_to_extract_adjacency_matrix_as_freerider<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    }
+    else
+    {
+        travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
     }
 }
 
@@ -215,10 +224,13 @@ inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
                                                int target_party_id,
                                                int min_sample)
 {
-    if (is_freerider){
+    if (is_freerider)
+    {
         travase_nodes_to_extract_adjacency_matrix_as_freerider<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
-    } else {
-    travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
+    }
+    else
+    {
+        travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
     }
 }
 
@@ -238,11 +250,14 @@ inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
                                                int target_party_id,
                                                int min_sample)
 {
-     if (is_freerider){
+    if (is_freerider)
+    {
         travase_nodes_to_extract_adjacency_matrix_as_freerider<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
-     } else {
-    travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
-     }
+    }
+    else
+    {
+        travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id, min_sample);
+    }
 }
 
 /**
