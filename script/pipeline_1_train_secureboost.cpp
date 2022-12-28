@@ -83,7 +83,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'k':
-            min_leaf = stoi(string(optarg));
+            attack_min_leaf = stoi(string(optarg));
             break;
         case 'w':
             is_freerider = true;

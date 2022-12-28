@@ -31,6 +31,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
     int n_job;
     bool save_loss;
     int num_classes;
+    int attack_min_leaf;
 
     LossFunc *lossfunc_obj;
 
@@ -45,7 +46,8 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
                 float lam_ = 1.5, float gamma_ = 1, float eps_ = 0.1,
                 float mi_bound_ = numeric_limits<float>::infinity(),
                 int active_party_id_ = -1, int completelly_secure_round_ = 0,
-                float init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true)
+                float init_value_ = 1.0, int n_job_ = 1, bool save_loss_ = true,
+                int attack_min_leaf_ = 1)
     {
         num_classes = num_classes_;
         subsample_cols = subsample_cols_;
@@ -63,6 +65,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
         init_value = init_value_;
         n_job = n_job_;
         save_loss = save_loss_;
+        attack_min_leaf = attack_min_leaf_;
 
         if (mi_bound < 0)
         {
@@ -168,7 +171,7 @@ struct XGBoostBase : TreeModelBase<XGBoostParty>
             XGBoostTree boosting_tree = XGBoostTree();
             boosting_tree.fit(&parties, &y, num_classes, &grad, &hess, &prior, min_child_weight,
                               lam, gamma, eps, min_leaf, depth, mi_bound,
-                              active_party_id, (completelly_secure_round > i), n_job);
+                              active_party_id, (completelly_secure_round > i), n_job, attack_min_leaf);
             vector<vector<float>> pred_temp = boosting_tree.get_train_prediction();
             for (int j = 0; j < row_count; j++)
                 for (int c = 0; c < num_classes; c++)

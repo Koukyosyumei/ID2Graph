@@ -32,6 +32,7 @@ int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
 int min_leaf = 1;
+int attack_min_leaf = 1;
 float learning_rate = 0.3;
 float eta = 0.3;
 float epsilon_ldp = -1;
@@ -83,7 +84,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'k':
-            min_leaf = stoi(string(optarg));
+            attack_min_leaf = stoi(string(optarg));
             break;
         case 'w':
             is_freerider = true;
@@ -245,7 +246,8 @@ int main(int argc, char *argv[])
                                               boosting_rounds,
                                               lam, const_gamma, eps,
                                               mi_bound, 0, completely_secure_round,
-                                              1 / num_classes, n_job, true);
+                                              1 / num_classes, n_job, true,
+                                              attack_min_leaf);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;

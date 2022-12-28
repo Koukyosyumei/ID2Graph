@@ -14,7 +14,7 @@ struct RandomForestTree : Tree<RandomForestNode>
     void fit(vector<RandomForestParty> *parties, vector<float> *y,
              int num_classes, int min_leaf, int depth, vector<float> *prior,
              float max_samples_ratio = 1.0, float mi_bound = 0,
-             int active_party_id = -1, int n_job = 1, int seed = 0)
+             int active_party_id = -1, int n_job = 1, int seed = 0, int attack_min_leaf = 1)
     {
         vector<int> idxs(y->size());
         iota(idxs.begin(), idxs.end(), 0);
@@ -32,7 +32,8 @@ struct RandomForestTree : Tree<RandomForestNode>
             parties->at(i).subsample_columns();
         }
         num_row = y->size();
-        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_bound, active_party_id, false, n_job);
+        dtree = RandomForestNode(parties, y, num_classes, idxs, depth, prior, mi_bound,
+                                 active_party_id, false, n_job, attack_min_leaf);
     }
 
     void free_intermediate_resources()

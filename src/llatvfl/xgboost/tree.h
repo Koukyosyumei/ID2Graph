@@ -38,7 +38,8 @@ struct XGBoostTree : Tree<XGBoostNode>
              vector<vector<float>> *gradient, vector<vector<float>> *hessian,
              vector<float> *prior, float min_child_weight, float lam,
              float gamma, float eps, int min_leaf, int depth, float mi_bound,
-             int active_party_id = -1, bool use_only_active_party = false, int n_job = 1)
+             int active_party_id = -1, bool use_only_active_party = false,
+             int n_job = 1, int attack_min_leaf = 1)
     {
         vector<int> idxs(y->size());
         iota(idxs.begin(), idxs.end(), 0);
@@ -49,7 +50,7 @@ struct XGBoostTree : Tree<XGBoostNode>
         num_row = y->size();
         dtree = XGBoostNode(parties, y, num_classes, gradient, hessian, idxs, prior,
                             min_child_weight, lam, gamma, eps, depth, mi_bound,
-                            active_party_id, use_only_active_party, n_job);
+                            active_party_id, use_only_active_party, n_job, attack_min_leaf);
     }
 
     void free_intermediate_resources()

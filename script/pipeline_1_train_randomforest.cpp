@@ -74,7 +74,7 @@ void parse_args(int argc, char *argv[])
             mi_bound = stof(string(optarg));
             break;
         case 'k':
-            min_leaf = stoi(string(optarg));
+            attack_min_leaf = stoi(string(optarg));
             break;
         case 'w':
             is_freerider = true;
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
     // --- Check Initialization --- //
     RandomForestClassifier clf = RandomForestClassifier(num_classes, subsample_cols, depth, min_leaf,
                                                         max_samples_ratio, num_trees,
-                                                        mi_bound, 0, n_job, 0);
+                                                        mi_bound, 0, n_job, 0, attack_min_leaf);
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
     start = chrono::system_clock::now();

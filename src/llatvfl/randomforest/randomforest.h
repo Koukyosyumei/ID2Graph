@@ -21,13 +21,15 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
     int active_party_id;
     int n_job;
     int seed;
+    int attack_min_leaf;
 
     vector<RandomForestTree> estimators;
 
     RandomForestClassifier(int num_classes_ = 2, float subsample_cols_ = 0.8, int depth_ = 5, int min_leaf_ = 1,
                            float max_samples_ratio_ = 1.0, int num_trees_ = 5,
                            float mi_bound_ = numeric_limits<float>::infinity(),
-                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0)
+                           int active_party_id_ = -1, int n_job_ = 1, int seed_ = 0,
+                           int attack_min_leaf_ = 1)
     {
         num_classes = num_classes_;
         subsample_cols = subsample_cols_;
@@ -39,6 +41,7 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         active_party_id = active_party_id_;
         n_job = n_job_;
         seed = seed_;
+        attack_min_leaf = attack_min_leaf_;
 
         if (mi_bound < 0)
         {
@@ -78,7 +81,8 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty>
         for (int i = 0; i < num_trees; i++)
         {
             RandomForestTree tree = RandomForestTree();
-            tree.fit(&parties, &y, num_classes, min_leaf, depth, &prior, max_samples_ratio, mi_bound, active_party_id, n_job, seed);
+            tree.fit(&parties, &y, num_classes, min_leaf, depth, &prior, max_samples_ratio,
+                     mi_bound, active_party_id, n_job, seed, attack_min_leaf);
             estimators.push_back(tree);
             seed += 1;
         }

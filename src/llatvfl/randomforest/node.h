@@ -34,10 +34,13 @@ struct RandomForestNode : Node<RandomForestParty>
     float entire_datasetsize = 0;
     vector<float> entire_class_cnt;
 
+    int attack_min_leaf;
+
     RandomForestNode() {}
     RandomForestNode(vector<RandomForestParty> *parties_, vector<float> *y_, int num_classes_,
                      vector<int> &idxs_, int depth_, vector<float> *prior_, float mi_bound_,
-                     int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
+                     int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1,
+                     int attack_min_leaf_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -49,6 +52,7 @@ struct RandomForestNode : Node<RandomForestParty>
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
+        attack_min_leaf = attack_min_leaf_;
 
         lmir_flag_exclude_passive_parties = use_only_active_party;
 
@@ -347,13 +351,17 @@ struct RandomForestNode : Node<RandomForestParty>
                                                                                       entire_class_cnt, prior, right_idxs);
 
         left = new RandomForestNode(parties, y, num_classes, left_idxs,
-                                    depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
+                                    depth - 1, prior, mi_bound, active_party_id,
+                                    (use_only_active_party || !left_is_satisfied_lmir_cond || left_idxs->size() <= attack_min_leaf),
+                                    n_job, attack_min_leaf);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new RandomForestNode(parties, y, num_classes, right_idxs,
-                                     depth - 1, prior, mi_bound, active_party_id, (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
+                                     depth - 1, prior, mi_bound, active_party_id,
+                                     (use_only_active_party || !right_is_satisfied_lmir_cond || right_idxs->size() <= attack_min_leaf),
+                                     n_job);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;

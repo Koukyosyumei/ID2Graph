@@ -41,12 +41,15 @@ struct XGBoostNode : Node<XGBoostParty>
     float entire_datasetsize = 0;
     vector<float> entire_class_cnt;
 
+    int attack_min_leaf;
+
     XGBoostNode() {}
     XGBoostNode(vector<XGBoostParty> *parties_, vector<float> *y_, int num_classes_,
                 vector<vector<float>> *gradient_,
                 vector<vector<float>> *hessian_, vector<int> &idxs_, vector<float> *prior_,
                 float min_child_weight_, float lam_, float gamma_, float eps_, int depth_, float mi_bound_,
-                int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1)
+                int active_party_id_ = -1, bool use_only_active_party_ = false, int n_job_ = 1,
+                int attack_min_leaf_ = 1)
     {
         parties = parties_;
         y = y_;
@@ -64,6 +67,7 @@ struct XGBoostNode : Node<XGBoostParty>
         active_party_id = active_party_id_;
         use_only_active_party = use_only_active_party_;
         n_job = n_job_;
+        attack_min_leaf = attack_min_leaf_;
 
         lmir_flag_exclude_passive_parties = use_only_active_party;
 
@@ -410,14 +414,16 @@ struct XGBoostNode : Node<XGBoostParty>
 
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
                                lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                               (use_only_active_party || (!left_is_satisfied_lmir_cond)), n_job);
+                               (use_only_active_party || (!left_is_satisfied_lmir_cond) || left_idxs->size() <= attack_min_leaf),
+                               n_job, attack_min_leaf);
         if (left->is_leaf_flag == 1)
         {
             left->party_id = party_id;
         }
         right = new XGBoostNode(parties, y, num_classes, gradient, hessian, right_idxs, prior, min_child_weight,
                                 lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                                (use_only_active_party || (!right_is_satisfied_lmir_cond)), n_job);
+                                (use_only_active_party || (!right_is_satisfied_lmir_cond) || left_idxs->size() <= attack_min_leaf),
+                                n_job, attack_min_leaf);
         if (right->is_leaf_flag == 1)
         {
             right->party_id = party_id;
