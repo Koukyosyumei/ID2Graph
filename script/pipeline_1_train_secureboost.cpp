@@ -33,6 +33,7 @@ int boosting_rounds = 20;
 int completely_secure_round = 0;
 int depth = 3;
 int min_leaf = 1;
+int attack_min_leaf = 1;
 float learning_rate = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
 float eta = 0.3;

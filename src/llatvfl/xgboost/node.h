@@ -414,7 +414,7 @@ struct XGBoostNode : Node<XGBoostParty>
 
         left = new XGBoostNode(parties, y, num_classes, gradient, hessian, left_idxs, prior, min_child_weight,
                                lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                               (use_only_active_party || (!left_is_satisfied_lmir_cond) || left_idxs->size() <= attack_min_leaf),
+                               (use_only_active_party || (!left_is_satisfied_lmir_cond) || left_idxs.size() <= attack_min_leaf),
                                n_job, attack_min_leaf);
         if (left->is_leaf_flag == 1)
         {
@@ -422,7 +422,7 @@ struct XGBoostNode : Node<XGBoostParty>
         }
         right = new XGBoostNode(parties, y, num_classes, gradient, hessian, right_idxs, prior, min_child_weight,
                                 lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-                                (use_only_active_party || (!right_is_satisfied_lmir_cond) || left_idxs->size() <= attack_min_leaf),
+                                (use_only_active_party || (!right_is_satisfied_lmir_cond) || left_idxs.size() <= attack_min_leaf),
                                 n_job, attack_min_leaf);
         if (right->is_leaf_flag == 1)
         {

@@ -26,6 +26,7 @@ string fileprefix;
 int num_trees = 20;
 int depth = 3;
 int min_leaf = 1;
+int attack_min_leaf = 1;
 int skip_round = 0;
 float eta = 0.3;
 float mi_bound = numeric_limits<float>::infinity();
