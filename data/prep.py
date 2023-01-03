@@ -775,9 +775,9 @@ if __name__ == "__main__":
         pass
     else:
         clf = RandomForestClassifier(random_state=parsed_args.seed)
-        clf.fit(X_val, y_val)
+        clf.fit(X_train, y_train)
         result = permutation_importance(
-            clf, X_val, y_val, n_repeats=30, random_state=parsed_args.seed
+            clf, X_train, y_train, n_repeats=10, random_state=parsed_args.seed
         )
         fti = result.importances_mean  # clf.feature_importances_
 
@@ -785,16 +785,20 @@ if __name__ == "__main__":
             fti_idx = np.argsort(fti).tolist()
             active_col = fti_idx[
                 : min(
-                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
-                    X_val.shape[1] - 1,
+                    int(
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
+                    ),
+                    X_train.shape[1] - 1,
                 )
             ]
         elif parsed_args.feature_importance == 0:
             fti_idx = np.argsort(fti * -1).tolist()
             active_col = fti_idx[
                 : min(
-                    int(X_val.shape[1] * parsed_args.feature_num_ratio_of_active_party),
-                    X_val.shape[1] - 1,
+                    int(
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
+                    ),
+                    X_train.shape[1] - 1,
                 )
             ]
         else:
@@ -804,21 +808,21 @@ if __name__ == "__main__":
                 fti_idx_f[
                     : min(
                         int(
-                            X_val.shape[1]
+                            X_train.shape[1]
                             * parsed_args.feature_num_ratio_of_active_party
                             * 0.5
                         ),
-                        X_val.shape[1] - 1,
+                        X_train.shape[1] - 1,
                     )
                 ]
                 + fti_idx_b[
                     : min(
                         int(
-                            X_val.shape[1]
+                            X_train.shape[1]
                             * parsed_args.feature_num_ratio_of_active_party
                             * 0.5
                         ),
-                        X_val.shape[1] - 1,
+                        X_train.shape[1] - 1,
                     )
                 ]
             )
