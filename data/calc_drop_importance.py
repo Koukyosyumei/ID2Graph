@@ -745,7 +745,19 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
 
-    fti = drop_column_importance(X, y)
+    clf = RandomForestClassifier(random_state=parsed_args.seed)
+    clf.fit(X, y)
+    result = permutation_importance(
+        clf,
+        X,
+        y,
+        n_repeats=10,
+        scoring="roc_auc_ovr",
+        random_state=parsed_args.seed,
+    )
+    fti = result.importances_mean
+
+    # fti = drop_column_importance(X, y)
 
     np.save(
         os.path.join(
