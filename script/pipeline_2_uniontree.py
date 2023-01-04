@@ -19,6 +19,11 @@ def add_args(parser):
         type=str,
     )
     parser.add_argument(
+        "-s",
+        "--seed",
+        type=int,
+    )
+    parser.add_argument(
         "-q",
         "--path_to_union_file",
         type=str,
