@@ -775,15 +775,20 @@ if __name__ == "__main__":
     if parsed_args.feature_importance == -1:
         pass
     else:
-        # clf = RandomForestClassifier(random_state=parsed_args.seed)
-        # clf.fit(X_train, y_train)
-        # result = permutation_importance(
-        #    clf, X_train, y_train, n_repeats=10, random_state=parsed_args.seed
-        # )
-        # fti = result.importances_mean  # clf.feature_importances_
-        fti = calculate_permutation_importance_for_kmeans_clustering(
-            X_train, y_train, n_classes=len(np.unique(y_train)), n_repeat=30, random_state=42
+        clf = RandomForestClassifier(random_state=parsed_args.seed)
+        clf.fit(X_train, y_train)
+        result = permutation_importance(
+            clf,
+            X_train,
+            y_train,
+            n_repeats=10,
+            scoring="roc_auc_ovr",
+            random_state=parsed_args.seed,
         )
+        fti = result.importances_mean  # clf.feature_importances_
+        # fti = calculate_permutation_importance_for_kmeans_clustering(
+        #    X_train, y_train, n_classes=len(np.unique(y_train)), n_repeat=30, random_state=42
+        # )
         np.save(
             os.path.join(
                 parsed_args.path_to_dir,

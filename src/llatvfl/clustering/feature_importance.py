@@ -15,7 +15,7 @@ class KMeansClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        return self.km.predict(self.min_max_scaler.transform(X))
+        return self.km.predict(X)
 
     def score(self, X, y):
         return metrics.v_measure_score(y, self.predict(X))
