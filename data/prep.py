@@ -11,8 +11,7 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import \
-    calculate_permutation_importance_for_kmeans_clustering
+from llatvfl.clustering import calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -790,8 +789,7 @@ if __name__ == "__main__":
         """
 
         fti = np.load(
-            parsed_args.path_to_dir,
-            f"{parsed_args.dataset_type}_fti"
+            os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_fti.npy")
         )
 
         # fti = calculate_permutation_importance_for_kmeans_clustering(
