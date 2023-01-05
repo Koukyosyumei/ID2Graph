@@ -55,3 +55,34 @@ def drop_column_importance(X_train, y_train):
         )
 
     return imp
+
+
+def order_importance(X_train, y_train):
+    num_col = X_train.shape[1]
+    best_order = []
+    clf = KMeansClassifier(n_classes=len(np.unique(y_train)))
+    used_col = set()
+
+    pbar = tqdm(total=num_col)
+
+    while len(best_order) != num_col:
+        best_score = -1e6
+        for i in range(num_col):
+            if i not in used_col:
+                clf.fit(X_train[:, best_order + [i]], y_train)
+                tmp_score = clf.score(X_train[:, best_order + [i]], y_train)
+                if tmp_score > best_score:
+                    best_score = tmp_score
+                    best_col = i
+
+        used_col.add(best_col)
+        best_order.append(best_col)
+        pbar.update(1)
+
+    pbar.close()
+
+    fti = np.zeros(num_col)
+    for i in range(num_col):
+        fti[best_order[i]] = num_col - i
+
+    return fti

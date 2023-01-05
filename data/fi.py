@@ -11,7 +11,7 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import drop_column_importance
+from llatvfl.clustering import drop_column_importance, order_importance
 
 
 def add_args(parser):
@@ -745,6 +745,7 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
 
+    """
     clf = RandomForestClassifier(random_state=parsed_args.seed)
     clf.fit(X, y)
     result = permutation_importance(
@@ -756,8 +757,9 @@ if __name__ == "__main__":
         random_state=parsed_args.seed,
     )
     fti = result.importances_mean
+    """
 
-    # fti = drop_column_importance(X, y)
+    fti = order_importance(X, y)
 
     np.save(
         os.path.join(
