@@ -180,6 +180,7 @@ echo "Making a report ..."
 python3 script/pipeline_4_report.py -p ${TEMPD} >"${RESUD}/report.md"
 
 mv ${TEMPD}/*.ans ${RESUD}/
+mv ${TEMPD}/*.sratio ${RESUD}/
 mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
 mv ${TEMPD}/result.png ${RESUD}/
