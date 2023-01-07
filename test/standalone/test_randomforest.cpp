@@ -139,7 +139,7 @@ TEST(RandomForest, RandomForestClassifierTest)
                                           {1, 0, 1, 0, 0, 0, 0, 0}};
 
     clf.free_intermediate_resources();
-    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, false, -1, false).first.to_densematrix();
+    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, false, -1, false).to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)

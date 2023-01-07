@@ -21,16 +21,12 @@ using namespace std;
  * @return false
  */
 template <typename NodeType>
-inline float travase_nodes_to_extract_adjacency_matrix(NodeType *node,
+inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                                                       int max_depth,
                                                       SparseMatrixDOK<float> &adj_mat,
                                                       float weight,
                                                       int target_party_id)
 {
-    float single_sample_node_cnt = 0;
-    float total_node_cnt = 0;
-
-
     queue<NodeType *> que;
     que.push(node);
     NodeType *temp_node;
@@ -54,11 +50,6 @@ inline float travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                         adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
                 }
-
-                if (temp_idxs_size == 1){
-                    single_sample_node_cnt ++;
-                }
-                total_node_cnt++;
             }
         }
         else
@@ -82,11 +73,6 @@ inline float travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                         adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
                 }
-
-                if (temp_idxs_size == 1){
-                    single_sample_node_cnt ++;
-                }
-                total_node_cnt++;
             }
 
             if (!temp_node->left->lmir_flag_exclude_passive_parties ||
@@ -102,8 +88,6 @@ inline float travase_nodes_to_extract_adjacency_matrix(NodeType *node,
         temp_node->val.clear();
         temp_node->val.shrink_to_fit();
     }
-
-    return single_sample_node_cnt / total_node_cnt;
 }
 
 /**
@@ -118,7 +102,7 @@ inline float travase_nodes_to_extract_adjacency_matrix(NodeType *node,
  * @return false
  */
 template <typename NodeType>
-inline float travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *node,
+inline void travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *node,
                                                       int max_depth,
                                                       SparseMatrixDOK<float> &adj_mat,
                                                       float weight,
@@ -187,8 +171,6 @@ inline float travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *no
         temp_node->val.clear();
         temp_node->val.shrink_to_fit();
     }
-
-    return 1.0;
 }
 
 /**
@@ -200,16 +182,16 @@ inline float travase_nodes_to_extract_adjacency_matrix_as_freerider(NodeType *no
  * @param weight The weight parameter.
  * @param target_party_id The target party id.
  */
-inline float extract_adjacency_matrix_from_tree(XGBoostTree *tree,
+inline void extract_adjacency_matrix_from_tree(XGBoostTree *tree,
                                                bool is_freerider,
                                                SparseMatrixDOK<float> &adj_mat,
                                                float weight,
                                                int target_party_id)
 {
     if (is_freerider){
-    return travase_nodes_to_extract_adjacency_matrix_as_freerider<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    travase_nodes_to_extract_adjacency_matrix_as_freerider<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     } else {
-    return travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    travase_nodes_to_extract_adjacency_matrix<XGBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     }
 }
 
@@ -222,16 +204,16 @@ inline float extract_adjacency_matrix_from_tree(XGBoostTree *tree,
  * @param weight The weight parameter.
  * @param target_party_id The target party id.
  */
-inline float extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
+inline void extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
                                                bool is_freerider,
                                                SparseMatrixDOK<float> &adj_mat,
                                                float weight,
                                                int target_party_id)
 {
     if (is_freerider){
-        return travase_nodes_to_extract_adjacency_matrix_as_freerider<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+        travase_nodes_to_extract_adjacency_matrix_as_freerider<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     } else {
-    return travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    travase_nodes_to_extract_adjacency_matrix<SecureBoostNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
     }
 }
 
@@ -244,16 +226,16 @@ inline float extract_adjacency_matrix_from_tree(SecureBoostTree *tree,
  * @param weight The weight parameter.
  * @param target_party_id The target party id.
  */
-inline float extract_adjacency_matrix_from_tree(RandomForestTree *tree,
+inline void extract_adjacency_matrix_from_tree(RandomForestTree *tree,
                                                bool is_freerider,
                                                SparseMatrixDOK<float> &adj_mat,
                                                float weight,
                                                int target_party_id)
 {
      if (is_freerider){
-        return travase_nodes_to_extract_adjacency_matrix_as_freerider<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+        travase_nodes_to_extract_adjacency_matrix_as_freerider<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
      } else {
-    return travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+    travase_nodes_to_extract_adjacency_matrix<RandomForestNode>(&tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
      }
 }
 
@@ -267,7 +249,7 @@ inline float extract_adjacency_matrix_from_tree(RandomForestTree *tree,
  * @param eta The discount factor.
  * @return SparseMatrixDOK<float>
  */
-inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(XGBoostBase *model,
                                                                    bool is_freerider,
                                                                    int target_party_id = -1,
                                                                    int skip_round = 0,
@@ -275,19 +257,17 @@ inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(
 {
     int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
-    float s_ratio = 0;
-
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
-            s_ratio += extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
+            extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
                                                adj_matrix,
                                                pow(eta, float(i - skip_round)),
                                                target_party_id);
         }
     }
-    return make_pair(adj_matrix, s_ratio / float(model->estimators.size()));
+    return adj_matrix;
 }
 
 /**
@@ -300,7 +280,7 @@ inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(
  * @param eta The discount factor.
  * @return SparseMatrixDOK<float>
  */
-inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(SecureBoostBase *model,
                                                                    bool is_freerider,
                                                                    int target_party_id = -1,
                                                                    int skip_round = 0,
@@ -308,19 +288,17 @@ inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(
 {
     int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
-    float s_ratio = 0;
-
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
-            s_ratio += extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
+            extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
                                                adj_matrix,
                                                pow(eta, float(i - skip_round)),
                                                target_party_id);
         }
     }
-    return make_pair(adj_matrix, s_ratio / float(model->estimators.size()));
+    return adj_matrix;
 }
 
 /**
@@ -332,23 +310,21 @@ inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(
  * @param skip_round The number of skipped rounds.
  * @return SparseMatrixDOK<float>
  */
-inline pair<SparseMatrixDOK<float>, float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(RandomForestClassifier *model,
                                                                    bool is_freerider,
                                                                    int target_party_id = -1,
                                                                    int skip_round = 0)
 {
     int num_row = model->estimators[0].num_row;
     SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
-    float s_ratio = 0;
-
     for (int i = 0; i < model->estimators.size(); i++)
     {
         if (i >= skip_round)
         {
-            s_ratio += extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
+            extract_adjacency_matrix_from_tree(&model->estimators[i], is_freerider,
                                                adj_matrix,
                                                1.0, target_party_id);
         }
     }
-    return make_pair(adj_matrix, s_ratio / float(model->estimators.size()));
+    return adj_matrix;
 }

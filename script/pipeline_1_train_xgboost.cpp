@@ -293,8 +293,7 @@ int main(int argc, char *argv[])
 
     // clf.free_intermediate_resources();
 
-    if (use_uniontree)
-    {
+    if (use_uniontree){
         vector<int> result = extract_uniontree_from_forest<XGBoostClassifier>(&clf, 1, completely_secure_round);
         std::ofstream union_file;
         string filepath = folderpath + "/" + fileprefix + "_union.out";
@@ -305,18 +304,10 @@ int main(int argc, char *argv[])
         }
         union_file.close();
     }
-    else
-    {
+    else {
         printf("Start graph extraction trial=%s\n", fileprefix.c_str());
         start = chrono::system_clock::now();
-        pair<SparseMatrixDOK<float>, float> attack_result = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta);
-        SparseMatrixDOK<float> adj_matrix = attack_result.first;
-
-        std::ofstream s_ratio_com_file;
-        string s_ratio_filepath = folderpath + "/" + fileprefix + ".sratio";
-        s_ratio_com_file.open(s_ratio_filepath, std::ios::out);
-        s_ratio_com_file << attack_result.second << "\n";
-        s_ratio_com_file.close();
+        SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(&clf, is_freerider, 1, completely_secure_round, eta);
 
         if (save_adj_mat)
         {
