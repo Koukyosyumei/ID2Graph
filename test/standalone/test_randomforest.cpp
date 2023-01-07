@@ -149,5 +149,5 @@ TEST(RandomForest, RandomForestClassifierTest)
         }
     }
 
-    ASSERT_NEAR(adj_mat_sparse.get_nonzero_ratio(), 0.21875, 1e-6)
+    ASSERT_NEAR(adj_mat_sparse.get_nonzero_ratio(), 0.21875, 1e-6);
 }
