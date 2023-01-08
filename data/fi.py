@@ -11,7 +11,7 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import drop_column_importance, order_importance
+from llatvfl.clustering import drop_column_importance, order_importance, univ_importance
 
 
 def add_args(parser):
@@ -759,7 +759,7 @@ if __name__ == "__main__":
     fti = result.importances_mean
     """
 
-    fti = order_importance(X, y)
+    fti = univ_importance(X, y)
 
     np.save(
         os.path.join(

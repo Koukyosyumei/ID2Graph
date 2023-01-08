@@ -11,7 +11,8 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from llatvfl.clustering import calculate_permutation_importance_for_kmeans_clustering
+from llatvfl.clustering import \
+    calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):

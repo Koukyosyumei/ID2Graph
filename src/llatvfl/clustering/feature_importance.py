@@ -2,6 +2,7 @@ import numpy as np
 from sklearn import metrics, preprocessing
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.inspection import permutation_importance
 from tqdm import tqdm
 
@@ -86,3 +87,13 @@ def order_importance(X_train, y_train):
         fti[best_order[i]] = num_col - i
 
     return fti
+
+
+def univ_importance(X_train, y_train):
+    mm = preprocessing.MinMaxScaler()
+    X_minmax = mm.fit_transform(X_train)
+    selector = SelectKBest(f_classif, k=X_train.shape[1] * 0.5)
+    selector.fit(X_minmax, y_train)
+    # scores = -np.log10(selector.pvalues_)
+    # scores /= scores.max()
+    return -1 * selector.pvalues_
