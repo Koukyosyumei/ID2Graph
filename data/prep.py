@@ -506,6 +506,11 @@ if __name__ == "__main__":
             os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
         )
 
+        if parsed_args.feature_importance != -1:
+            df = df.drop(["col_8", "col_9", "col_10", "col_11", "col_12",
+                    "col_18", "col_19", "col_20", "col_21", "col_35", "col_51",
+                    "col_52", "col_53", "col_70", "col_71"], axis=1)
+
         X = df[[f"col_{i}" for i in range(112)]].values
         y = df["targets"].values
 
