@@ -4,14 +4,10 @@ import random
 
 import numpy as np
 import pandas as pd
-from sklearn import datasets
+from sklearn import preprocessing
 from sklearn.datasets import load_breast_cancer, make_blobs
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.inspection import permutation_importance
-from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
-
-from llatvfl.clustering import drop_column_importance, order_importance, univ_importance
 
 
 def add_args(parser):
@@ -745,26 +741,15 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
 
-    """
-    clf = RandomForestClassifier(random_state=parsed_args.seed)
-    clf.fit(X, y)
-    result = permutation_importance(
-        clf,
-        X,
-        y,
-        n_repeats=10,
-        scoring="roc_auc_ovr",
-        random_state=parsed_args.seed,
-    )
-    fti = result.importances_mean
-    """
-
-    fti = univ_importance(X, y)
+    mm = preprocessing.MinMaxScaler()
+    X_minmax = mm.fit_transform(X)
+    selector = SelectKBest(mutual_info_classif, k=X.shape[1] * 0.5)
+    selector.fit(X_minmax, y)
 
     np.save(
         os.path.join(
             parsed_args.path_to_dir,
             f"{parsed_args.dataset_type}_fti",
         ),
-        fti,
+        selector.scores_,
     )
