@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <numeric>
 using namespace std;
 
 /**
@@ -173,6 +174,7 @@ struct SparseMatrixDOK
 
   float get_nonzero_ratio()
   {
+    /*
     float non_zero_cnt = 0;
     auto it = um_ij2w.begin();
     while (it != um_ij2w.end())
@@ -182,6 +184,21 @@ struct SparseMatrixDOK
     }
 
     return 2 * non_zero_cnt / (float(dim_row) * float(dim_column));
+    */
+
+    vector<int> tmp_buffer(dim_row * dim_column, 0);
+    auto it = um_ij2w.begin();
+    while (it != um_ij2w.end())
+    {
+      if (tmp_buffer[it->first.first] == 0){
+        tmp_buffer[it->first.first] = 1;
+      }
+        if (tmp_buffer[it->first.second] == 0){
+        tmp_buffer[it->first.second] = 1;
+      }
+      it++;
+    }
+    return float(std::accumulate(tmp_buffer.begin(), tmp_buffer.end(), 0)) / float(dim_row * dim_column);
   }
 
   /**
