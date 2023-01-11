@@ -186,7 +186,7 @@ struct SparseMatrixDOK
     return 2 * non_zero_cnt / (float(dim_row) * float(dim_column));
     */
 
-    vector<int> tmp_buffer(dim_row * dim_column, 0);
+    vector<int> tmp_buffer(dim_row, 0);
     auto it = um_ij2w.begin();
     while (it != um_ij2w.end())
     {
@@ -198,7 +198,7 @@ struct SparseMatrixDOK
       }
       it++;
     }
-    return float(std::accumulate(tmp_buffer.begin(), tmp_buffer.end(), 0)) / float(dim_row * dim_column);
+    return float(std::accumulate(tmp_buffer.begin(), tmp_buffer.end(), 0)) / float(dim_row);
   }
 
   /**
