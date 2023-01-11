@@ -52,7 +52,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                 }
 
                 adj_mat.node_counter += 1;
-                if (temp_idx_size == 1){
+                if (temp_idxs_size == 1){
                     adj_mat.zero_node_counter += 1;
                 }
             }
@@ -80,7 +80,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                 }
 
                 adj_mat.node_counter += 1;
-                if (temp_idx_size == 1){
+                if (temp_idxs_size == 1){
                     adj_mat.zero_node_counter += 1;
                 }
             }
