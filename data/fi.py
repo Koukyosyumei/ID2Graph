@@ -4,15 +4,10 @@ import random
 
 import numpy as np
 import pandas as pd
-from sklearn import datasets
+from sklearn import preprocessing
 from sklearn.datasets import load_breast_cancer, make_blobs
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.inspection import permutation_importance
-from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from sklearn.preprocessing import LabelEncoder
-
-from llatvfl.clustering import \
-    calculate_permutation_importance_for_kmeans_clustering
 
 
 def add_args(parser):
@@ -56,13 +51,6 @@ def add_args(parser):
         "--seed",
         type=int,
         default=42,
-    )
-
-    parser.add_argument(
-        "-i",
-        "--feature_importance",
-        type=int,
-        default=-1,
     )
 
     args = parser.parse_args()
@@ -753,118 +741,15 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X,
-        y,
-        test_size=1 / 5,
-        random_state=parsed_args.seed,
-        stratify=y,
-    )
+    mm = preprocessing.MinMaxScaler()
+    X_minmax = mm.fit_transform(X)
+    selector = SelectKBest(mutual_info_classif, k=X.shape[1] * 0.5)
+    selector.fit(X_minmax, y)
 
-    if parsed_args.dataset_type == "dummy0":
-        col_alloc = [
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        ]
-    elif parsed_args.dataset_type == "dummy1":
-        col_alloc = [
-            [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-        ]
-
-    if parsed_args.feature_importance == -1:
-        pass
-    else:
-        """
-        clf = RandomForestClassifier(random_state=parsed_args.seed)
-        clf.fit(X_train, y_train)
-        result = permutation_importance(
-            clf,
-            X_train,
-            y_train,
-            n_repeats=10,
-            scoring="roc_auc_ovr",
-            random_state=parsed_args.seed,
-        )
-        fti = result.importances_mean  # clf.feature_importances_
-        """
-
-        fti = np.load(
-            os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_fti.npy")
-        )
-
-        # fti = calculate_permutation_importance_for_kmeans_clustering(
-        #    X_train, y_train, n_classes=len(np.unique(y_train)), n_repeat=30, random_state=42
-        # )
-
-        """
-        np.save(
-            os.path.join(
-                parsed_args.path_to_dir,
-                f"{parsed_args.dataset_type}_{parsed_args.seed}_fti",
-            ),
-            fti,
-        )
-        """
-
-        if parsed_args.feature_importance == 1:
-            fti_idx = np.argsort(fti).tolist()
-            active_col = fti_idx[
-                : min(
-                    int(
-                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
-                    ),
-                    X_train.shape[1] - 1,
-                )
-            ]
-        elif parsed_args.feature_importance == 0:
-            fti_idx = np.argsort(fti * -1).tolist()
-            active_col = fti_idx[
-                : min(
-                    int(
-                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
-                    ),
-                    X_train.shape[1] - 1,
-                )
-            ]
-        else:
-            fti_idx_f = np.argsort(fti).tolist()
-            fti_idx_b = np.argsort(fti * -1).tolist()
-            active_col = (
-                fti_idx_f[
-                    : min(
-                        int(
-                            X_train.shape[1]
-                            * parsed_args.feature_num_ratio_of_active_party
-                            * 0.5
-                        ),
-                        X_train.shape[1] - 1,
-                    )
-                ]
-                + fti_idx_b[
-                    : min(
-                        int(
-                            X_train.shape[1]
-                            * parsed_args.feature_num_ratio_of_active_party
-                            * 0.5
-                        ),
-                        X_train.shape[1] - 1,
-                    )
-                ]
-            )
-
-        col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
-
-    convert_df_to_input(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
+    np.save(
         os.path.join(
-            parsed_args.path_to_dir, f"{parsed_args.dataset_type}_{parsed_args.seed}.in"
+            parsed_args.path_to_dir,
+            f"{parsed_args.dataset_type}_fti",
         ),
-        col_alloc=col_alloc,
-        feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
-        feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
-        parties_num=2,
+        selector.scores_,
     )

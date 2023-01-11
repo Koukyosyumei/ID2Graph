@@ -139,7 +139,8 @@ TEST(RandomForest, RandomForestClassifierTest)
                                           {1, 0, 1, 0, 0, 0, 0, 0}};
 
     clf.free_intermediate_resources();
-    vector<vector<float>> adj_mat = extract_adjacency_matrix_from_forest(&clf, false, -1, false).to_densematrix();
+    SparseMatrixDOK<float> adj_mat_sparse = extract_adjacency_matrix_from_forest(&clf, false, -1, false);
+    vector<vector<float>> adj_mat = adj_mat_sparse.to_densematrix();
     for (int j = 0; j < test_adj_mat.size(); j++)
     {
         for (int k = 0; k < test_adj_mat[j].size(); k++)
@@ -147,4 +148,6 @@ TEST(RandomForest, RandomForestClassifierTest)
             ASSERT_EQ(adj_mat[j][k], test_adj_mat[j][k]);
         }
     }
+
+    // ASSERT_NEAR(adj_mat_sparse.get_nonzero_ratio(), 0.21875, 1e-6);
 }
