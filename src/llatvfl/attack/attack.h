@@ -50,6 +50,11 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                         adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
                 }
+
+                adj_mat.node_counter += 1;
+                if (temp_idx_size == 1){
+                    adj_mat.zero_node_counter += 1;
+                }
             }
         }
         else
@@ -72,6 +77,11 @@ inline void travase_nodes_to_extract_adjacency_matrix(NodeType *node,
                     {
                         adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
                     }
+                }
+
+                adj_mat.node_counter += 1;
+                if (temp_idx_size == 1){
+                    adj_mat.zero_node_counter += 1;
                 }
             }
 

@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
         std::ofstream s_file;
         string s_filepath = folderpath + "/" + fileprefix + ".sratio";
         s_file.open(s_filepath, std::ios::out);
-        s_file << adj_matrix.get_nonzero_ratio() << "\n";
+        s_file << adj_matrix.zero_node_counter / adj_matrix.node_counter << "\n";
         s_file.close();
 
         if (save_adj_mat)
