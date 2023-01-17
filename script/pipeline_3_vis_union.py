@@ -4,6 +4,7 @@ import os
 
 import networkx as nx
 import numpy as np
+from matplotlib import cm
 from matplotlib import pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder
@@ -49,16 +50,24 @@ if __name__ == "__main__":
             y_train = lines[num_col + num_party + 1].split(" ")
             y_train = [int(y) for y in y_train]
 
-        with open(parsed_args.path_to_union_file, mode="r") as f:
+        with open(path_to_union_file, mode="r") as f:
             lines = f.readlines()
             union_clusters = lines[0].split(" ")[:-1]
 
+        edge_color = []
+        edge_list = []
         adj_mat = np.zeros((len(union_clusters), len(union_clusters)))
         for i, c in enumerate(union_clusters):
-            adj_mat[i][c] = 1
-            adj_mat[c][i] = 1
+            if i != int(c):
+                adj_mat[i, int(c)] += 1
+                adj_mat[int(c), i] += 1
+                edge_list.append((i, int(c)))
+                edge_color.append(0)
 
         union_clusters = LabelEncoder().fit_transform(union_clusters)
+
+        plt.style.use("ggplot")
+        cmap = cm.get_cmap("plasma", len(set(union_clusters)) + 3)
         G = nx.from_numpy_matrix(
             adj_mat, create_using=nx.MultiGraph, parallel_edges=False
         )
@@ -71,6 +80,10 @@ if __name__ == "__main__":
             with_labels=False,
             alpha=0.7,
             node_size=10,
+            width=0.2,
+            cmap=cmap,
+            edge_color=edge_color,
+            edgelist=edge_list,
             node_color=[label2color[y] for y in y_train],
         )
 

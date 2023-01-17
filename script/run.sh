@@ -197,6 +197,9 @@ for s in $(seq 1 ${VALUE_Z}); do
   if [ -e ${TEMPD}/${s}_adj_mat_plot.png ]; then
     mv ${TEMPD}/${s}_adj_mat_plot.png ${RESUD}/
   fi
+  if [ -e ${TEMPD}/${s}_union_plot.png ]; then
+    mv ${TEMPD}/${s}_union_plot.png ${RESUD}/
+  fi
 done
 
 wait
