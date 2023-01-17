@@ -16,19 +16,10 @@ label2maker = {0: "o", 1: "x"}
 def add_args(parser):
     parser.add_argument(
         "-p",
-        "--path_to_input_file",
+        "--path_to_dir",
         type=str,
     )
-    parser.add_argument(
-        "-s",
-        "--seed",
-        type=int,
-    )
-    parser.add_argument(
-        "-q",
-        "--path_to_union_file",
-        type=str,
-    )
+
     args = parser.parse_args()
     return args
 

@@ -173,7 +173,11 @@ script/run_extract_result.sh -o ${TEMPD}
 
 if [ "${FLG_G}" = "TRUE" ]; then
   echo "Drawing a network ..."
-  python3 script/pipeline_3_vis_network.py -p ${TEMPD} -e ${VALUE_E}
+  if [ "${FLG_X}" = "TRUE" ]; then
+    python3 script/pipeline_3_vis_union.py -p ${TEMPD}
+  else
+    python3 script/pipeline_3_vis_network.py -p ${TEMPD} -e ${VALUE_E}
+  fi
 fi
 
 echo "Making a report ..."
