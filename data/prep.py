@@ -4,6 +4,7 @@ import random
 
 import numpy as np
 import pandas as pd
+from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
@@ -268,6 +269,11 @@ if __name__ == "__main__":
             ]
         ].values
         y = df["default.payment.next.month"].values
+
+    elif parsed_args.dataset_type == "breastcancer":
+        data = load_breast_cancer()
+        X = data["data"]
+        y = data["target"]
 
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
