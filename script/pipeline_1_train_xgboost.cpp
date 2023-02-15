@@ -96,7 +96,6 @@ void parse_args(int argc, char *argv[])
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-h] [-j] [-c] [-e] [-l] [-o] [-z] [-b] [-w] [-x] [-g] [-q] ...\n", argv[0]);
             break;
         }
     }
