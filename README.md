@@ -1,6 +1,4 @@
-# "Do not share instance space": Label Leakage from Vertical Federated Learning
-
-This repository contains the implementation of *"Do not share instance space": Label Leakage from Vertical Federated Learning* and all datasets used in this paper.
+# Eliminating Label Leakage in Tree-based Vertical Federated Learning
 
 ## 1. Dependencies
 
@@ -61,7 +59,3 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -g : (optional) draw the extracted graph.
     -q : (optional) draw trees as html files.
 ```
-
-### Google colab
-
-You can run most of our experiments on Google colab. Please use a runtime with high memory. You may encounter memory leakage for some experiments with relatively large datasets.
