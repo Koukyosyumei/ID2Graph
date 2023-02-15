@@ -40,7 +40,7 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
     -i : (optional) specify feature importance
 
-    -m : (str) type of the model.
+    -m : (str) type of the model. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
     -r : (int) total number of rounds for training.
     -j : (int) minimum number of samples within a leaf.
     -h : (int) depth.
@@ -49,7 +49,6 @@ You can run all experiments conducted in the paper with [`/script/run.sh`](./scr
     -e : (float) coefficient of edge weight (tau in our paper).
     -k : (float) weight for community variables.
     -l : (int) maximum number of iterations of Louvain
-    -w : (optional) if specified, simulate free-rider setting.
     -x : (optional) baseline union attack
 
     -b : (float) bound of mutual information.

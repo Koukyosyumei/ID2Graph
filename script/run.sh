@@ -104,17 +104,9 @@ while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xwygq OPT; do
     FLG_P="TRUE"
     VALUE_P="$OPTARG"
     ;;
-  "w")
-    FLG_W="TRUE"
-    VALUE_W="$OPTARG"
-    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
-    ;;
-  "y")
-    FLG_Y="TRUE"
-    VALUE_Y="$OPTARG"
     ;;
   "g")
     FLG_G="TRUE"
@@ -130,7 +122,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}\ny,${FLG_Y}\nw,${FLG_W}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
@@ -147,17 +139,11 @@ for s in $(seq 1 ${VALUE_Z}); do
   if [ "${FLG_X}" = "TRUE" ]; then
     TRAINCMD+=" -x"
   fi
-  if [ "${FLG_Y}" = "TRUE" ]; then
-    TRAINCMD+=" -y"
-  fi
   if [ "${FLG_G}" = "TRUE" ]; then
     TRAINCMD+=" -g"
   fi
   if [ "${FLG_Q}" = "TRUE" ]; then
     TRAINCMD+=" -q"
-  fi
-  if [ "${FLG_W}" = "TRUE" ]; then
-    TRAINCMD+=" -w"
   fi
   if [ ${VALUE_P} -gt 1 ]; then
     if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${VALUE_Z} ]; then

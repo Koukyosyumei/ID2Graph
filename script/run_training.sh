@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xwgyq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xgq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -76,17 +76,9 @@ while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xwgyq OPT; do
     FLG_S="TRUE"
     VALUE_S="$OPTARG"
     ;;
-  "w")
-    FLG_W="TRUE"
-    VALUE_W="$OPTARG"
-    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
-    ;;
-  "y")
-    FLG_Y="TRUE"
-    VALUE_Y="$OPTARG"
     ;;
   "g")
     FLG_G="TRUE"
@@ -114,9 +106,6 @@ fi
 if [ "${FLG_Q}" = "TRUE" ]; then
   RUNCMD+=" -q"
 fi
-if [ "${FLG_W}" = "TRUE" ]; then
-  RUNCMD+=" -w"
-fi
 if [ "${FLG_X}" = "TRUE" ]; then
   RUNCMD+=" -x"
 fi
@@ -125,16 +114,9 @@ eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 if [ "${FLG_X}" = "TRUE" ]; then
   echo "Start Union Tree Attack trial=${VALUE_S}"
   python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
-elif [ "${FLG_Y}" = "TRUE" ]; then
-  echo "Start Supervised Learning trial=${VALUE_S}"
-  python3 script/pipeline_2_supervised.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_communities.out" -k ${VALUE_K} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
-  echo "Supervised Learning is complete trial=${VALUE_S}"
 else
   echo "Start Clustering trial=${VALUE_S}"
   CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -s ${VALUE_S}"
-  if [ "${FLG_W}" = "TRUE" ]; then
-    CLSCMD+=" -w"
-  fi
   eval ${CLSCMD} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Clustering is complete trial=${VALUE_S}"
 fi

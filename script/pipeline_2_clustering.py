@@ -33,7 +33,6 @@ def add_args(parser):
         type=float,
         default=1.0,
     )
-    parser.add_argument("-w", "--freerider_flag", action="store_true")
 
     args = parser.parse_args()
     return args
