@@ -45,6 +45,8 @@ struct SparseMatrixDOK
   DataType zero_val = 0;
   bool is_symmetric = false;
   bool save_row2nonzero_idx = true;
+  float node_counter = 0;
+  float zero_node_counter = 0;
 
   vector<vector<int>> row2nonzero_idx;
 
@@ -190,10 +192,12 @@ struct SparseMatrixDOK
     auto it = um_ij2w.begin();
     while (it != um_ij2w.end())
     {
-      if (tmp_buffer[it->first.first] == 0){
+      if (tmp_buffer[it->first.first] == 0)
+      {
         tmp_buffer[it->first.first] = 1;
       }
-        if (tmp_buffer[it->first.second] == 0){
+      if (tmp_buffer[it->first.second] == 0)
+      {
         tmp_buffer[it->first.second] = 1;
       }
       it++;
