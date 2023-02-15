@@ -4,7 +4,7 @@
 VALUE_T="result/temp"  # path to the folder to save the final results
 VALUE_U="result"       # path to the folder to save the temporary results.
 VALUE_Z=5              # number of trials.
-VALUE_P=1              # number of parallelly executed experiments.
+VALUE_P=5              # number of parallelly executed experiments.
 VALUE_D="breastcancer" # name of dataset.
 VALUE_N=-1             # number of data records sampled for training.
 VALUE_F=0.5            # ratio of features owned by the active party.
