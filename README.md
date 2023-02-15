@@ -20,14 +20,13 @@ pip install -e .
 - Example
 
 ```
-./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 5
+./script/run.sh -u result -d ucicreditcard -m r
 ```
 
 - Basic Arguments
 
 ```
     -u : (str) path to the folder to save the final results.
-    -t : (str) path to the folder to save the temporary results.
     -d : (str) name of dataset.
     -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
 ```
@@ -35,6 +34,7 @@ pip install -e .
 - Advanced Arguments
 
 ```
+    -t : (str) path to the folder to save the temporary results.
     -z : (int) number of trials.
     -p : (int) number of parallelly executed experiments.
 
