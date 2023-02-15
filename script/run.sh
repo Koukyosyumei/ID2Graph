@@ -1,28 +1,28 @@
 #!/bin/bash
 
 # default values
-VALUE_D="breastcancer"
-VALUE_M="xgboost"
-VALUE_R=20
-VALUE_C=1
-VALUE_A=0.3
-VALUE_H=3
-VALUE_B=-1
-VALUE_J=1
-VALUE_N=20000
-VALUE_F=0.5
-VALUE_V=-1
-VALUE_E=0.3
-VALUE_K=1.0
-VALUE_T="result/temp"
-VALUE_U="result"
-VALUE_P=1
-VALUE_L=100
-VALUE_Z=5
-VALUE_O=-1
-VALUE_I=-1
+VALUE_T="result/temp"  # path to the folder to save the final results
+VALUE_U="result"       # path to the folder to save the temporary results.
+VALUE_Z=5              # number of trials.
+VALUE_P=1              # number of parallelly executed experiments.
+VALUE_D="breastcancer" # name of dataset.
+VALUE_N=-1             # number of data records sampled for training.
+VALUE_F=0.5            # ratio of features owned by the active party.
+VALUE_V=-1             # ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
+VALUE_I=-1             # setting of feature importance. -1: normal, 1: unbalance
+VALUE_M="xgboost"      # type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
+VALUE_R=20             # total number of rounds for training.
+VALUE_J=1              # minimum number of samples within a leaf.
+VALUE_H=6              # maximum depth
+VALUE_A=0.3            # learning rate of XGBoost.
+VALUE_E=0.3            # coefficient of edge weight (tau in our paper).
+VALUE_K=1.0            # weight for community variables.
+VALUE_L=100            # maximum number of iterations of Louvain
+VALUE_C=1              # number of completely secure rounds.
+VALUE_B=-1             # epsilon of ID-LMID.
+VALUE_O=-1             # epsilon of LP-MST.
 
-while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xwygq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xgq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
