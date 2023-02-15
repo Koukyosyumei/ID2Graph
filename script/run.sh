@@ -11,7 +11,7 @@ VALUE_F=0.5            # ratio of features owned by the active party.
 VALUE_V=-1             # ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
 VALUE_I=-1             # setting of feature importance. -1: normal, 1: unbalance
 VALUE_M="xgboost"      # type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
-VALUE_R=20             # total number of rounds for training.
+VALUE_R=5              # total number of rounds for training.
 VALUE_J=1              # minimum number of samples within a leaf.
 VALUE_H=6              # maximum depth
 VALUE_A=0.3            # learning rate of XGBoost.
