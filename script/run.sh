@@ -18,7 +18,7 @@ VALUE_A=0.3            # learning rate of XGBoost.
 VALUE_E=0.3            # coefficient of edge weight (tau in our paper).
 VALUE_K=1.0            # weight for community variables.
 VALUE_L=100            # maximum number of iterations of Louvain
-VALUE_C=1              # number of completely secure rounds.
+VALUE_C=0              # number of completely secure rounds.
 VALUE_B=-1             # epsilon of ID-LMID.
 VALUE_O=-1             # epsilon of LP-MST.
 
