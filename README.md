@@ -15,7 +15,13 @@ pip install -e .
 ./script/build.sh
 ```
 
-### 2.2. Run experiments
+### 2.2. Download datasets
+
+```
+./script/download.sh
+```
+
+### 2.3. Run experiments
 
 - Example
 
