@@ -34,7 +34,7 @@ pip install -e .
 ```
     -u : (str) path to the folder to save the final results.
     -d : (str) name of dataset.
-    -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
+    -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost
 ```
 
 - Advanced Arguments
