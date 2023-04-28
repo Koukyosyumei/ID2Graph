@@ -1,6 +1,4 @@
-# "Do not share instance space": Label Leakage from Vertical Federated Learning
-
-This repository contains the implementation of *"Do not share instance space": Label Leakage from Vertical Federated Learning* and all datasets used in this paper.
+# Eliminating Label Leakage in Tree-based Vertical Federated Learning
 
 ## 1. Dependencies
 
@@ -17,51 +15,54 @@ pip install -e .
 ./script/build.sh
 ```
 
-### 2.2. Run experiments
+### 2.2. Download datasets
 
-You can run all experiments conducted in the paper with [`/script/run.sh`](./script/run.sh).
+```
+./script/download.sh
+```
+
+### 2.3. Run experiments
 
 - Example
 
 ```
-./script/run.sh -d ucicreditcard -m r -r 2 -c 0 -h 3 -i 1 -e 1 -n -1 -f 0.5 -p 1 -z 5
+./script/run.sh -u result -d ucicreditcard -m r
 ```
 
-- Arguments
+- Basic Arguments
 
 ```
-    -u : (str) the path to the folder for saving the final results.
-    -t : (str) the path to the folder where this script saves temporary results (default=`result`).
-    -y : (optional) steal the exact label values.
+    -u : (str) path to the folder to save the final results.
+    -d : (str) name of dataset.
+    -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost
+```
+
+- Advanced Arguments
+
+```
+    -t : (str) path to the folder to save the temporary results.
     -z : (int) number of trials.
     -p : (int) number of parallelly executed experiments.
 
-    -d : (str) the name of dataset.
     -n : (int) number of data records sampled for training.
-    -f : (float) the ratio of features owned by the active party.
-    -v : (float) the ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
-    -i : (optional) specify feature importance
+    -f : (float) ratio of features owned by the active party.
+    -v : (float) ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
+    -i : (int) setting of feature importance. -1: normal, 1: unbalance
 
-    -m : (str) type of the model.
     -r : (int) total number of rounds for training.
     -j : (int) minimum number of samples within a leaf.
-    -h : (int) depth.
+    -h : (int) maximum depth.
     -a : (float) learning rate of XGBoost.
 
     -e : (float) coefficient of edge weight (tau in our paper).
     -k : (float) weight for community variables.
     -l : (int) maximum number of iterations of Louvain
-    -w : (optional) if specified, simulate free-rider setting.
     -x : (optional) baseline union attack
 
-    -b : (float) bound of mutual information.
-    -c : (int) the number of completely secure rounds.
+    -b : (float) epsilon of ID-LMID.
+    -c : (int) number of completely secure rounds.
     -o : (float) epsilon of LP-MST.
 
     -g : (optional) draw the extracted graph.
     -q : (optional) draw trees as html files.
 ```
-
-### Google colab
-
-You can run most of our experiments on Google colab. Please use a runtime with high memory. You may encounter memory leakage for some experiments with relatively large datasets.

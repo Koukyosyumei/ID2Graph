@@ -1,28 +1,28 @@
 #!/bin/bash
 
 # default values
-VALUE_D="breastcancer"
-VALUE_M="xgboost"
-VALUE_R=20
-VALUE_C=1
-VALUE_A=0.3
-VALUE_H=3
-VALUE_B=-1
-VALUE_J=1
-VALUE_N=20000
-VALUE_F=0.5
-VALUE_V=-1
-VALUE_E=0.3
-VALUE_K=1.0
-VALUE_T="result/temp"
-VALUE_U="result"
-VALUE_P=1
-VALUE_L=100
-VALUE_Z=5
-VALUE_O=-1
-VALUE_I=-1
+VALUE_T="result/temp"  # path to the folder to save the final results
+VALUE_U="result"       # path to the folder to save the temporary results.
+VALUE_Z=5              # number of trials.
+VALUE_P=5              # number of parallelly executed experiments.
+VALUE_D="breastcancer" # name of dataset.
+VALUE_N=-1             # number of data records sampled for training.
+VALUE_F=0.5            # ratio of features owned by the active party.
+VALUE_V=-1             # ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
+VALUE_I=-1             # setting of feature importance. -1: normal, 1: unbalance
+VALUE_M="xgboost"      # type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
+VALUE_R=5              # total number of rounds for training.
+VALUE_J=1              # minimum number of samples within a leaf.
+VALUE_H=6              # maximum depth
+VALUE_A=0.3            # learning rate of XGBoost.
+VALUE_E=0.6            # coefficient of edge weight (tau in our paper).
+VALUE_K=1.0            # weight for community variables.
+VALUE_L=100            # maximum number of iterations of Louvain
+VALUE_C=0              # number of completely secure rounds.
+VALUE_B=-1             # epsilon of ID-LMID.
+VALUE_O=-1             # epsilon of LP-MST.
 
-while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xwygq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xgq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -104,17 +104,9 @@ while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xwygq OPT; do
     FLG_P="TRUE"
     VALUE_P="$OPTARG"
     ;;
-  "w")
-    FLG_W="TRUE"
-    VALUE_W="$OPTARG"
-    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
-    ;;
-  "y")
-    FLG_Y="TRUE"
-    VALUE_Y="$OPTARG"
     ;;
   "g")
     FLG_G="TRUE"
@@ -130,7 +122,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}\ny,${FLG_Y}\nw,${FLG_W}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
@@ -147,17 +139,11 @@ for s in $(seq 1 ${VALUE_Z}); do
   if [ "${FLG_X}" = "TRUE" ]; then
     TRAINCMD+=" -x"
   fi
-  if [ "${FLG_Y}" = "TRUE" ]; then
-    TRAINCMD+=" -y"
-  fi
   if [ "${FLG_G}" = "TRUE" ]; then
     TRAINCMD+=" -g"
   fi
   if [ "${FLG_Q}" = "TRUE" ]; then
     TRAINCMD+=" -q"
-  fi
-  if [ "${FLG_W}" = "TRUE" ]; then
-    TRAINCMD+=" -w"
   fi
   if [ ${VALUE_P} -gt 1 ]; then
     if [ $((${s} % ${VALUE_P})) -ne 0 ] && [ ${s} -ne ${VALUE_Z} ]; then

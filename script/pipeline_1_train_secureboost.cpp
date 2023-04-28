@@ -93,7 +93,6 @@ void parse_args(int argc, char *argv[])
             break;
         default:
             printf("unknown parameter %s is specified", optarg);
-            printf("Usage: %s [-f] [-p] [-r] [-c] [-j] [-m] [-w] ...\n", argv[0]);
             break;
         }
     }
@@ -250,7 +249,7 @@ int main(int argc, char *argv[])
                                                       boosting_rounds,
                                                       lam, const_gamma, eps,
                                                       0, completely_secure_round,
-                                                      0.5, n_job, true);
+                                                      1 / num_classes, n_job, true);
 
     printf("Start training trial=%s\n", fileprefix.c_str());
     chrono::system_clock::time_point start, end;
