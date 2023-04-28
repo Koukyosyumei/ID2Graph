@@ -1,7 +1,8 @@
-#include "llatvfl/louvain/louvain.h"
-#include "gtest/gtest.h"
 #include <limits>
 #include <vector>
+
+#include "llatvfl/louvain/louvain.h"
+#include "gtest/gtest.h"
 using namespace std;
 
 TEST(Louvain, DenseTest) {
@@ -14,7 +15,7 @@ TEST(Louvain, DenseTest) {
   int num_nodes = test_adj_mat.size();
   vector<unsigned int> degrees;
   vector<unsigned int> links;
-  vector<float> weights;
+  vector<half> weights;
 
   int cum_degree = 0;
   for (int i = 0; i < num_nodes; i++) {
@@ -22,7 +23,7 @@ TEST(Louvain, DenseTest) {
       if (test_adj_mat[i][j] != 0) {
         cum_degree += 1;
         links.push_back(j);
-        weights.push_back(test_adj_mat[i][j]);
+        weights.push_back((half)test_adj_mat[i][j]);
       }
     }
     degrees.push_back(cum_degree);
@@ -37,8 +38,8 @@ TEST(Louvain, DenseTest) {
   ASSERT_EQ(g.get_weighted_degree(2), 2);
   ASSERT_EQ(g.total_weight, 14);
 
-  Community c = Community(&g, -1, 0.000001);
-  ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-6);
+  Community c = Community(&g, -1, (half)0.000001);
+  ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-4);
   c.compute_neigh_comms(0);
   ASSERT_EQ(c.neigh_last, 3);
 
@@ -49,15 +50,28 @@ TEST(Louvain, DenseTest) {
 }
 
 TEST(Louvain, SparseTest) {
-  vector<vector<float>> test_adj_mat = {
-      {0, 0, 1, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 1, 1, 0, 0},
-      {1, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 0, 0, 1, 0},
-      {0, 1, 0, 0, 0, 1, 0, 0}, {0, 1, 0, 0, 1, 0, 0, 0},
-      {0, 0, 0, 1, 0, 0, 0, 0}, {1, 0, 1, 0, 0, 0, 0, 0}};
+  vector<vector<half>> test_adj_mat = {
+      {(half)(0), (half)(0), (half)(1), (half)(0), (half)(0), (half)(0),
+       (half)(0), (half)(1)},
+      {(half)(0), (half)(0), (half)(0), (half)(0), (half)(1), (half)(1),
+       (half)(0), (half)(0)},
+      {(half)(1), (half)(0), (half)(0), (half)(0), (half)(0), (half)(0),
+       (half)(0), (half)(1)},
+      {(half)(0), (half)(0), (half)(0), (half)(0), (half)(0), (half)(0),
+       (half)(1), (half)(0)},
+
+      {(half)(0), (half)(1), (half)(0), (half)(0), (half)(0), (half)(1),
+       (half)(0), (half)(0)},
+      {(half)(0), (half)(1), (half)(0), (half)(0), (half)(1), (half)(0),
+       (half)(0), (half)(0)},
+      {(half)(0), (half)(0), (half)(0), (half)(1), (half)(0), (half)(0),
+       (half)(0), (half)(0)},
+      {(half)(1), (half)(0), (half)(1), (half)(0), (half)(0), (half)(0),
+       (half)(0), (half)(0)}};
 
   int num_nodes = test_adj_mat.size();
-  SparseMatrixDOK<float> sm =
-      SparseMatrixDOK<float>(num_nodes, num_nodes, 0, false, true);
+  SparseMatrixDOK<half> sm =
+      SparseMatrixDOK<half>(num_nodes, num_nodes, (half)0, false, true);
   sm.from_densematrix(test_adj_mat);
 
   Graph g = Graph(sm);
@@ -69,8 +83,8 @@ TEST(Louvain, SparseTest) {
   ASSERT_EQ(g.get_weighted_degree(2), 2);
   ASSERT_EQ(g.total_weight, 14);
 
-  Community c = Community(&g, -1, 0.000001);
-  ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-6);
+  Community c = Community(&g, -1, (half)0.000001);
+  ASSERT_NEAR(c.modularity(), -0.1326530612244898, 1e-4);
   c.compute_neigh_comms(0);
   ASSERT_EQ(c.neigh_last, 3);
 
