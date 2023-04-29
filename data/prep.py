@@ -65,7 +65,8 @@ def sampling_col_alloc(
     col_num, feature_num_ratio_of_active_party, feature_num_ratio_of_passive_party
 ):
     shufled_col_indicies = random.sample(list(range(col_num)), col_num)
-    col_num_of_active_party = max(1, int(feature_num_ratio_of_active_party * col_num))
+    col_num_of_active_party = max(
+        1, int(feature_num_ratio_of_active_party * col_num))
     if feature_num_ratio_of_passive_party < 0:
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
@@ -78,7 +79,7 @@ def sampling_col_alloc(
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
             shufled_col_indicies[
-                col_num_of_active_party : (
+                col_num_of_active_party: (
                     min(
                         col_num_of_active_party + col_num_of_passive_party,
                         col_num,
@@ -200,7 +201,8 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt"),
+            os.path.join(parsed_args.path_to_dir,
+                         "Sensorless_drive_diagnosis.txt"),
             sep=" ",
             header=None,
         )
@@ -220,8 +222,10 @@ if __name__ == "__main__":
             feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
         )
         X_d = df.drop(8, axis=1)
-        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
-        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        X_a = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -231,14 +235,16 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "fraud":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
+            os.path.join(parsed_args.path_to_dir,
+                         "fraud_detection_bank_dataset.csv")
         )
 
         X = df[[f"col_{i}" for i in range(112)]].values
         y = df["targets"].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
         df = sampling(df, "default.payment.next.month", parsed_args)
 
         X = df[
@@ -274,6 +280,44 @@ if __name__ == "__main__":
         data = load_breast_cancer()
         X = data["data"]
         y = data["target"]
+    elif parsed_args.dataset_type == "givemesomecredit":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                                      "cs-training.csv"))
+        X = df[
+            [
+                "RevolvingUtilizationOfUnsecuredLines",
+                "age",
+                "NumberOfTime30-59DaysPastDueNotWorse",
+                "DebtRatio",
+                "MonthlyIncome",
+                "NumberOfOpenCreditLinesAndLoans",
+                "NumberOfTimes90DaysLate",
+                "NumberRealEstateLoansOrLines",
+                "NumberOfTime60-89DaysPastDueNotWorse",
+                "NumberOfDependents",
+            ]
+        ].values
+        y = df["SeriousDlqin2yrs"].values
+    elif parsed_args.dataset_type == "bank":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "bank-full.csv"), sep=";")
+        df["y"] = df["y"].apply(lambda x: 1 if x == "yes" else 0)
+        df = pd.get_dummies(df)
+        X = df.drop("y", axis=1).values
+        y = df[["y"]].values
+    elif parsed_args.dataset_type == "dota2":
+        df1 = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                                       "dota2Train.csv"), header=None)
+        df2 = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                                       "dota2Train.csv"), header=None)
+        df = pd.concat([df1, df2])
+        X = df.drop(0, axis=1).values
+        y = df[[0]].values
+    elif parsed_args.dataset_type == "sepsis":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                                      "s41598-020-73558-3_sepsis_survival_primary_cohort.csv"))
+        X = df.drop("hospital_outcome_1alive_0dead", axis=1).values
+        y = df[["hospital_outcome_1alive_0dead"]].values
 
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
@@ -290,7 +334,8 @@ if __name__ == "__main__":
         pass
     else:
         fti = np.load(
-            os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_fti.npy")
+            os.path.join(parsed_args.path_to_dir,
+                         f"{parsed_args.dataset_type}_fti.npy")
         )
 
         if parsed_args.feature_importance == 1:
@@ -298,7 +343,8 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] *
+                        parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -308,7 +354,8 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] *
+                        parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -339,7 +386,8 @@ if __name__ == "__main__":
                 ]
             )
 
-        col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
+        col_alloc = [active_col, list(
+            set(range(X_val.shape[1])) - set(active_col))]
 
     convert_df_to_input(
         X_train,
