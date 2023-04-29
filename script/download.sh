@@ -23,4 +23,5 @@ wget -P data/sepsis https://archive.ics.uci.edu/ml/machine-learning-databases/00
 unzip data/sepsis/s41598-020-73558-3_sepsis_survival_dataset.zip -d data/sepsis
 
 wget -P data/diabetes https://archive.ics.uci.edu/ml/machine-learning-databases/00296/dataset_diabetes.zip
-unzip data/dataset_diabetes.zip -d data/diabetes
+unzip data/diabetes/dataset_diabetes.zip -d data/diabetes
+mv data/diabetes/dataset_diabetes/diabetic_data.csv data/diabetes/diabetic_data.csv

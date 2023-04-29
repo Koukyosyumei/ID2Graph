@@ -356,7 +356,7 @@ if __name__ == "__main__":
             ]
         ].values
         y = df["ratings"].values
-    elif parsed_args.dataset_type == "diabetic":
+    elif parsed_args.dataset_type == "diabetes":
         df = pd.read_csv(os.path.join(
             parsed_args.path_to_dir, "diabetic_data.csv"))
 
