@@ -21,3 +21,6 @@ unzip data/bank/bank.zip -d data/bank
 
 wget -P data/sepsis https://archive.ics.uci.edu/ml/machine-learning-databases/00628/s41598-020-73558-3_sepsis_survival_dataset.zip
 unzip data/sepsis/s41598-020-73558-3_sepsis_survival_dataset.zip -d data/sepsis
+
+wget -P data/diabetes https://archive.ics.uci.edu/ml/machine-learning-databases/00296/dataset_diabetes.zip
+unzip data/dataset_diabetes.zip -d data/diabetes

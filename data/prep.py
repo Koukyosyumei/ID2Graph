@@ -315,7 +315,7 @@ if __name__ == "__main__":
         )
         df = pd.concat([df1, df2])
         X = df.drop(0, axis=1).values
-        y = df[0].values
+        y = (df[0].values + 1) / 2
     elif parsed_args.dataset_type == "sepsis":
         df = pd.read_csv(
             os.path.join(
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         y = np.array([0] * 36499 + [1] * 93565)
     elif parsed_args.dataset_type == "drugs":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "drugs.csv"))
-        X = data[
+        X = df[
             [
                 "condition",
                 "usefulCount",
@@ -355,7 +355,106 @@ if __name__ == "__main__":
                 "mean_word_len",
             ]
         ].values
-        y = data["Review_Sentiment"].values
+        y = df["ratings"].values
+    elif parsed_args.dataset_type == "diabetic":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "diabetic_data.csv"))
+
+        df["readmitted"] = LabelEncoder().fit_transform(df["readmitted"])
+        df["age"] = df["age"].apply(lambda x: int(x.split("-")[0][1:]))
+        df["weight"] = df["weight"].apply(lambda x: "[250-" if x == "?" else x)
+        df["weight"] = df["weight"].apply(
+            lambda x: "[200-" if x == ">200" else x)
+        df["weight"] = df["weight"].apply(lambda x: int(x.split("-")[0][1:]))
+
+        df = df.drop(
+            [
+                "citoglipton",
+                "examide",
+                "payer_code",
+                "medical_specialty",
+                "encounter_id",
+                "patient_nbr",
+            ],
+            axis=1,
+        )
+
+        four_status_cols = [
+            "metformin",
+            "repaglinide",
+            "nateglinide",
+            "chlorpropamide",
+            "glimepiride",
+            "glipizide",
+            "glyburide",
+            "pioglitazone",
+            "rosiglitazone",
+            "acarbose",
+            "miglitol",
+            "insulin",
+            "glyburide-metformin",
+            "tolazamide",
+            "metformin-pioglitazone",
+            "metformin-rosiglitazone",
+            "glimepiride-pioglitazone",
+            "glipizide-metformin",
+            "troglitazone",
+            "tolbutamide",
+            "acetohexamide",
+        ]
+        four_maps = {"Down": 0, "No": -1, "Steady": 1, "Up": 2}
+        for c in four_status_cols:
+            df[c] = df[c].apply(lambda x: four_maps[x])
+
+        df["change"] = df["change"].replace("Ch", 1)
+        df["change"] = df["change"].replace("No", 0)
+        df["gender"] = df["gender"].replace("Male", 1)
+        df["gender"] = df["gender"].replace("Female", 0)
+        df["gender"] = df["gender"].replace("Unknown/Invalid", -1)
+        df["diabetesMed"] = df["diabetesMed"].replace("Yes", 1)
+        df["diabetesMed"] = df["diabetesMed"].replace("No", 0)
+
+        df["A1Cresult"] = df["A1Cresult"].replace(">7", 1)
+        df["A1Cresult"] = df["A1Cresult"].replace(">8", 2)
+        df["A1Cresult"] = df["A1Cresult"].replace("Norm", 0)
+        df["A1Cresult"] = df["A1Cresult"].replace("None", -1)
+        df["max_glu_serum"] = df["max_glu_serum"].replace(">200", 1)
+        df["max_glu_serum"] = df["max_glu_serum"].replace(">300", 2)
+        df["max_glu_serum"] = df["max_glu_serum"].replace("Norm", 0)
+        df["max_glu_serum"] = df["max_glu_serum"].replace("None", -1)
+
+        df["diag_1"] = df["diag_1"].apply(lambda x: "-1" if "?" == x else x)
+        df["diag_2"] = df["diag_2"].apply(lambda x: "-1" if "?" == x else x)
+        df["diag_3"] = df["diag_3"].apply(lambda x: "-1" if "?" == x else x)
+        df["diag_1"] = df["diag_1"].apply(
+            lambda x: 0 if ("V" in x) or ("E" in x) else x
+        )
+        df["diag_2"] = df["diag_2"].apply(
+            lambda x: 0 if ("V" in x) or ("E" in x) else x
+        )
+        df["diag_3"] = df["diag_3"].apply(
+            lambda x: 0 if ("V" in x) or ("E" in x) else x
+        )
+        df["diag_1"] = df["diag_1"].replace("?", -1).astype(float)
+        df["diag_2"] = df["diag_2"].replace("?", -1).astype(float)
+        df["diag_3"] = df["diag_3"].replace("?", -1).astype(float)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("readmitted", axis=1)
+        X_a = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
+        y = df["readmitted"].values
 
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
