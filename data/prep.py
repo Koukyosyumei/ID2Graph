@@ -304,7 +304,7 @@ if __name__ == "__main__":
         df["y"] = df["y"].apply(lambda x: 1 if x == "yes" else 0)
         df = pd.get_dummies(df)
         X = df.drop("y", axis=1).values
-        y = df[["y"]].values
+        y = df["y"].values
     elif parsed_args.dataset_type == "dota2":
         df1 = pd.read_csv(os.path.join(parsed_args.path_to_dir,
                                        "dota2Train.csv"), header=None)
@@ -312,12 +312,12 @@ if __name__ == "__main__":
                                        "dota2Train.csv"), header=None)
         df = pd.concat([df1, df2])
         X = df.drop(0, axis=1).values
-        y = df[[0]].values
+        y = df[0].values
     elif parsed_args.dataset_type == "sepsis":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
                                       "s41598-020-73558-3_sepsis_survival_primary_cohort.csv"))
         X = df.drop("hospital_outcome_1alive_0dead", axis=1).values
-        y = df[["hospital_outcome_1alive_0dead"]].values
+        y = df["hospital_outcome_1alive_0dead"].values
 
     else:
         raise ValueError(f"{parsed_args.dataset_type} is not supported.")
