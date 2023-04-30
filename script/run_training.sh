@@ -79,9 +79,11 @@ while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:w:y:xgq OPT; do
   "w")
     FLG_W="TRUE"
     VALUE_W="$OPTARG"
+    ;;
   "y")
     FLG_Y="TRUE"
     VALUE_Y="$OPTARG"
+    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
