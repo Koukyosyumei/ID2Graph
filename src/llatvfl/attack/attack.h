@@ -57,7 +57,6 @@ inline void travase_nodes_to_extract_adjacency_matrix(
               adj_mat.add(temp_node->idxs[start_idx], temp_node->idxs[end_idx],
                           edge_weight_between_chunks);
             }
-            start_idx = end_idx;
             end_idx =
                 min(start_idx + max_num_samples_in_a_chunk, temp_idxs_size);
             for (int i = start_idx; i < end_idx; i++) {
@@ -65,6 +64,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(
                 adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
               }
             }
+            start_idx = end_idx;
           }
         }
 
@@ -113,7 +113,6 @@ inline void travase_nodes_to_extract_adjacency_matrix(
               adj_mat.add(temp_node->idxs[start_idx], temp_node->idxs[end_idx],
                           edge_weight_between_chunks);
             }
-            start_idx = end_idx;
             end_idx =
                 min(start_idx + max_num_samples_in_a_chunk, temp_idxs_size);
             for (int i = start_idx; i < end_idx; i++) {
@@ -121,6 +120,7 @@ inline void travase_nodes_to_extract_adjacency_matrix(
                 adj_mat.add(temp_node->idxs[i], temp_node->idxs[j], weight);
               }
             }
+            start_idx = end_idx;
           }
         }
         adj_mat.node_counter += 1;
