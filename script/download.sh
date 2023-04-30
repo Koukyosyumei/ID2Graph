@@ -27,4 +27,7 @@ unzip data/diabetes/dataset_diabetes.zip -d data/diabetes
 mv data/diabetes/dataset_diabetes/diabetic_data.csv data/diabetes/diabetic_data.csv
 
 wget -P data/indoor https://archive.ics.uci.edu/ml/machine-learning-databases/00377/Ipin2016Dataset.zip
-unzip Ipin2016Dataset.zip -d data/indoor
+unzip data/indoor/Ipin2016Dataset.zip -d data/indoor
+
+wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/birch1.txt
+wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/b1-gt.pa
