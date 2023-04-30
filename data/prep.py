@@ -356,6 +356,81 @@ if __name__ == "__main__":
             ]
         ].values
         y = df["ratings"].values
+    elif parsed_args.dataset_type == "indoor":
+        df_timestamp1 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure1_timestamp_id.csv"), header=None)
+        df_phonesens1 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure1_smartphone_sens.csv"))
+        df_phonewifi1 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir,
+            "measure1_smartphone_wifi.csv", header=None))
+        df_watchsens1 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure1_smartwatch_sens.csv"))
+        df_phonesens2 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure2_phone_sens.csv"))
+        df_phonewifi2 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir,
+            "measure2_smartphone_wifi.csv", header=None))
+        df_timestamp2 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure2_timestamp_id.csv", header=None))
+        df_watchsens2 = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "measure2_watch_sens.csv"))
+
+        df_phonesens1 = df_phonesens1.sort_values("timestamp")
+        df_watchsens1 = df_watchsens1.sort_values("timestamp")
+        df_phonesens2 = df_phonesens2.sort_values("timestamp")
+        df_watchsens2 = df_watchsens2.sort_values("timestamp")
+
+        df1_1 = pd.merge_asof(df_watchsens1, df_phonesens1,
+                              on="timestamp", direction='backward')
+        df1_2 = pd.merge_asof(df_phonesens1, df_watchsens1,
+                              on="timestamp", direction='backward')
+        df2_1 = pd.merge_asof(df_watchsens2, df_phonesens2,
+                              on="timestamp", direction='backward')
+        df2_2 = pd.merge_asof(df_phonesens2, df_watchsens2,
+                              on="timestamp", direction='backward')
+
+        df1_merged = df1_1.append(df1_2).sort_values(
+            "timestamp").drop_duplicates(subset="timestamp")
+        df2_merged = df2_1.append(df2_2).sort_values(
+            "timestamp").drop_duplicates(subset="timestamp")
+
+        df1_merged = df1_merged.fillna(0)
+        df2_merged = df2_merged.fillna(0)
+
+        dep_1 = df_timestamp1[0].values
+        arr_1 = df_timestamp1[1].values
+        pos_1 = df_timestamp1[2].values
+
+        def f1(x):
+            for d, a, p in zip(dep_1, arr_1, pos_1):
+                if (d <= x) and (x <= a):
+                    return p
+            return p
+
+        dep_2 = df_timestamp2[0].values
+        arr_2 = df_timestamp2[1].values
+        pos_2 = df_timestamp2[2].values
+
+        def f2(x):
+            for d, a, p in zip(dep_2, arr_2, pos_2):
+                if (d <= x) and (x <= a):
+                    return p
+            return p
+
+        timestamp1 = df1_merged["timestamp"].values
+        posid1 = [f1(t) for t in timestamp1]
+        timestamp2 = df2_merged["timestamp"].values
+        posid2 = [f2(t) for t in timestamp2]
+
+        df1_merged["PosID"] = posid1
+        df2_merged["PosID"] = posid2
+
+        df_merged = pd.concat([df1_merged, df2_merged])
+
+        X = df_merged.drop(["timestamp", "PosID"], axis=1).values
+        y = df_merged["PosID"].values
+
     elif parsed_args.dataset_type == "diabetes":
         df = pd.read_csv(os.path.join(
             parsed_args.path_to_dir, "diabetic_data.csv"))
