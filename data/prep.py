@@ -457,6 +457,25 @@ if __name__ == "__main__":
             df_merged["PosID"].values)
         y = df_merged["PosID"].values
 
+    elif parsed_args.dataset_type == "fars":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "fars.arff"),
+            skiprows=37, header=None)
+        X = df.drop(29, axis=1).values
+        y = df[29].values
+
+    elif parsed_args.dataset_type == "asteroids":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "dataset"),
+            skiprows=40, header=None)
+        df = df.dropna()
+        df[2] = LabelEncoder().fit_transform(df[2].values)
+        df[33] = LabelEncoder().fit_transform(df[33].values)
+        df[4] = df[4].apply(lambda x: -1 if "?" == x else float(x))
+        df[6] = df[6].apply(lambda x: -1 if "?" == x else float(x))
+        X = df.drop([0, 1, 33], axis=1).values
+        y = df[33].values
+
     elif parsed_args.dataset_type == "brich1":
         X = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "birch1.txt"),

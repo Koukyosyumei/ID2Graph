@@ -31,3 +31,7 @@ unzip data/indoor/Ipin2016Dataset.zip -d data/indoor
 
 wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/birch1.txt
 wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/b1-gt.pa
+
+wget -P data/fars https://www.openml.org/data/download/4965247/fars.arff
+
+wget -P data/asteroids https://www.openml.org/data/download/21799723/dataset
