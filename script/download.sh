@@ -26,12 +26,12 @@ wget -P data/diabetes https://archive.ics.uci.edu/ml/machine-learning-databases/
 unzip data/diabetes/dataset_diabetes.zip -d data/diabetes
 mv data/diabetes/dataset_diabetes/diabetic_data.csv data/diabetes/diabetic_data.csv
 
-wget -P data/indoor https://archive.ics.uci.edu/ml/machine-learning-databases/00377/Ipin2016Dataset.zip
-unzip data/indoor/Ipin2016Dataset.zip -d data/indoor
+# wget -P data/indoor https://archive.ics.uci.edu/ml/machine-learning-databases/00377/Ipin2016Dataset.zip
+# unzip data/indoor/Ipin2016Dataset.zip -d data/indoor
 
-wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/birch1.txt
-wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/b1-gt.pa
+# wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/birch1.txt
+# wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/b1-gt.pa
 
 wget -P data/fars https://www.openml.org/data/download/4965247/fars.arff
 
-wget -P data/asteroids https://www.openml.org/data/download/21799723/dataset
+# wget -P data/asteroids https://www.openml.org/data/download/21799723/dataset
