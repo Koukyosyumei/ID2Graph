@@ -65,8 +65,7 @@ def sampling_col_alloc(
     col_num, feature_num_ratio_of_active_party, feature_num_ratio_of_passive_party
 ):
     shufled_col_indicies = random.sample(list(range(col_num)), col_num)
-    col_num_of_active_party = max(
-        1, int(feature_num_ratio_of_active_party * col_num))
+    col_num_of_active_party = max(1, int(feature_num_ratio_of_active_party * col_num))
     if feature_num_ratio_of_passive_party < 0:
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
@@ -79,7 +78,7 @@ def sampling_col_alloc(
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
             shufled_col_indicies[
-                col_num_of_active_party: (
+                col_num_of_active_party : (
                     min(
                         col_num_of_active_party + col_num_of_passive_party,
                         col_num,
@@ -201,8 +200,7 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "Sensorless_drive_diagnosis.txt"),
+            os.path.join(parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt"),
             sep=" ",
             header=None,
         )
@@ -222,10 +220,8 @@ if __name__ == "__main__":
             feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
         )
         X_d = df.drop(8, axis=1)
-        X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
-        X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -235,16 +231,14 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "fraud":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "fraud_detection_bank_dataset.csv")
+            os.path.join(parsed_args.path_to_dir, "fraud_detection_bank_dataset.csv")
         )
 
         X = df[[f"col_{i}" for i in range(112)]].values
         y = df["targets"].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
         df = sampling(df, "default.payment.next.month", parsed_args)
 
         X = df[
@@ -281,8 +275,7 @@ if __name__ == "__main__":
         X = data["data"]
         y = data["target"]
     elif parsed_args.dataset_type == "givemesomecredit":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "cs-training.csv"))
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "cs-training.csv"))
         X = df[
             [
                 "RevolvingUtilizationOfUnsecuredLines",
@@ -362,24 +355,20 @@ if __name__ == "__main__":
             header=None,
         )
         df_phonesens1 = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "measure1_smartphone_sens.csv")
+            os.path.join(parsed_args.path_to_dir, "measure1_smartphone_sens.csv")
         )
         df_phonewifi1 = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "measure1_smartphone_wifi.csv"),
+            os.path.join(parsed_args.path_to_dir, "measure1_smartphone_wifi.csv"),
             header=None,
         )
         df_watchsens1 = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "measure1_smartwatch_sens.csv")
+            os.path.join(parsed_args.path_to_dir, "measure1_smartwatch_sens.csv")
         )
         df_phonesens2 = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "measure2_phone_sens.csv")
         )
         df_phonewifi2 = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "measure2_smartphone_wifi.csv"),
+            os.path.join(parsed_args.path_to_dir, "measure2_smartphone_wifi.csv"),
             header=None,
         )
         df_timestamp2 = pd.read_csv(
@@ -453,23 +442,22 @@ if __name__ == "__main__":
         df_merged = pd.concat([df1_merged, df2_merged])
 
         X = df_merged.drop(["timestamp", "PosID"], axis=1).values
-        df_merged["PosID"] = LabelEncoder().fit_transform(
-            df_merged["PosID"].values)
+        df_merged["PosID"] = LabelEncoder().fit_transform(df_merged["PosID"].values)
         y = df_merged["PosID"].values
 
     elif parsed_args.dataset_type == "fars":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "fars.arff"),
-            skiprows=37, header=None)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "fars.arff"), skiprows=37, header=None
+        )
         if parsed_args.num_samples != -1:
             df = df.sample(parsed_args.num_samples)
         X = df.drop(29, axis=1).values
         y = LabelEncoder().fit_transform(df[29].values)
 
     elif parsed_args.dataset_type == "asteroids":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "dataset"),
-            skiprows=40, header=None)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "dataset"), skiprows=40, header=None
+        )
         df = df.dropna()
         if parsed_args.num_samples != -1:
             df = df.sample(parsed_args.num_samples)
@@ -494,14 +482,12 @@ if __name__ == "__main__":
         )[0].values
 
     elif parsed_args.dataset_type == "diabetes":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "diabetic_data.csv"))
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "diabetic_data.csv"))
 
         df["readmitted"] = LabelEncoder().fit_transform(df["readmitted"])
         df["age"] = df["age"].apply(lambda x: int(x.split("-")[0][1:]))
         df["weight"] = df["weight"].apply(lambda x: "[250-" if x == "?" else x)
-        df["weight"] = df["weight"].apply(
-            lambda x: "[200-" if x == ">200" else x)
+        df["weight"] = df["weight"].apply(lambda x: "[200-" if x == ">200" else x)
         df["weight"] = df["weight"].apply(lambda x: int(x.split("-")[0][1:]))
 
         df = df.drop(
@@ -582,10 +568,8 @@ if __name__ == "__main__":
             feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
         )
         X_d = df.drop("readmitted", axis=1)
-        X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
-        X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        X_a = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -608,8 +592,7 @@ if __name__ == "__main__":
         pass
     else:
         fti = np.load(
-            os.path.join(parsed_args.path_to_dir,
-                         f"{parsed_args.dataset_type}_fti.npy")
+            os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_fti.npy")
         )
 
         if parsed_args.feature_importance == 1:
@@ -617,8 +600,7 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] *
-                        parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -628,8 +610,7 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] *
-                        parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -660,8 +641,7 @@ if __name__ == "__main__":
                 ]
             )
 
-        col_alloc = [active_col, list(
-            set(range(X_val.shape[1])) - set(active_col))]
+        col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
 
     convert_df_to_input(
         X_train,

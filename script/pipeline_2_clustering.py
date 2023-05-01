@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from llatvfl.clustering import get_f_p_r
 
 # from matplotlib import pyplot as plt
-
+N_INIT = 10
 label2maker = {0: "o", 1: "x"}
 
 
@@ -76,16 +76,14 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
-    kmeans = clustering_cls(n_clusters=num_classes, random_state=parsed_args.seed).fit(
-        X_train_minmax
-    )
+    kmeans = clustering_cls(
+        n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
+    ).fit(X_train_minmax)
     c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
     h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
     v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
 
-    _, p_score_baseline, ip_score_baseline = get_f_p_r(
-        y_train, kmeans.labels_
-    )
+    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_train, kmeans.labels_)
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, kmeans.labels_)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
 
@@ -101,20 +99,14 @@ if __name__ == "__main__":
                 X_com[int(k), i] += parsed_args.weight_for_community_variables
 
     kmeans_with_com = clustering_cls(
-        n_clusters=num_classes, random_state=parsed_args.seed
+        n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
-    c_score_with_com = metrics.completeness_score(
-        y_train, kmeans_with_com.labels_)
-    h_score_with_com = metrics.homogeneity_score(
-        y_train, kmeans_with_com.labels_)
-    v_score_with_com = metrics.v_measure_score(
-        y_train, kmeans_with_com.labels_)
+    c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
+    h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
+    v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(
-        y_train, kmeans_with_com.labels_
-    )
-    f_score_with_com = metrics.fowlkes_mallows_score(
-        y_train, kmeans_with_com.labels_)
+    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, kmeans_with_com.labels_)
+    f_score_with_com = metrics.fowlkes_mallows_score(y_train, kmeans_with_com.labels_)
 
     print(
         f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
