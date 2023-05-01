@@ -86,6 +86,7 @@ void parse_args(int argc, char *argv[]) {
       break;
     case 'y':
       edge_weight_between_chunks = stoi(string(optarg));
+      break;
     case 'x':
       use_uniontree = true;
       break;
