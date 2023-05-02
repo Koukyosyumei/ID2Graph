@@ -359,7 +359,7 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "pucrio":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                                      "pucrio.csv"), sep=";")
+                                      "pucrio.csv"), sep=";", low_memory=False)
         df = df.drop_duplicates()
         df["gender"] = df["gender"].apply(lambda x: 1 if x == "Woman" else 0)
         df["how_tall_in_meters"] = df["how_tall_in_meters"].apply(
