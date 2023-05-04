@@ -254,12 +254,12 @@ struct XGBoostNode : Node<XGBoostParty> {
           }
 
           if ((temp_party_id != active_party_id) &&
-              is_satisfied_with_lmir_bound_with_precalculation(
-                  num_classes, mi_bound, temp_left_size, y->size(),
-                  entire_class_cnt, prior, temp_left_class_cnt) &&
-              is_satisfied_with_lmir_bound_with_precalculation(
-                  num_classes, mi_bound, temp_right_size, y->size(),
-                  entire_class_cnt, prior, temp_right_class_cnt)) {
+              ((!is_satisfied_with_lmir_bound_with_precalculation(
+                   num_classes, mi_bound, temp_left_size, y->size(),
+                   entire_class_cnt, prior, temp_left_class_cnt)) ||
+               (!is_satisfied_with_lmir_bound_with_precalculation(
+                   num_classes, mi_bound, temp_right_size, y->size(),
+                   entire_class_cnt, prior, temp_right_class_cnt)))) {
             continue;
           }
 
