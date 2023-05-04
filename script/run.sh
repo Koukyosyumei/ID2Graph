@@ -21,8 +21,10 @@ VALUE_L=100            # maximum number of iterations of Louvain
 VALUE_C=0              # number of completely secure rounds.
 VALUE_B=-1             # epsilon of ID-LMID.
 VALUE_O=-1             # epsilon of LP-MST.
+VALUE_W=1000000
+VALUE_Y=100
 
-while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xgq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:w:y:xgq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -104,6 +106,14 @@ while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:xgq OPT; do
     FLG_P="TRUE"
     VALUE_P="$OPTARG"
     ;;
+  "w")
+    FLG_W="TRUE"
+    VALUE_W="$OPTARG"
+    ;;
+  "y")
+    FLG_Y="TRUE"
+    VALUE_Y="$OPTARG"
+    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
@@ -122,7 +132,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nx,${FLG_X}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nw,${VALUE_W}\ny,${VALUE_Y}\nx,${FLG_X}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
@@ -135,7 +145,7 @@ else
 fi
 
 for s in $(seq 1 ${VALUE_Z}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -i ${VALUE_I}"
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -i ${VALUE_I} -w ${VALUE_W} -y ${VALUE_Y}"
   if [ "${FLG_X}" = "TRUE" ]; then
     TRAINCMD+=" -x"
   fi

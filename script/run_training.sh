@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xgq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:w:y:xgq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -76,6 +76,14 @@ while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:xgq OPT; do
     FLG_S="TRUE"
     VALUE_S="$OPTARG"
     ;;
+  "w")
+    FLG_W="TRUE"
+    VALUE_W="$OPTARG"
+    ;;
+  "y")
+    FLG_Y="TRUE"
+    VALUE_Y="$OPTARG"
+    ;;
   "x")
     FLG_X="TRUE"
     VALUE_X="$OPTARG"
@@ -96,7 +104,7 @@ eval ${PREPCMD}
 
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
-RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O}"
+RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -w ${VALUE_W} -y ${VALUE_Y}"
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
