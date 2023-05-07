@@ -183,7 +183,7 @@ mv ${TEMPD}/*.ans ${RESUD}/
 mv ${TEMPD}/*.sratio ${RESUD}/
 mv ${TEMPD}/leak.csv ${RESUD}/
 mv ${TEMPD}/loss_lp.csv ${RESUD}/
-mv ${TEMPD}/result.png ${RESUD}/
+mv ${TEMPD}/*.png ${RESUD}/
 
 if [ "${FLG_Q}" = "TRUE" ]; then
   mv ${TEMPD}/*.html ${RESUD}/

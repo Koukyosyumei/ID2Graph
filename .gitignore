@@ -1,3 +1,10 @@
+data/**/*.txt
+data/**/*.int
+data/**/*.csv
+data/**/*.arff
+data/**/*.zip
+data/**/*.data
+
 # Prerequisites
 *.d
 
