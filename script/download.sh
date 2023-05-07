@@ -35,3 +35,6 @@ mv data/diabetes/dataset_diabetes/diabetic_data.csv data/diabetes/diabetic_data.
 wget -P data/fars https://www.openml.org/data/download/4965247/fars.arff
 
 # wget -P data/asteroids https://www.openml.org/data/download/21799723/dataset
+
+wget -P data/obesity "https://archive.ics.uci.edu/ml/machine-learning-databases/00544/ObesityDataSet_raw_and_data_sinthetic (2).zip"
+unzip "data/obesity/ObesityDataSet_raw_and_data_sinthetic (2).zip" -d data/obesity

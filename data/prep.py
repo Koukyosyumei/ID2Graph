@@ -357,15 +357,45 @@ if __name__ == "__main__":
         ].values
         y = df["ratings"].values
 
+    elif parsed_args.dataset_type == "obesity":
+        df = pd.read_csv(
+            os.path.join(
+                parsed_args.path_to_dir, "ObesityDataSet_raw_and_data_sinthetic.csv"
+            )
+        )
+        df["NObeyesdad"] = LabelEncoder().fit_transform(df["NObeyesdad"].values)
+
+        col_alloc_origin = sampling_col_alloc(
+            col_num=df.shape[1] - 1,
+            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
+            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
+        )
+        X_d = df.drop("NObeyesdad", axis=1)
+        X_a = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+        X_p = pd.get_dummies(
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+        col_alloc = [
+            list(range(X_a.shape[1])),
+            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
+        ]
+        X = pd.concat([X_a, X_p], axis=1).values
+        y = df["NObeyesdad"]
+
     elif parsed_args.dataset_type == "pucrio":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                                      "pucrio.csv"), sep=";", low_memory=False)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "pucrio.csv"),
+            sep=";",
+            low_memory=False,
+        )
         df = df.drop_duplicates()
         df["gender"] = df["gender"].apply(lambda x: 1 if x == "Woman" else 0)
         df["how_tall_in_meters"] = df["how_tall_in_meters"].apply(
-            lambda x: float(x.replace(",", ".")))
+            lambda x: float(x.replace(",", "."))
+        )
         df["body_mass_index"] = df["body_mass_index"].apply(
-            lambda x: float(x.replace(",", ".")))
+            lambda x: float(x.replace(",", "."))
+        )
         df["z4"] = df["z4"].apply(lambda x: int(str(x)[:4]))
         df["class"] = LabelEncoder().fit_transform(df["class"].values)
         X = df.drop(["user", "class"], axis=1).values
