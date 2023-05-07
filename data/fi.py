@@ -643,7 +643,7 @@ if __name__ == "__main__":
 
     mm = preprocessing.MinMaxScaler()
     X_minmax = mm.fit_transform(X)
-    selector = SelectKBest(mutual_info_classif, k=X.shape[1] * 0.5)
+    selector = SelectKBest(mutual_info_classif, k=int(X.shape[1] * 0.5))
     selector.fit(X_minmax, y)
 
     np.save(
