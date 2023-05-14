@@ -3,12 +3,74 @@ import argparse
 import numpy as np
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 
 from llatvfl.clustering import get_f_p_r
 
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
+
 N_INIT = 10
 label2maker = {0: "o", 1: "x"}
+plt.style.use("ggplot")
+
+
+marker_shapes = ["o", "o", "*", "*", "^", "^", "d", "d"]
+marker_colors = ["k", "white", "k", "white", "k", "white", "k", "white"]
+
+
+def visualize_clusters(X, y_true, num_classes, title, saved_path, h=0.02, eps=0.02):
+    reduced_data = PCA(n_components=2).fit_transform(X)
+    kmeans = clustering_cls(
+        n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
+    ).fit(reduced_data)
+    x_min, x_max = reduced_data[:, 0].min(
+    ) - eps, reduced_data[:, 0].max() + eps
+    y_min, y_max = reduced_data[:, 1].min(
+    ) - eps, reduced_data[:, 1].max() + eps
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    Z = kmeans.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.figure(1)
+    plt.clf()
+    plt.imshow(
+        Z,
+        interpolation="nearest",
+        extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+        # cmap=plt.cm.Paired,
+        aspect="auto",
+        origin="lower",
+        alpha=0.7,
+    )
+
+    for i in range(num_classes):
+        idx = np.where(y_true == i)[0]
+        plt.scatter(
+            reduced_data[idx, 0],
+            reduced_data[idx, 1],
+            c=marker_colors[i],
+            marker=marker_shapes[i],
+            s=15,
+            alpha=0.9,
+            edgecolors="black",
+        )
+    # Plot the centroids as a white X
+    # centroids = kmeans.cluster_centers_
+    # plt.scatter(
+    #    centroids[:, 0],
+    #    centroids[:, 1],
+    #    marker="x",
+    #    s=169,
+    #    linewidths=3,
+    #    color="w",
+    #    zorder=10,
+    # )
+    # plt.title("Breastcance " + title)
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
+    plt.xticks(())
+    plt.yticks(())
+    plt.savefig(saved_path, bbox_inches="tight", dpi=300)
 
 
 def add_args(parser):
@@ -87,6 +149,14 @@ if __name__ == "__main__":
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, kmeans.labels_)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
 
+    # visualize_clusters(
+    #    X_train_minmax,
+    #    y_train,
+    #    num_classes,
+    #    "CL",
+    #    f"{parsed_args.path_to_input_file.split('.')[0]}_CL.png",
+    # )
+
     with open(parsed_args.path_to_com_file, mode="r") as f:
         lines = f.readlines()
         comm_num = int(lines[0])
@@ -101,12 +171,25 @@ if __name__ == "__main__":
     kmeans_with_com = clustering_cls(
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
-    c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
-    h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
-    v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
+    c_score_with_com = metrics.completeness_score(
+        y_train, kmeans_with_com.labels_)
+    h_score_with_com = metrics.homogeneity_score(
+        y_train, kmeans_with_com.labels_)
+    v_score_with_com = metrics.v_measure_score(
+        y_train, kmeans_with_com.labels_)
 
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, kmeans_with_com.labels_)
-    f_score_with_com = metrics.fowlkes_mallows_score(y_train, kmeans_with_com.labels_)
+    _, p_score_with_com, ip_score_with_com = get_f_p_r(
+        y_train, kmeans_with_com.labels_)
+    f_score_with_com = metrics.fowlkes_mallows_score(
+        y_train, kmeans_with_com.labels_)
+
+    # visualize_clusters(
+    #    np.hstack([X_train_minmax, X_com]),
+    #    y_train,
+    #    num_classes,
+    #    "ID2Graph",
+    #    f"{parsed_args.path_to_input_file.split('.')[0]}_ID2Graph.png",
+    # )
 
     print(
         f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"

@@ -223,9 +223,9 @@ if __name__ == "__main__":
         )
         X_d = df.drop(8, axis=1)
         X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int)
         X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -303,7 +303,7 @@ if __name__ == "__main__":
             os.path.join(parsed_args.path_to_dir, "bank-full.csv"), sep=";"
         )
         df["y"] = df["y"].apply(lambda x: 1 if x == "yes" else 0)
-        df = pd.get_dummies(df)
+        df = pd.get_dummies(df, drop_first=True, dtype=int)
         X = df.drop("y", axis=1).values
         y = df["y"].values
     elif parsed_args.dataset_type == "dota2":
@@ -372,9 +372,9 @@ if __name__ == "__main__":
         )
         X_d = df.drop("NObeyesdad", axis=1)
         X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int)
         X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -628,9 +628,9 @@ if __name__ == "__main__":
         )
         X_d = df.drop("readmitted", axis=1)
         X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int)
         X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True)
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int)
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
