@@ -317,17 +317,21 @@ struct RandomForestNode : Node<RandomForestParty> {
         is_satisfied_with_lmir_bound_from_pointer(
             num_classes, mi_bound, y, entire_class_cnt, prior, right_idxs);
 
-    left = new RandomForestNode(
-        parties, y, num_classes, left_idxs, depth - 1, prior, mi_bound,
-        active_party_id,
-        (use_only_active_party || !left_is_satisfied_lmir_cond), n_job);
+    left = new RandomForestNode(parties, y, num_classes, left_idxs, depth - 1,
+                                prior, mi_bound, active_party_id,
+                                (use_only_active_party ||
+                                 (!left_is_satisfied_lmir_cond) ||
+                                 (!right_is_satisfied_lmir_cond)),
+                                n_job);
     if (left->is_leaf_flag == 1) {
       left->party_id = party_id;
     }
-    right = new RandomForestNode(
-        parties, y, num_classes, right_idxs, depth - 1, prior, mi_bound,
-        active_party_id,
-        (use_only_active_party || !right_is_satisfied_lmir_cond), n_job);
+    right = new RandomForestNode(parties, y, num_classes, right_idxs, depth - 1,
+                                 prior, mi_bound, active_party_id,
+                                 (use_only_active_party ||
+                                  (!left_is_satisfied_lmir_cond) ||
+                                  (!right_is_satisfied_lmir_cond)),
+                                 n_job);
     if (right->is_leaf_flag == 1) {
       right->party_id = party_id;
     }

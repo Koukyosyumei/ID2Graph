@@ -379,14 +379,18 @@ struct XGBoostNode : Node<XGBoostParty> {
     left = new XGBoostNode(
         parties, y, num_classes, gradient, hessian, left_idxs, prior,
         min_child_weight, lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-        (use_only_active_party || (!left_is_satisfied_lmir_cond)), n_job);
+        (use_only_active_party || (!left_is_satisfied_lmir_cond) ||
+         (!right_is_satisfied_lmir_cond)),
+        n_job);
     if (left->is_leaf_flag == 1) {
       left->party_id = party_id;
     }
     right = new XGBoostNode(
         parties, y, num_classes, gradient, hessian, right_idxs, prior,
         min_child_weight, lam, gamma, eps, depth - 1, mi_bound, active_party_id,
-        (use_only_active_party || (!right_is_satisfied_lmir_cond)), n_job);
+        (use_only_active_party || (!left_is_satisfied_lmir_cond) ||
+         (!right_is_satisfied_lmir_cond)),
+        n_job);
     if (right->is_leaf_flag == 1) {
       right->party_id = party_id;
     }
