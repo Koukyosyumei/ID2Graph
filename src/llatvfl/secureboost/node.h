@@ -135,15 +135,18 @@ struct SecureBoostNode : Node<SecureBoostParty> {
       if (temp_party_id == active_party_id) {
         search_results =
             parties->at(temp_party_id)
-                .greedy_search_split(vanila_gradient, vanila_hessian, y, idxs);
+                .greedy_search_split(vanila_gradient, vanila_hessian, y, idxs,
+                                     entire_datasetsize, entire_class_cnt);
       } else {
-        vector<
-            vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
-                         vector<pair<PaillierCipherText, PaillierCipherText>>>>>
+        vector<vector<
+            tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
+                  vector<tuple<PaillierCipherText, PaillierCipherText,
+                               PaillierCipherText, PaillierCipherText>>>>>
             encrypted_search_result =
                 parties->at(temp_party_id)
                     .greedy_search_split_encrypt(gradient, hessian, y_encrypted,
-                                                 idxs);
+                                                 idxs, entire_datasetsize,
+                                                 entire_class_cnt);
         int temp_result_size = encrypted_search_result.size();
         search_results.resize(temp_result_size);
         int temp_vec_size;
@@ -152,7 +155,8 @@ struct SecureBoostNode : Node<SecureBoostParty> {
           search_results[j].resize(temp_vec_size);
           for (int k = 0; k < temp_vec_size; k++) {
             vector<float> temp_grad_decrypted, temp_hess_decrypted;
-            vector<pair<float, float>> temp_label_ratio_decrypted;
+            vector<tuple<float, float, float, float>>
+                temp_label_ratio_decrypted;
             temp_grad_decrypted.resize(grad_dim);
             temp_hess_decrypted.resize(grad_dim);
             temp_label_ratio_decrypted.resize(num_classes);
@@ -168,13 +172,19 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                           get<1>(encrypted_search_result[j][k])[c]);
             }
             for (int c = 0; c < num_classes; c++) {
-              temp_label_ratio_decrypted[c] = make_pair(
+              temp_label_ratio_decrypted[c] = make_tuple(
                   parties->at(active_party_id)
                       .sk.decrypt<float>(
-                          get<2>(encrypted_search_result[j][k])[c].first),
+                          get<0>(get<2>(encrypted_search_result[j][k])[c])),
                   parties->at(active_party_id)
                       .sk.decrypt<float>(
-                          get<2>(encrypted_search_result[j][k])[c].second));
+                          get<1>(get<2>(encrypted_search_result[j][k])[c])),
+                  parties->at(active_party_id)
+                      .sk.decrypt<float>(
+                          get<2>(get<2>(encrypted_search_result[j][k])[c])),
+                  parties->at(active_party_id)
+                      .sk.decrypt<float>(
+                          get<3>(get<2>(encrypted_search_result[j][k])[c])));
             }
             search_results[j][k] =
                 make_tuple(temp_grad_decrypted, temp_hess_decrypted,
@@ -221,6 +231,16 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                 get<2>(get<2>(search_results[j][k])[c]);
             temp_right_class_out_ratio[c] =
                 get<3>(get<2>(search_results[j][k])[c]);
+          }
+
+          if ((temp_party_id != active_party_id) &&
+              ((!is_satisfied_with_lmir_bound_from_ratio(
+                   num_classes, mi_bound, temp_left_class_in_ratio,
+                   temp_left_class_out_ratio, prior)) ||
+               (!is_satisfied_with_lmir_bound_from_ratio(
+                   num_classes, mi_bound, temp_right_class_in_ratio,
+                   temp_right_class_out_ratio, prior)))) {
+            continue;
           }
 
           skip_flag = false;

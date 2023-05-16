@@ -20,11 +20,12 @@ struct SecureBoostParty : XGBoostParty {
 
   void set_secretkey(PaillierSecretKey sk_) { sk = sk_; }
 
-  vector<
-      vector<tuple<vector<float>, vector<float>, vector<pair<float, float>>>>>
+  vector<vector<tuple<vector<float>, vector<float>,
+                      vector<tuple<float, float, float, float>>>>>
   greedy_search_split(vector<vector<float>> &gradient,
                       vector<vector<float>> &hessian, vector<float> *y,
-                      vector<int> &idxs) {
+                      vector<int> &idxs, float entire_datasetsize,
+                      vector<float> &entire_class_cnt) {
     // feature_id -> [(grad hess)]
     // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
     int num_thresholds;
@@ -32,8 +33,8 @@ struct SecureBoostParty : XGBoostParty {
       num_thresholds = subsample_col_count * 2;
     else
       num_thresholds = subsample_col_count;
-    vector<
-        vector<tuple<vector<float>, vector<float>, vector<pair<float, float>>>>>
+    vector<vector<tuple<vector<float>, vector<float>,
+                        vector<tuple<float, float, float, float>>>>>
         split_candidates_grad_hess(num_thresholds);
     temp_thresholds = vector<vector<float>>(num_thresholds);
 
@@ -79,7 +80,7 @@ struct SecureBoostParty : XGBoostParty {
         float temp_right_size = 0;
         vector<float> temp_left_y_class_cnt(num_classes, 0);
         vector<float> temp_right_y_class_cnt(num_classes, 0);
-        vector<pair<float, float>> temp_label_ratio(num_classes);
+        vector<tuple<float, float, float, float>> temp_label_ratio(num_classes);
 
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
           if (x_col[r] <= percentiles[p]) {
@@ -104,9 +105,13 @@ struct SecureBoostParty : XGBoostParty {
           }
         }
         for (int c = 0; c < num_classes; c++) {
-          temp_label_ratio[c].first = temp_left_y_class_cnt[c] / temp_left_size;
-          temp_label_ratio[c].second =
-              temp_right_y_class_cnt[c] / temp_right_size;
+          temp_label_ratio[c] =
+              make_tuple(temp_left_y_class_cnt[c] / temp_left_size,
+                         temp_right_y_class_cnt[c] / temp_right_size,
+                         (entire_class_cnt[c] - temp_left_y_class_cnt[c]) /
+                             (entire_datasetsize - temp_left_size),
+                         (entire_class_cnt[c] - temp_right_y_class_cnt[c]) /
+                             (entire_datasetsize - temp_right_size));
         }
 
         if (cumulative_left_size >= min_leaf &&
@@ -122,11 +127,13 @@ struct SecureBoostParty : XGBoostParty {
   }
 
   vector<vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
-                      vector<pair<PaillierCipherText, PaillierCipherText>>>>>
+                      vector<tuple<PaillierCipherText, PaillierCipherText,
+                                   PaillierCipherText, PaillierCipherText>>>>>
   greedy_search_split_encrypt(vector<vector<PaillierCipherText>> &gradient,
                               vector<vector<PaillierCipherText>> &hessian,
                               vector<vector<PaillierCipherText>> &y_onehot,
-                              vector<int> &idxs) {
+                              vector<int> &idxs, float entire_datasetsize,
+                              vector<float> &entire_class_cnt) {
     // feature_id -> [(grad hess)]
     // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
     int num_thresholds;
@@ -135,7 +142,8 @@ struct SecureBoostParty : XGBoostParty {
     else
       num_thresholds = subsample_col_count;
     vector<vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
-                        vector<pair<PaillierCipherText, PaillierCipherText>>>>>
+                        vector<tuple<PaillierCipherText, PaillierCipherText,
+                                     PaillierCipherText, PaillierCipherText>>>>>
         split_candidates_grad_hess(num_thresholds);
     temp_thresholds = vector<vector<float>>(num_thresholds);
 
@@ -181,8 +189,9 @@ struct SecureBoostParty : XGBoostParty {
         float temp_right_size = 0;
         vector<PaillierCipherText> temp_left_y_class_cnt(num_classes);
         vector<PaillierCipherText> temp_right_y_class_cnt(num_classes);
-        vector<pair<PaillierCipherText, PaillierCipherText>> temp_label_ratio(
-            num_classes);
+        vector<tuple<PaillierCipherText, PaillierCipherText, PaillierCipherText,
+                     PaillierCipherText>>
+            temp_label_ratio(num_classes);
 
         for (int c = 0; c < grad_dim; c++) {
           temp_grad[c] = pk.encrypt<float>(0);
@@ -222,10 +231,13 @@ struct SecureBoostParty : XGBoostParty {
           }
         }
         for (int c = 0; c < num_classes; c++) {
-          temp_label_ratio[c].first =
-              temp_left_y_class_cnt[c] * (1.0 / temp_left_size);
-          temp_label_ratio[c].second =
-              temp_right_y_class_cnt[c] * (1.0 / temp_left_size);
+          temp_label_ratio[c] = make_tuple(
+              temp_left_y_class_cnt[c] * (1.0 / temp_left_size),
+              temp_right_y_class_cnt[c] * (1.0 / temp_left_size),
+              (temp_left_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                  (1.0 / (entire_datasetsize - temp_left_size)),
+              (temp_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                  (1.0 / (entire_datasetsize - temp_right_size)));
         }
 
         if (cumulative_left_size >= min_leaf &&
