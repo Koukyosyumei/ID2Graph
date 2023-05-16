@@ -19,6 +19,9 @@ struct SecureBoostNode : Node<SecureBoostParty> {
 
   int num_classes;
 
+  float entire_datasetsize = 0;
+  vector<float> entire_class_cnt;
+
   SecureBoostNode() {}
   SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> *y_,
                   int num_classes_,
@@ -54,6 +57,12 @@ struct SecureBoostNode : Node<SecureBoostParty> {
 
     row_count = idxs.size();
     num_parties = parties->size();
+
+    entire_class_cnt.resize(num_classes, 0);
+    entire_datasetsize = y->size();
+    for (int i = 0; i < entire_datasetsize; i++) {
+      entire_class_cnt[int(y->at(i))] += 1.0;
+    }
 
     val = compute_weight();
     // tuple<int, int, int> best_split = find_split();
@@ -108,17 +117,20 @@ struct SecureBoostNode : Node<SecureBoostParty> {
   void find_split_per_party(int party_id_start, int temp_num_parties,
                             vector<float> &sum_grad, vector<float> &sum_hess) {
 
-    vector<float> temp_left_class_ratio, temp_right_class_ratio;
-    temp_left_class_ratio.resize(num_classes, 0);
-    temp_right_class_ratio.resize(num_classes, 0);
+    vector<float> temp_left_class_in_ratio, temp_left_class_out_ratio,
+        temp_right_class_in_ratio, temp_right_class_out_ratio;
+    temp_left_class_in_ratio.resize(num_classes, 0);
+    temp_right_class_in_ratio.resize(num_classes, 0);
+    temp_left_class_out_ratio.resize(num_classes, 0);
+    temp_right_class_out_ratio.resize(num_classes, 0);
 
     int grad_dim = sum_grad.size();
 
     for (int temp_party_id = party_id_start;
          temp_party_id < party_id_start + temp_num_parties; temp_party_id++) {
 
-      vector<vector<
-          tuple<vector<float>, vector<float>, vector<pair<float, float>>>>>
+      vector<vector<tuple<vector<float>, vector<float>,
+                          vector<tuple<float, float, float, float>>>>>
           search_results;
       if (temp_party_id == active_party_id) {
         search_results =
@@ -188,8 +200,10 @@ struct SecureBoostNode : Node<SecureBoostParty> {
         }
 
         for (int c = 0; c < num_classes; c++) {
-          temp_left_class_ratio[c] = 0;
-          temp_right_class_ratio[c] = 0;
+          temp_left_class_in_ratio[c] = 0;
+          temp_right_class_in_ratio[c] = 0;
+          temp_left_class_out_ratio[c] = 0;
+          temp_right_class_out_ratio[c] = 0;
         }
 
         for (int k = 0; k < search_results[j].size(); k++) {
@@ -199,8 +213,14 @@ struct SecureBoostNode : Node<SecureBoostParty> {
           }
 
           for (int c = 0; c < num_classes; c++) {
-            temp_left_class_ratio[c] = get<2>(search_results[j][k])[c].first;
-            temp_right_class_ratio[c] = get<2>(search_results[j][k])[c].second;
+            temp_left_class_in_ratio[c] =
+                get<0>(get<2>(search_results[j][k])[c]);
+            temp_right_class_in_ratio[c] =
+                get<1>(get<2>(search_results[j][k])[c]);
+            temp_left_class_out_ratio[c] =
+                get<2>(get<2>(search_results[j][k])[c]);
+            temp_right_class_out_ratio[c] =
+                get<3>(get<2>(search_results[j][k])[c]);
           }
 
           skip_flag = false;
@@ -286,19 +306,28 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                   [&](float x) { return x == idxs[i]; }))
         right_idxs.push_back(idxs[i]);
 
-    left =
-        new SecureBoostNode(parties, y, num_classes, y_encrypted, gradient,
-                            hessian, vanila_gradient, vanila_hessian, left_idxs,
-                            min_child_weight, lam, gamma, eps, depth - 1, prior,
-                            mi_bound, active_party_id, use_only_active_party);
+    bool left_is_satisfied_lmir_cond =
+        is_satisfied_with_lmir_bound_from_pointer(
+            num_classes, mi_bound, y, entire_class_cnt, prior, left_idxs);
+    bool right_is_satisfied_lmir_cond =
+        is_satisfied_with_lmir_bound_from_pointer(
+            num_classes, mi_bound, y, entire_class_cnt, prior, right_idxs);
+
+    left = new SecureBoostNode(
+        parties, y, num_classes, y_encrypted, gradient, hessian,
+        vanila_gradient, vanila_hessian, left_idxs, min_child_weight, lam,
+        gamma, eps, depth - 1, prior, mi_bound, active_party_id,
+        (use_only_active_party || (!left_is_satisfied_lmir_cond) ||
+         (!right_is_satisfied_lmir_cond)));
     if (left->is_leaf_flag == 1) {
       left->party_id = party_id;
     }
-    right = new SecureBoostNode(parties, y, num_classes, y_encrypted, gradient,
-                                hessian, vanila_gradient, vanila_hessian,
-                                right_idxs, min_child_weight, lam, gamma, eps,
-                                depth - 1, prior, mi_bound, active_party_id,
-                                use_only_active_party);
+    right = new SecureBoostNode(
+        parties, y, num_classes, y_encrypted, gradient, hessian,
+        vanila_gradient, vanila_hessian, right_idxs, min_child_weight, lam,
+        gamma, eps, depth - 1, prior, mi_bound, active_party_id,
+        (use_only_active_party || (!left_is_satisfied_lmir_cond) ||
+         (!right_is_satisfied_lmir_cond)));
     if (right->is_leaf_flag == 1) {
       right->party_id = party_id;
     }
