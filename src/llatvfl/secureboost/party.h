@@ -1,6 +1,7 @@
 #pragma once
 #include "../paillier/paillier.h"
 #include "../xgboost/party.h"
+#include <iostream>
 using namespace std;
 
 struct SecureBoostParty : XGBoostParty {
@@ -214,7 +215,7 @@ struct SecureBoostParty : XGBoostParty {
             break;
           }
         }
-
+        std::cout << 4 << std::endl;
         for (int r = 0; r < not_missing_values_count; r++) {
           if (x_col[r] <= percentiles[p]) {
             temp_left_size += 1.0;
@@ -230,6 +231,7 @@ struct SecureBoostParty : XGBoostParty {
             }
           }
         }
+        std::cout << 5 << std::endl;
         for (int c = 0; c < num_classes; c++) {
           temp_label_ratio[c] = make_tuple(
               temp_left_y_class_cnt[c] * (1.0 / temp_left_size),
