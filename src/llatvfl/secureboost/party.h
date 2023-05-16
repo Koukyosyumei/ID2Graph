@@ -215,35 +215,37 @@ struct SecureBoostParty : XGBoostParty {
             break;
           }
         }
-        std::cout << 4 << std::endl;
-        for (int r = 0; r < not_missing_values_count; r++) {
-          if (x_col[r] <= percentiles[p]) {
-            temp_left_size += 1.0;
-            for (int c = 0; c < num_classes; c++) {
-              temp_left_y_class_cnt[c] =
-                  temp_left_y_class_cnt[c] + y_onehot[idxs[x_col_idxs[r]]][c];
-            }
-          } else {
-            temp_right_size += 1.0;
-            for (int c = 0; c < num_classes; c++) {
-              temp_right_y_class_cnt[c] =
-                  temp_right_y_class_cnt[c] + y_onehot[idxs[x_col_idxs[r]]][c];
-            }
-          }
-        }
-        std::cout << 5 << std::endl;
-        for (int c = 0; c < num_classes; c++) {
-          temp_label_ratio[c] = make_tuple(
-              temp_left_y_class_cnt[c] * (1.0 / temp_left_size),
-              temp_right_y_class_cnt[c] * (1.0 / temp_left_size),
-              (temp_left_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
-                  (1.0 / (entire_datasetsize - temp_left_size)),
-              (temp_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
-                  (1.0 / (entire_datasetsize - temp_right_size)));
-        }
 
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
+          std::cout << 4 << std::endl;
+          for (int r = 0; r < not_missing_values_count; r++) {
+            if (x_col[r] <= percentiles[p]) {
+              temp_left_size += 1.0;
+              for (int c = 0; c < num_classes; c++) {
+                temp_left_y_class_cnt[c] =
+                    temp_left_y_class_cnt[c] + y_onehot[idxs[x_col_idxs[r]]][c];
+              }
+            } else {
+              temp_right_size += 1.0;
+              for (int c = 0; c < num_classes; c++) {
+                temp_right_y_class_cnt[c] = temp_right_y_class_cnt[c] +
+                                            y_onehot[idxs[x_col_idxs[r]]][c];
+              }
+            }
+          }
+          std::cout << 5 << std::endl;
+          for (int c = 0; c < num_classes; c++) {
+            temp_label_ratio[c] = make_tuple(
+                temp_left_y_class_cnt[c] * (1.0 / temp_left_size),
+                temp_right_y_class_cnt[c] * (1.0 / temp_left_size),
+                (temp_left_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                    (1.0 / (entire_datasetsize - temp_left_size)),
+                (temp_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                    (1.0 / (entire_datasetsize - temp_right_size)));
+          }
+          std::cout << 6 << std::endl;
+
           split_candidates_grad_hess[i].push_back(
               make_tuple(temp_grad, temp_hess, temp_label_ratio));
           temp_thresholds[i].push_back(percentiles[p]);
