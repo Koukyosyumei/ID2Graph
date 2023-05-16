@@ -85,6 +85,7 @@ TEST(SecureBoost, SecureBoostClassifierTest) {
 
   // --- Check Training --- //
   clf.fit(parties, y);
+  std::cout << 0 << std::endl;
 
   ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
   ASSERT_EQ(parties[1].get_lookup_table().size(), 2);
@@ -143,6 +144,7 @@ TEST(SecureBoost, SecureBoostClassifierTest) {
   ASSERT_NEAR(clf.estimators[0].dtree.right->right->right->val[0],
               -0.6109404045885225, 1e-6);
 
+  std::cout << 1 << std::endl;
   vector<vector<float>> predict_raw = clf.predict_raw(X);
   vector<float> test_predcit_raw = {1.38379341, 0.53207456, 1.38379341,
                                     0.22896408, 1.29495549, 1.29495549,
