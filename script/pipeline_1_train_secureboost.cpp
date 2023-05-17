@@ -41,10 +41,12 @@ int maximum_nb_pass_done = 300;
 bool save_adj_mat = false;
 bool is_freerider = false;
 bool use_uniontree = false;
+int max_num_samples_in_a_chunk = 1000000;
+int edge_weight_between_chunks = 100;
 
 void parse_args(int argc, char *argv[]) {
   int opt;
-  while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:xwg")) != -1) {
+  while ((opt = getopt(argc, argv, "f:p:r:c:a:e:h:j:l:o:b:w:y:xgq")) != -1) {
     switch (opt) {
     case 'f':
       folderpath = string(optarg);
@@ -80,7 +82,10 @@ void parse_args(int argc, char *argv[]) {
       mi_bound = stof(string(optarg));
       break;
     case 'w':
-      is_freerider = true;
+      max_num_samples_in_a_chunk = stoi(string(optarg));
+      break;
+    case 'y':
+      edge_weight_between_chunks = stoi(string(optarg));
       break;
     case 'x':
       use_uniontree = true;
@@ -263,7 +268,8 @@ int main(int argc, char *argv[]) {
     printf("Start graph extraction trial=%s\n", fileprefix.c_str());
     start = chrono::system_clock::now();
     SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(
-        &clf, is_freerider, 1, completely_secure_round, eta);
+        &clf, is_freerider, 1, completely_secure_round, eta,
+        max_num_samples_in_a_chunk, edge_weight_between_chunks);
 
     std::ofstream s_file;
     string s_filepath = folderpath + "/" + fileprefix + ".sratio";
