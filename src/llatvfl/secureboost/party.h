@@ -218,7 +218,6 @@ struct SecureBoostParty : XGBoostParty {
 
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
-          std::cout << 4 << std::endl;
           for (int r = 0; r < not_missing_values_count; r++) {
             if (x_col[r] <= percentiles[p]) {
               temp_left_size += 1.0;
@@ -234,7 +233,6 @@ struct SecureBoostParty : XGBoostParty {
               }
             }
           }
-          std::cout << 5 << std::endl;
           for (int c = 0; c < num_classes; c++) {
             temp_label_ratio[c] = make_tuple(
                 temp_left_y_class_cnt[c] * (1.0 / temp_left_size),
@@ -244,7 +242,6 @@ struct SecureBoostParty : XGBoostParty {
                 (temp_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
                     (1.0 / (entire_datasetsize - temp_right_size)));
           }
-          std::cout << 6 << std::endl;
 
           split_candidates_grad_hess[i].push_back(
               make_tuple(temp_grad, temp_hess, temp_label_ratio));

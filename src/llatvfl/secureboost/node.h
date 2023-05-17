@@ -138,7 +138,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                 .greedy_search_split(vanila_gradient, vanila_hessian, y, idxs,
                                      entire_datasetsize, entire_class_cnt);
       } else {
-        std::cout << -1 << std::endl;
         vector<vector<
             tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
                   vector<tuple<PaillierCipherText, PaillierCipherText,
@@ -148,7 +147,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                     .greedy_search_split_encrypt(gradient, hessian, y_encrypted,
                                                  idxs, entire_datasetsize,
                                                  entire_class_cnt);
-        std::cout << -2 << std::endl;
         int temp_result_size = encrypted_search_result.size();
         search_results.resize(temp_result_size);
         int temp_vec_size;
@@ -224,7 +222,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             temp_left_hess[c] += get<1>(search_results[j][k])[c];
           }
 
-          std::cout << 8 << std::endl;
           for (int c = 0; c < num_classes; c++) {
             temp_left_class_in_ratio[c] =
                 get<0>(get<2>(search_results[j][k])[c]);
@@ -235,7 +232,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             temp_right_class_out_ratio[c] =
                 get<3>(get<2>(search_results[j][k])[c]);
           }
-          std::cout << 9 << std::endl;
 
           if ((temp_party_id != active_party_id) &&
               ((!is_satisfied_with_lmir_bound_from_ratio(
@@ -246,7 +242,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                    temp_right_class_out_ratio, prior)))) {
             continue;
           }
-          std::cout << 10 << std::endl;
 
           skip_flag = false;
           for (int c = 0; c < grad_dim; c++) {
