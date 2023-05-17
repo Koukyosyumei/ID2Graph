@@ -134,7 +134,8 @@ struct SecureBoostParty : XGBoostParty {
                               vector<vector<PaillierCipherText>> &hessian,
                               vector<vector<PaillierCipherText>> &y_onehot,
                               vector<int> &idxs, float entire_datasetsize,
-                              vector<float> &entire_class_cnt) {
+                              vector<PaillierCipherText> &entire_class_cnt,
+                              vector<PaillierCipherText> &sum_class_cnt) {
     // feature_id -> [(grad hess)]
     // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
     int num_thresholds;
@@ -179,17 +180,6 @@ struct SecureBoostParty : XGBoostParty {
 
       // get percentiles of x_col
       vector<float> percentiles = get_threshold_candidates(x_col);
-
-      vector<PaillierCipherText> all_y_class_cnt(num_classes);
-      for (int c = 0; c < num_classes; c++) {
-        all_y_class_cnt[c] = pk.encrypt<float>(0);
-      }
-      for (int r = 0; r < not_missing_values_count; r++) {
-        for (int c = 0; c < num_classes; c++) {
-          all_y_class_cnt[c] =
-              all_y_class_cnt[c] + y_onehot[idxs[x_col_idxs[r]]][c];
-        }
-      }
 
       vector<PaillierCipherText> cumulative_left_y_class_cnt(num_classes);
       vector<PaillierCipherText> cumulative_right_y_class_cnt(num_classes);
@@ -238,7 +228,8 @@ struct SecureBoostParty : XGBoostParty {
           }
         }
         for (int c = 0; c < num_classes; c++) {
-          cumulative_right_y_class_cnt[c] = all_y_class_cnt[c];
+          cumulative_right_y_class_cnt[c] =
+              sum_class_cnt[c] + (cumulative_left_y_class_cnt[c] * -1);
         }
 
         if (cumulative_left_size >= min_leaf &&
