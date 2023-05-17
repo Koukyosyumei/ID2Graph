@@ -55,6 +55,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
     use_only_active_party = use_only_active_party_;
     n_job = n_job_;
 
+    lmir_flag_exclude_passive_parties = use_only_active_party;
     mi_bound = mi_bound_;
     prior = prior_;
 
