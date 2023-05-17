@@ -21,6 +21,9 @@ struct SecureBoostNode : Node<SecureBoostParty> {
 
   float entire_datasetsize = 0;
   vector<float> entire_class_cnt;
+  vector<PaillierCipherText> entire_class_cnt_encrypted;
+  vector<float> class_cnt_within_this_node;
+  vector<PaillierCipherText> class_cnt_within_this_node_encrypted;
 
   SecureBoostNode() {}
   SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> *y_,
@@ -74,6 +77,20 @@ struct SecureBoostNode : Node<SecureBoostParty> {
     }
 
     if (is_leaf_flag == 0) {
+      entire_class_cnt_encrypted.resize(num_classes);
+      class_cnt_within_this_node.resize(num_classes);
+      class_cnt_within_this_node_encrypted.resize(num_classes);
+      for (int i = 0; i < row_count; i++) {
+        class_cnt_within_this_node[int(y->at(idxs[i]))] += 1.0;
+      }
+      for (int c = 0; c < num_classes; c++) {
+        entire_class_cnt_encrypted[c] =
+            parties->at(active_party_id).pk.encrypt<float>(entire_class_cnt[c]);
+        class_cnt_within_this_node_encrypted[c] =
+            parties->at(active_party_id)
+                .pk.encrypt<float>(class_cnt_within_this_node[c]);
+      }
+
       tuple<int, int, int> best_split = find_split();
       party_id = get<0>(best_split);
       if (party_id != -1) {
@@ -136,7 +153,8 @@ struct SecureBoostNode : Node<SecureBoostParty> {
         search_results =
             parties->at(temp_party_id)
                 .greedy_search_split(vanila_gradient, vanila_hessian, y, idxs,
-                                     entire_datasetsize, entire_class_cnt);
+                                     entire_datasetsize, entire_class_cnt,
+                                     class_cnt_within_this_node);
       } else {
         vector<vector<
             tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
@@ -144,9 +162,10 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                                PaillierCipherText, PaillierCipherText>>>>>
             encrypted_search_result =
                 parties->at(temp_party_id)
-                    .greedy_search_split_encrypt(gradient, hessian, y_encrypted,
-                                                 idxs, entire_datasetsize,
-                                                 entire_class_cnt);
+                    .greedy_search_split_encrypt(
+                        gradient, hessian, y_encrypted, idxs,
+                        entire_datasetsize, entire_class_cnt_encrypted,
+                        class_cnt_within_this_node_encrypted);
         int temp_result_size = encrypted_search_result.size();
         search_results.resize(temp_result_size);
         int temp_vec_size;

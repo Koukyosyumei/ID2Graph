@@ -26,7 +26,8 @@ struct SecureBoostParty : XGBoostParty {
   greedy_search_split(vector<vector<float>> &gradient,
                       vector<vector<float>> &hessian, vector<float> *y,
                       vector<int> &idxs, float entire_datasetsize,
-                      vector<float> &entire_class_cnt) {
+                      vector<float> &entire_class_cnt,
+                      vector<float> &sum_class_cnt) {
     // feature_id -> [(grad hess)]
     // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
     int num_thresholds;
@@ -71,16 +72,19 @@ struct SecureBoostParty : XGBoostParty {
       // get percentiles of x_col
       vector<float> percentiles = get_threshold_candidates(x_col);
 
+      vector<float> cumulative_left_y_class_cnt(num_classes, 0);
+      vector<float> cumulative_right_y_class_cnt(num_classes, 0);
+
       // enumerate all threshold value (missing value goto right)
       int current_min_idx = 0;
       int cumulative_left_size = 0;
       for (int p = 0; p < percentiles.size(); p++) {
         vector<float> temp_grad(grad_dim, 0);
         vector<float> temp_hess(grad_dim, 0);
-        float temp_left_size = 0;
-        float temp_right_size = 0;
-        vector<float> temp_left_y_class_cnt(num_classes, 0);
-        vector<float> temp_right_y_class_cnt(num_classes, 0);
+        // float temp_left_size = 0;
+        // float temp_right_size = 0;
+        // vector<float> temp_left_y_class_cnt(num_classes, 0);
+        // vector<float> temp_right_y_class_cnt(num_classes, 0);
         vector<tuple<float, float, float, float>> temp_label_ratio(num_classes);
 
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
@@ -89,6 +93,7 @@ struct SecureBoostParty : XGBoostParty {
               temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
               temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
             }
+            cumulative_left_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] += 1.0;
             cumulative_left_size += 1;
           } else {
             current_min_idx = r;
@@ -96,27 +101,27 @@ struct SecureBoostParty : XGBoostParty {
           }
         }
 
-        for (int r = 0; r < not_missing_values_count; r++) {
-          if (x_col[r] <= percentiles[p]) {
-            temp_left_size += 1.0;
-            temp_left_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] += 1.0;
-          } else {
-            temp_right_size += 1.0;
-            temp_right_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] += 1.0;
-          }
-        }
         for (int c = 0; c < num_classes; c++) {
-          temp_label_ratio[c] =
-              make_tuple(temp_left_y_class_cnt[c] / temp_left_size,
-                         temp_right_y_class_cnt[c] / temp_right_size,
-                         (entire_class_cnt[c] - temp_left_y_class_cnt[c]) /
-                             (entire_datasetsize - temp_left_size),
-                         (entire_class_cnt[c] - temp_right_y_class_cnt[c]) /
-                             (entire_datasetsize - temp_right_size));
+          cumulative_right_y_class_cnt[c] =
+              sum_class_cnt[c] - cumulative_left_y_class_cnt[c];
         }
 
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
+          for (int c = 0; c < num_classes; c++) {
+            temp_label_ratio[c] = make_tuple(
+                cumulative_left_y_class_cnt[c] / (float)cumulative_left_size,
+                cumulative_right_y_class_cnt[c] /
+                    ((float)not_missing_values_count -
+                     (float)cumulative_left_size),
+                (entire_class_cnt[c] - cumulative_left_y_class_cnt[c]) /
+                    ((float)entire_datasetsize - (float)cumulative_left_size),
+                (entire_class_cnt[c] - cumulative_right_y_class_cnt[c]) /
+                    ((float)entire_datasetsize -
+                     ((float)not_missing_values_count -
+                      (float)cumulative_left_size)));
+          }
+
           split_candidates_grad_hess[i].push_back(
               make_tuple(temp_grad, temp_hess, temp_label_ratio));
           temp_thresholds[i].push_back(percentiles[p]);
