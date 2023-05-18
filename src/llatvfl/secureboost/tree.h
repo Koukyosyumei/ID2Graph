@@ -23,10 +23,10 @@ struct SecureBoostTree : Tree<SecureBoostNode> {
       parties->at(i).subsample_columns();
     }
     num_row = y->size();
-    dtree =
-        SecureBoostNode(parties, y, num_classes, y_encrypted, gradient, hessian,
-                        vanila_gradient, vanila_hessian, idxs, min_child_weight,
-                        lam, gamma, eps, depth, prior, mi_bound,
-                        active_party_id, use_only_active_party, n_job);
+    dtree = SecureBoostNode(parties, y, num_classes, &y_encrypted, &gradient,
+                            &hessian, vanila_gradient, vanila_hessian, idxs,
+                            min_child_weight, lam, gamma, eps, depth, prior,
+                            mi_bound, active_party_id, use_only_active_party,
+                            n_job);
   }
 };
