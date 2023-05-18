@@ -94,6 +94,8 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                 .pk.encrypt<float>(class_cnt_within_this_node[c]);
       }
       std::cout << 250 << std::endl;
+      std::cout << y_encrypted->size() << " " << gradient->size() << " "
+                << hessian->size() << std::endl;
       tuple<int, int, int> best_split = find_split();
       std::cout << 300 << std::endl;
       party_id = get<0>(best_split);
@@ -160,6 +162,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                                      entire_datasetsize, entire_class_cnt,
                                      class_cnt_within_this_node);
       } else {
+        std::cout << 55 << std::endl;
         vector<vector<
             tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
                   vector<tuple<PaillierCipherText, PaillierCipherText,
@@ -170,6 +173,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                         gradient, hessian, y_encrypted, idxs,
                         entire_datasetsize, entire_class_cnt_encrypted,
                         class_cnt_within_this_node_encrypted);
+        std::cout << 66 << std::endl;
         int temp_result_size = encrypted_search_result.size();
         search_results.resize(temp_result_size);
         int temp_vec_size;
