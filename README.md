@@ -87,4 +87,5 @@ done
 
 ### 3. Note
 
-All of the above experiments are simulations using only plaintext on a single process, but you can run SecureBoost and ID-LMID with Paillier Encryption applied to the gradient and label by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
+You can run XGBoost and ID-LMID with Paillier Encryption applied to the gradient and label by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
+
