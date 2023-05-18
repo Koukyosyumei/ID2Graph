@@ -302,8 +302,8 @@ struct SecureBoostNode : Node<SecureBoostParty> {
   }
 
   tuple<int, int, int> find_split() {
-    vector<float> sum_grad(gradient[0].size(), 0);
-    vector<float> sum_hess(hessian[0].size(), 0);
+    vector<float> sum_grad(gradient->at(0).size(), 0);
+    vector<float> sum_hess(hessian->at(0).size(), 0);
     for (int i = 0; i < row_count; i++) {
       for (int c = 0; c < sum_grad.size(); c++) {
         sum_grad[c] += vanila_gradient[idxs[i]][c];
