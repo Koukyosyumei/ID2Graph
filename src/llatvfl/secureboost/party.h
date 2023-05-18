@@ -157,7 +157,7 @@ struct SecureBoostParty : XGBoostParty {
     int row_count = idxs.size();
     int recoed_id = 0;
 
-    int grad_dim = gradient[0].size();
+    int grad_dim = gradient->at(0).size();
 
     for (int i = 0; i < subsample_col_count; i++) {
       // extract the necessary data
