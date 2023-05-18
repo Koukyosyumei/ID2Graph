@@ -87,5 +87,5 @@ done
 
 ### 3. Note
 
-You can run XGBoost and ID-LMID with Paillier Encryption applied to the gradient and label by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
+You can run ID-LMID with Paillier Encryption by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
 
