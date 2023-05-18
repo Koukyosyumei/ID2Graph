@@ -94,8 +94,9 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                 .pk.encrypt<float>(class_cnt_within_this_node[c]);
       }
       std::cout << 250 << std::endl;
-      std::cout << y_encrypted->size() << " " << gradient->size() << " "
-                << hessian->size() << std::endl;
+      std::cout << y->size() << " " << idxs.size() << " " << y_encrypted->size()
+                << " " << gradient->size() << " " << hessian->size()
+                << std::endl;
       tuple<int, int, int> best_split = find_split();
       std::cout << 300 << std::endl;
       party_id = get<0>(best_split);
