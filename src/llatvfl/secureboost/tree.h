@@ -23,7 +23,6 @@ struct SecureBoostTree : Tree<SecureBoostNode> {
       parties->at(i).subsample_columns();
     }
     num_row = y->size();
-    std::cout << num_row << "-- " << y_encrypted->size() << std::endl;
     dtree =
         SecureBoostNode(parties, y, num_classes, y_encrypted, gradient, hessian,
                         vanila_gradient, vanila_hessian, idxs, min_child_weight,

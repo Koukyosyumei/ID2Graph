@@ -84,9 +84,7 @@ TEST(SecureBoost, SecureBoostClassifierTest) {
     ASSERT_NEAR(hess[i][0], test_hess[i], 1e-5);
 
   // --- Check Training --- //
-  std::cout << 1111 << std::endl;
   clf.fit(parties, y);
-  std::cout << 2222 << std::endl;
 
   ASSERT_EQ(parties[0].get_lookup_table().size(), 4);
   ASSERT_EQ(parties[1].get_lookup_table().size(), 2);

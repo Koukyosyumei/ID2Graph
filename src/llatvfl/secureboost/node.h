@@ -37,7 +37,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                   int depth_, vector<float> *prior_, float mi_bound_,
                   int active_party_id_ = 0, bool use_only_active_party_ = false,
                   int n_job_ = 1) {
-    std::cout << 100 << std::endl;
     parties = parties_;
     y = y_;
     num_classes = num_classes_;
@@ -77,7 +76,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
     } else {
       is_leaf_flag = 0;
     }
-    std::cout << 200 << std::endl;
 
     if (is_leaf_flag == 0) {
       entire_class_cnt_encrypted.resize(num_classes);
@@ -93,12 +91,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             parties->at(active_party_id)
                 .pk.encrypt<float>(class_cnt_within_this_node[c]);
       }
-      std::cout << 250 << std::endl;
-      std::cout << y->size() << " " << idxs.size() << " " << y_encrypted->size()
-                << " " << gradient->size() << " " << hessian->size()
-                << std::endl;
       tuple<int, int, int> best_split = find_split();
-      std::cout << 300 << std::endl;
       party_id = get<0>(best_split);
       if (party_id != -1) {
         record_id = parties->at(party_id).insert_lookup_table(
@@ -163,7 +156,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                                      entire_datasetsize, entire_class_cnt,
                                      class_cnt_within_this_node);
       } else {
-        std::cout << 55 << std::endl;
         vector<vector<
             tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
                   vector<tuple<PaillierCipherText, PaillierCipherText,
@@ -174,7 +166,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                         gradient, hessian, y_encrypted, idxs,
                         entire_datasetsize, entire_class_cnt_encrypted,
                         class_cnt_within_this_node_encrypted);
-        std::cout << 66 << std::endl;
         int temp_result_size = encrypted_search_result.size();
         search_results.resize(temp_result_size);
         int temp_vec_size;
