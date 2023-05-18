@@ -195,6 +195,32 @@ inline bool is_satisfied_with_lmir_bound_from_pointer(
   }
 }
 
+inline bool is_satisfied_with_lmir_bound_from_ratio(int num_classes, float xi,
+                                                    vector<float> &in_ratio,
+                                                    vector<float> &out_ratio,
+                                                    vector<float> *prior) {
+  float eps = 1e-15;
+
+  if (xi > 0) {
+    float in_kl_divergence = 0;
+    float out_kl_divergence = 0;
+
+    float nc_div_n;
+    float Nc_div_N;
+    float Nc_m_nc_div_N_m_n;
+
+    for (int c = 0; c < num_classes; c++) {
+      in_kl_divergence += in_ratio[c] * log(eps + in_ratio[c] / prior->at(c));
+      out_kl_divergence +=
+          out_ratio[c] * log(eps + out_ratio[c] / prior->at(c));
+    }
+
+    return max(in_kl_divergence, out_kl_divergence) <= xi;
+  } else {
+    return true;
+  }
+}
+
 inline bool is_satisfied_with_lmir_bound_with_precalculation(
     int num_classes, float xi, int num_idxs_within_node, int num_row,
     vector<float> &entire_class_cnt, vector<float> *prior,

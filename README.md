@@ -6,6 +6,14 @@
 - Boost 1.65 or later
 - Python 3.7 or later
 
+We use the following version for the experiments.
+
+```
+- Python 3.10.11
+- g++ (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+- Boost 1.71
+```
+
 ## 2. Usage
 
 ### 2.1. Build from source
@@ -26,7 +34,17 @@ pip install -e .
 - Example
 
 ```
-./script/run.sh -u result -d ucicreditcard -m r
+for VAL_D in breastcancer phishing obesity nursery avila ucicreditcard
+do
+  sudo ./script/run.sh -d ${VAL_D} -m r -r 5 -a 1.0 -c 0 -h 6 -e 1.0 -f 0.5 -n -1 -p 5 -z 5 -u ${OUTPUT_DIR} -t result/temp
+  sudo ./script/run.sh -d ${VAL_D} -m x -r 5 -a 0.3 -c 0 -h 6 -e 0.6 -f 0.5 -n -1 -p 5 -z 5 -u ${OUTPUT_DIR} -t result/temp
+done
+
+for VAL_D in drive fars pucrio
+do
+  sudo ./script/run.sh -d ${VAL_D} -m r -r 5 -a 1.0 -c 0 -h 6 -e 1.0 -f 0.5 -n -1 -p 1 -z 5 -w 1000 -y 100 -u ${OUTPUT_DIR} -t result/temp
+  sudo ./script/run.sh -d ${VAL_D} -m x -r 5 -a 0.3 -c 0 -h 6 -e 0.6 -f 0.5 -n -1 -p 1 -z 5 -w 1000 -y 100 -u ${OUTPUT_DIR} -t result/temp
+done
 ```
 
 - Basic Arguments
@@ -66,3 +84,8 @@ pip install -e .
     -g : (optional) draw the extracted graph.
     -q : (optional) draw trees as html files.
 ```
+
+### 3. Note
+
+You can run XGBoost and ID-LMID with Paillier Encryption applied to the gradient and label by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
+
