@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  PaillierKeyGenerator keygenerator = PaillierKeyGenerator(512);
+  PaillierKeyGenerator keygenerator = PaillierKeyGenerator(128);
   pair<PaillierPublicKey, PaillierSecretKey> keypair =
       keygenerator.generate_keypair();
   PaillierPublicKey pk = keypair.first;
