@@ -55,7 +55,9 @@ TEST(SecureForest, SecureForestClassifierTest) {
       numeric_limits<float>::infinity(), -1, 1);
 
   // --- Check Training --- //
+  std::cout << 100 << std::endl;
   clf.fit(parties, y);
+  std::cout << 200 << std::endl;
 
   ASSERT_NEAR(clf.estimators[0].dtree.giniimp, 0.46875, 1e-6);
   ASSERT_NEAR(clf.estimators[0].dtree.score, 0.16875, 1e-6);

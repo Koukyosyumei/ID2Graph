@@ -85,7 +85,9 @@ struct SecureForestNode : Node<SecureForestParty> {
               .pk.encrypt<float>(class_cnt_within_this_node[c]);
     }
 
+    std::cout << 1 << std::endl;
     tuple<int, int, int> best_split = find_split();
+    std::cout << 2 << std::endl;
 
     if (is_leaf()) {
       is_leaf_flag = 1;
