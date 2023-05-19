@@ -12,6 +12,7 @@ TEST(SecureForest, SecureForestClassifierTest) {
   const float subsample_cols = 1.0;
   const float max_samples_ratio = 1.0;
   const int key_bitsize = 512;
+  const int active_party_id = 0;
 
   // --- Load Data --- //
   int num_row = 8;
