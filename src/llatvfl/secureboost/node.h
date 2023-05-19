@@ -8,7 +8,7 @@ using namespace std;
 struct SecureBoostNode : Node<SecureBoostParty> {
   vector<SecureBoostParty> *parties;
   vector<float> *y;
-  vector<vector<PaillierCipherText>> y_encrypted, gradient, hessian;
+  vector<vector<PaillierCipherText>> *y_encrypted, *gradient, *hessian;
   vector<vector<float>> vanila_gradient, vanila_hessian;
   float min_child_weight, lam, gamma, eps;
   bool use_only_active_party;
@@ -28,9 +28,9 @@ struct SecureBoostNode : Node<SecureBoostParty> {
   SecureBoostNode() {}
   SecureBoostNode(vector<SecureBoostParty> *parties_, vector<float> *y_,
                   int num_classes_,
-                  vector<vector<PaillierCipherText>> &y_encrypted_,
-                  vector<vector<PaillierCipherText>> &gradient_,
-                  vector<vector<PaillierCipherText>> &hessian_,
+                  vector<vector<PaillierCipherText>> *y_encrypted_,
+                  vector<vector<PaillierCipherText>> *gradient_,
+                  vector<vector<PaillierCipherText>> *hessian_,
                   vector<vector<float>> &vanila_gradient_,
                   vector<vector<float>> &vanila_hessian_, vector<int> &idxs_,
                   float min_child_weight_, float lam_, float gamma_, float eps_,
@@ -91,7 +91,6 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             parties->at(active_party_id)
                 .pk.encrypt<float>(class_cnt_within_this_node[c]);
       }
-
       tuple<int, int, int> best_split = find_split();
       party_id = get<0>(best_split);
       if (party_id != -1) {
@@ -294,8 +293,8 @@ struct SecureBoostNode : Node<SecureBoostParty> {
   }
 
   tuple<int, int, int> find_split() {
-    vector<float> sum_grad(gradient[0].size(), 0);
-    vector<float> sum_hess(hessian[0].size(), 0);
+    vector<float> sum_grad(gradient->at(0).size(), 0);
+    vector<float> sum_hess(hessian->at(0).size(), 0);
     for (int i = 0; i < row_count; i++) {
       for (int c = 0; c < sum_grad.size(); c++) {
         sum_grad[c] += vanila_gradient[idxs[i]][c];

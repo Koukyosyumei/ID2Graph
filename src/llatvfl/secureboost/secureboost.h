@@ -157,8 +157,8 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty> {
       }
 
       SecureBoostTree boosting_tree = SecureBoostTree();
-      boosting_tree.fit(&parties, &y, num_classes, y_onehot_encrypted, grad,
-                        hess, vanila_grad, vanila_hess, min_child_weight, lam,
+      boosting_tree.fit(&parties, &y, num_classes, &y_onehot_encrypted, &grad,
+                        &hess, vanila_grad, vanila_hess, min_child_weight, lam,
                         gamma, eps, min_leaf, depth, &prior, mi_bound,
                         active_party_id, (completelly_secure_round > i), n_job);
       vector<vector<float>> pred_temp = boosting_tree.get_train_prediction();

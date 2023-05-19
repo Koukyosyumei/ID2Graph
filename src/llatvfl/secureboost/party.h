@@ -135,9 +135,9 @@ struct SecureBoostParty : XGBoostParty {
   vector<vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
                       vector<tuple<PaillierCipherText, PaillierCipherText,
                                    PaillierCipherText, PaillierCipherText>>>>>
-  greedy_search_split_encrypt(vector<vector<PaillierCipherText>> &gradient,
-                              vector<vector<PaillierCipherText>> &hessian,
-                              vector<vector<PaillierCipherText>> &y_onehot,
+  greedy_search_split_encrypt(vector<vector<PaillierCipherText>> *gradient,
+                              vector<vector<PaillierCipherText>> *hessian,
+                              vector<vector<PaillierCipherText>> *y_onehot,
                               vector<int> &idxs, float entire_datasetsize,
                               vector<PaillierCipherText> &entire_class_cnt,
                               vector<PaillierCipherText> &sum_class_cnt) {
@@ -157,7 +157,7 @@ struct SecureBoostParty : XGBoostParty {
     int row_count = idxs.size();
     int recoed_id = 0;
 
-    int grad_dim = gradient[0].size();
+    int grad_dim = gradient->at(0).size();
 
     for (int i = 0; i < subsample_col_count; i++) {
       // extract the necessary data
@@ -219,12 +219,14 @@ struct SecureBoostParty : XGBoostParty {
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
           if (x_col[r] <= percentiles[p]) {
             for (int c = 0; c < grad_dim; c++) {
-              temp_grad[c] = temp_grad[c] + gradient[idxs[x_col_idxs[r]]][c];
-              temp_hess[c] = temp_hess[c] + hessian[idxs[x_col_idxs[r]]][c];
+              temp_grad[c] =
+                  temp_grad[c] + gradient->at(idxs[x_col_idxs[r]])[c];
+              temp_hess[c] = temp_hess[c] + hessian->at(idxs[x_col_idxs[r]])[c];
             }
             for (int c = 0; c < num_classes; c++) {
-              cumulative_left_y_class_cnt[c] = cumulative_left_y_class_cnt[c] +
-                                               y_onehot[idxs[x_col_idxs[r]]][c];
+              cumulative_left_y_class_cnt[c] =
+                  cumulative_left_y_class_cnt[c] +
+                  y_onehot->at(idxs[x_col_idxs[r]])[c];
             }
             cumulative_left_size += 1;
           } else {

@@ -6,6 +6,7 @@
 
 #include "../randomforest/randomforest.h"
 #include "../secureboost/secureboost.h"
+#include "../secureforest/secureforest.h"
 #include "../utils/dok.h"
 #include "../xgboost/xgboost.h"
 using namespace std;
@@ -262,6 +263,20 @@ inline void extract_adjacency_matrix_from_tree(
   }
 }
 
+inline void extract_adjacency_matrix_from_tree(
+    SecureForestTree *tree, bool is_freerider, SparseMatrixDOK<float> &adj_mat,
+    float weight, int target_party_id, int max_num_samples_in_a_chunk,
+    int edge_weight_between_chunks) {
+  if (is_freerider) {
+    travase_nodes_to_extract_adjacency_matrix_as_freerider<SecureForestNode>(
+        &tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id);
+  } else {
+    travase_nodes_to_extract_adjacency_matrix<SecureForestNode>(
+        &tree->dtree, tree->dtree.depth, adj_mat, weight, target_party_id,
+        max_num_samples_in_a_chunk, edge_weight_between_chunks);
+  }
+}
+
 /**
  * @brief Update adjacency matrix with given tree.
  *
@@ -309,6 +324,22 @@ extract_adjacency_matrix_from_forest(XGBoostBase *model, bool is_freerider,
       extract_adjacency_matrix_from_tree(
           &model->estimators[i], is_freerider, adj_matrix,
           pow(eta, float(i - skip_round)), target_party_id,
+          max_num_samples_in_a_chunk, edge_weight_between_chunks);
+    }
+  }
+  return adj_matrix;
+}
+
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(
+    SecureForestClassifier *model, bool is_freerider, int target_party_id = -1,
+    int skip_round = 0, int max_num_samples_in_a_chunk = 1000000,
+    int edge_weight_between_chunks = 100) {
+  int num_row = model->estimators[0].num_row;
+  SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
+  for (int i = 0; i < model->estimators.size(); i++) {
+    if (i >= skip_round) {
+      extract_adjacency_matrix_from_tree(
+          &model->estimators[i], is_freerider, adj_matrix, 1.0, target_party_id,
           max_num_samples_in_a_chunk, edge_weight_between_chunks);
     }
   }

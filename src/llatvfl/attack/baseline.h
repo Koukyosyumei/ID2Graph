@@ -1,6 +1,7 @@
 #pragma once
 #include "../randomforest/randomforest.h"
 #include "../secureboost/secureboost.h"
+#include "../secureforest/secureforest.h"
 #include "../utils/dok.h"
 #include "../xgboost/xgboost.h"
 #include <iostream>
@@ -102,43 +103,50 @@ inline void travase_nodes_to_extract_uniontree(NodeType *node,
   }
 }
 
-inline void extract_uniontree_from_tree(
-    XGBoostTree *tree, UnionTree &uinontree, int target_party_id) {
+inline void extract_uniontree_from_tree(XGBoostTree *tree, UnionTree &uinontree,
+                                        int target_party_id) {
   travase_nodes_to_extract_uniontree<XGBoostNode>(&tree->dtree, uinontree,
                                                   target_party_id);
 }
 
-inline void extract_uniontree_from_tree(
-    RandomForestTree *tree, UnionTree &uinontree, int target_party_id) {
+inline void extract_uniontree_from_tree(RandomForestTree *tree,
+                                        UnionTree &uinontree,
+                                        int target_party_id) {
   travase_nodes_to_extract_uniontree<RandomForestNode>(&tree->dtree, uinontree,
-                                                  target_party_id);
+                                                       target_party_id);
 }
 
-inline void extract_uniontree_from_tree(
-    SecureBoostTree *tree, UnionTree &uinontree, int target_party_id) {
+inline void extract_uniontree_from_tree(SecureBoostTree *tree,
+                                        UnionTree &uinontree,
+                                        int target_party_id) {
   travase_nodes_to_extract_uniontree<SecureBoostNode>(&tree->dtree, uinontree,
-                                                  target_party_id);
+                                                      target_party_id);
+}
+
+inline void extract_uniontree_from_tree(SecureForestTree *tree,
+                                        UnionTree &uinontree,
+                                        int target_party_id) {
+  travase_nodes_to_extract_uniontree<SecureForestNode>(&tree->dtree, uinontree,
+                                                       target_party_id);
 }
 
 template <typename ModelType>
 inline vector<int> extract_uniontree_from_forest(ModelType *model,
                                                  int target_party_id = -1,
-                                                 int skip_round = 0)
-{
-    int num_row = model->estimators[0].num_row;
-    UnionTree uniontree(num_row);
-    for (int i = 0; i < model->estimators.size(); i++)
-    {
-        if (i >= skip_round)
-        {
-            extract_uniontree_from_tree(&model->estimators[i], uniontree, target_party_id);
-        }
+                                                 int skip_round = 0) {
+  int num_row = model->estimators[0].num_row;
+  UnionTree uniontree(num_row);
+  for (int i = 0; i < model->estimators.size(); i++) {
+    if (i >= skip_round) {
+      extract_uniontree_from_tree(&model->estimators[i], uniontree,
+                                  target_party_id);
     }
+  }
 
-    vector<int> result(num_row, 0);
-    for (int j = 0; j < num_row; j++){
-      result[j] = uniontree.findRoot(j);
-    }
+  vector<int> result(num_row, 0);
+  for (int j = 0; j < num_row; j++) {
+    result[j] = uniontree.findRoot(j);
+  }
 
-    return result;
+  return result;
 }
