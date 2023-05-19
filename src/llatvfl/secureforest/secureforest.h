@@ -64,6 +64,8 @@ struct SecureForestClassifier : TreeModelBase<SecureForestParty> {
       prior[c] /= float(row_count);
     }
 
+    std::cout << 321 << std::endl;
+
     vector<vector<PaillierCipherText>> y_onehot_encrypted(
         row_count, vector<PaillierCipherText>(num_classes));
     for (int i = 0; i < row_count; i++) {

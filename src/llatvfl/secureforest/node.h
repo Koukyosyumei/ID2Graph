@@ -59,6 +59,8 @@ struct SecureForestNode : Node<SecureForestParty> {
 
     lmir_flag_exclude_passive_parties = use_only_active_party;
 
+    std::cout << 9 << std::endl;
+
     row_count = idxs.size();
     num_parties = parties->size();
 
