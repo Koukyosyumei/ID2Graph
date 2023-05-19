@@ -1,6 +1,7 @@
 #pragma once
 #include "../randomforest/randomforest.h"
 #include "../secureboost/secureboost.h"
+#include "../secureforest/secureforest.h"
 #include "../xgboost/xgboost.h"
 #include "rrp.h"
 #include <algorithm>
@@ -27,6 +28,10 @@ struct LPMST {
   void fit(SecureBoostClassifier &clf, vector<SecureBoostParty> &parties,
            vector<float> &y, vector<float> &y_hat) {
     _fit<SecureBoostClassifier, SecureBoostParty>(clf, parties, y, y_hat);
+  }
+  void fit(SecureForestClassifier &clf, vector<SecureForestParty> &parties,
+           vector<float> &y, vector<float> &y_hat) {
+    _fit<SecureForestClassifier, SecureForestParty>(clf, parties, y, y_hat);
   }
   void fit(RandomForestClassifier &clf, vector<RandomForestParty> &parties,
            vector<float> &y, vector<float> &y_hat) {
