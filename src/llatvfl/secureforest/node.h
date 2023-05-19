@@ -396,8 +396,8 @@ struct SecureForestNode : Node<SecureForestParty> {
         is_satisfied_with_lmir_bound_from_pointer(
             num_classes, mi_bound, y, entire_class_cnt, prior, right_idxs);
 
-    left = new SecureForestNode(parties, y, num_classes, left_idxs, depth - 1,
-                                prior, mi_bound, active_party_id,
+    left = new SecureForestNode(parties, y, num_classes, y_encrypted, left_idxs,
+                                depth - 1, prior, mi_bound, active_party_id,
                                 (use_only_active_party ||
                                  (!left_is_satisfied_lmir_cond) ||
                                  (!right_is_satisfied_lmir_cond)),
@@ -405,12 +405,12 @@ struct SecureForestNode : Node<SecureForestParty> {
     if (left->is_leaf_flag == 1) {
       left->party_id = party_id;
     }
-    right = new SecureForestNode(parties, y, num_classes, right_idxs, depth - 1,
-                                 prior, mi_bound, active_party_id,
-                                 (use_only_active_party ||
-                                  (!left_is_satisfied_lmir_cond) ||
-                                  (!right_is_satisfied_lmir_cond)),
-                                 n_job);
+    right = new SecureForestNode(
+        parties, y, num_classes, y_encrypted, right_idxs, depth - 1, prior,
+        mi_bound, active_party_id,
+        (use_only_active_party || (!left_is_satisfied_lmir_cond) ||
+         (!right_is_satisfied_lmir_cond)),
+        n_job);
     if (right->is_leaf_flag == 1) {
       right->party_id = party_id;
     }
