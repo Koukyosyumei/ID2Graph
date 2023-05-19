@@ -87,5 +87,4 @@ done
 
 ### 3. Note
 
-You can run ID-LMID with Paillier Encryption by specifying `-m s`. However, it is very slow, and the attack result is the same as `-m x` in this case.
-
+The above simulations utilize computation on the plaintext. Experiments using Paiilier Encryption can also be performed with `-m sr` and `-m sx`, but they are time-consuming. The results are identical to those obtained with `-m r` and `-m x`, respectively. We also provide MPI backend as a reference implementation in `mpiscipt` folder, but it does not support some features.
