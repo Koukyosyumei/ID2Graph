@@ -1,49 +1,39 @@
 #pragma once
 #include "../paillier/paillier.h"
-#include "../xgboost/party.h"
-#include <iostream>
+#include "../randomforest/party.h"
 using namespace std;
 
-struct SecureBoostParty : XGBoostParty {
+/**
+ * @brief Party structure of Ranfom Forest
+ *
+ */
+struct SecureForestParty : RandomForestParty {
   PaillierPublicKey pk;
   PaillierSecretKey sk;
-
-  SecureBoostParty() {}
-  SecureBoostParty(vector<vector<float>> &x_, int num_classes_,
-                   vector<int> &feature_id_, int &party_id_, int min_leaf_,
-                   float subsample_cols_, int num_precentile_bin_ = 256,
-                   bool use_missing_value_ = false, int seed_ = 0)
-      : XGBoostParty(x_, num_classes_, feature_id_, party_id_, min_leaf_,
-                     subsample_cols_, num_precentile_bin_, use_missing_value_,
-                     seed_) {}
+  SecureForestParty() {}
+  SecureForestParty(vector<vector<float>> &x_, int num_classes_,
+                    vector<int> &feature_id_, int &party_id_, int min_leaf_,
+                    float subsample_cols_, int seed_ = 0)
+      : RandomForestParty(x_, num_classes_, feature_id_, party_id_, min_leaf_,
+                          subsample_cols_, seed_) {}
 
   void set_publickey(PaillierPublicKey pk_) { pk = pk_; }
-
   void set_secretkey(PaillierSecretKey sk_) { sk = sk_; }
 
-  vector<vector<tuple<vector<float>, vector<float>,
-                      vector<tuple<float, float, float, float>>>>>
-  greedy_search_split(vector<vector<float>> &gradient,
-                      vector<vector<float>> &hessian, vector<float> *y,
-                      vector<int> &idxs, float entire_datasetsize,
-                      vector<float> &entire_class_cnt,
+  vector<vector<vector<tuple<float, float, float, float, float, float>>>>
+  greedy_search_split(vector<int> &idxs, vector<float> *y,
+                      float entire_datasetsize, vector<float> &entire_class_cnt,
                       vector<float> &sum_class_cnt) {
     // feature_id -> [(grad hess)]
-    // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
-    int num_thresholds;
-    if (use_missing_value)
-      num_thresholds = subsample_col_count * 2;
-    else
-      num_thresholds = subsample_col_count;
-    vector<vector<tuple<vector<float>, vector<float>,
-                        vector<tuple<float, float, float, float>>>>>
-        split_candidates_grad_hess(num_thresholds);
+    // the threshold of split_cancidates_leftsize_leftposcnt[i][j] =
+    // temp_thresholds[i][j]
+    int num_thresholds = subsample_col_count;
+    vector<vector<vector<tuple<float, float, float, float, float, float>>>>
+        split_cancidates_leftsize_leftposcnt(num_thresholds);
     temp_thresholds = vector<vector<float>>(num_thresholds);
 
     int row_count = idxs.size();
     int recoed_id = 0;
-
-    int grad_dim = gradient[0].size();
 
     for (int i = 0; i < subsample_col_count; i++) {
       // extract the necessary data
@@ -69,8 +59,8 @@ struct SecureBoostParty : XGBoostParty {
 
       sort(x_col.begin(), x_col.end());
 
-      // get percentiles of x_col
-      vector<float> percentiles = get_threshold_candidates(x_col);
+      // get threshold_candidates of x_col
+      vector<float> threshold_candidates = get_threshold_candidates(x_col);
 
       vector<float> cumulative_left_y_class_cnt(num_classes, 0);
       vector<float> cumulative_right_y_class_cnt(num_classes, 0);
@@ -78,21 +68,15 @@ struct SecureBoostParty : XGBoostParty {
       // enumerate all threshold value (missing value goto right)
       int current_min_idx = 0;
       int cumulative_left_size = 0;
-      for (int p = 0; p < percentiles.size(); p++) {
-        vector<float> temp_grad(grad_dim, 0);
-        vector<float> temp_hess(grad_dim, 0);
-        // float temp_left_size = 0;
-        // float temp_right_size = 0;
-        // vector<float> temp_left_y_class_cnt(num_classes, 0);
-        // vector<float> temp_right_y_class_cnt(num_classes, 0);
-        vector<tuple<float, float, float, float>> temp_label_ratio(num_classes);
+      int num_threshold_candidates = threshold_candidates.size();
+      for (int p = 0; p < num_threshold_candidates; p++) {
 
+        vector<tuple<float, float, float, float, float, float>>
+            temp_label_ratio(num_classes);
+
+        vector<float> temp_left_y_class_cnt(num_classes, 0);
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
-          if (x_col[r] <= percentiles[p]) {
-            for (int c = 0; c < grad_dim; c++) {
-              temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
-              temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
-            }
+          if (x_col[r] <= threshold_candidates[p]) {
             cumulative_left_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] += 1.0;
             cumulative_left_size += 1;
           } else {
@@ -106,8 +90,10 @@ struct SecureBoostParty : XGBoostParty {
               sum_class_cnt[c] - cumulative_left_y_class_cnt[c];
         }
 
+        // TODO: support multi-class
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
+
           for (int c = 0; c < num_classes; c++) {
             temp_label_ratio[c] = make_tuple(
                 cumulative_left_y_class_cnt[c] / (float)cumulative_left_size,
@@ -119,45 +105,40 @@ struct SecureBoostParty : XGBoostParty {
                 (entire_class_cnt[c] - cumulative_right_y_class_cnt[c]) /
                     ((float)entire_datasetsize -
                      ((float)not_missing_values_count -
-                      (float)cumulative_left_size)));
+                      (float)cumulative_left_size)),
+                (float)cumulative_left_size,
+                (float)not_missing_values_count - (float)cumulative_left_size);
           }
 
-          split_candidates_grad_hess[i].push_back(
-              make_tuple(temp_grad, temp_hess, temp_label_ratio));
-          temp_thresholds[i].push_back(percentiles[p]);
+          split_cancidates_leftsize_leftposcnt[i].push_back(temp_label_ratio);
+          temp_thresholds[i].push_back(threshold_candidates[p]);
         }
       }
     }
 
-    return split_candidates_grad_hess;
+    return split_cancidates_leftsize_leftposcnt;
   }
 
-  vector<vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
-                      vector<tuple<PaillierCipherText, PaillierCipherText,
-                                   PaillierCipherText, PaillierCipherText>>>>>
-  greedy_search_split_encrypt(vector<vector<PaillierCipherText>> &gradient,
-                              vector<vector<PaillierCipherText>> &hessian,
-                              vector<vector<PaillierCipherText>> &y_onehot,
-                              vector<int> &idxs, float entire_datasetsize,
+  vector<vector<
+      vector<tuple<PaillierCipherText, PaillierCipherText, PaillierCipherText,
+                   PaillierCipherText, float, float>>>>
+  greedy_search_split_encrypt(vector<int> &idxs,
+                              vector<vector<PaillierCipherText>> *y_onehot,
+                              float entire_datasetsize,
                               vector<PaillierCipherText> &entire_class_cnt,
                               vector<PaillierCipherText> &sum_class_cnt) {
     // feature_id -> [(grad hess)]
-    // the threshold of split_candidates_grad_hess[i][j] = temp_thresholds[i][j]
-    int num_thresholds;
-    if (use_missing_value)
-      num_thresholds = subsample_col_count * 2;
-    else
-      num_thresholds = subsample_col_count;
-    vector<vector<tuple<vector<PaillierCipherText>, vector<PaillierCipherText>,
-                        vector<tuple<PaillierCipherText, PaillierCipherText,
-                                     PaillierCipherText, PaillierCipherText>>>>>
-        split_candidates_grad_hess(num_thresholds);
+    // the threshold of split_cancidates_leftsize_leftposcnt[i][j] =
+    // temp_thresholds[i][j]
+    int num_thresholds = subsample_col_count;
+    vector<vector<
+        vector<tuple<PaillierCipherText, PaillierCipherText, PaillierCipherText,
+                     PaillierCipherText, float, float>>>>
+        split_cancidates_leftsize_leftposcnt(num_thresholds);
     temp_thresholds = vector<vector<float>>(num_thresholds);
 
     int row_count = idxs.size();
     int recoed_id = 0;
-
-    int grad_dim = gradient[0].size();
 
     for (int i = 0; i < subsample_col_count; i++) {
       // extract the necessary data
@@ -183,8 +164,8 @@ struct SecureBoostParty : XGBoostParty {
 
       sort(x_col.begin(), x_col.end());
 
-      // get percentiles of x_col
-      vector<float> percentiles = get_threshold_candidates(x_col);
+      // get threshold_candidates of x_col
+      vector<float> threshold_candidates = get_threshold_candidates(x_col);
 
       vector<PaillierCipherText> cumulative_left_y_class_cnt(num_classes);
       vector<PaillierCipherText> cumulative_right_y_class_cnt(num_classes);
@@ -196,35 +177,20 @@ struct SecureBoostParty : XGBoostParty {
       // enumerate all threshold value (missing value goto right)
       int current_min_idx = 0;
       int cumulative_left_size = 0;
-      for (int p = 0; p < percentiles.size(); p++) {
-        vector<PaillierCipherText> temp_grad(grad_dim);
-        vector<PaillierCipherText> temp_hess(grad_dim);
-        // float temp_left_size = 0;
-        // float temp_right_size = 0;
-        // vector<PaillierCipherText> temp_left_y_class_cnt(num_classes);
-        // vector<PaillierCipherText> temp_right_y_class_cnt(num_classes);
+      int num_threshold_candidates = threshold_candidates.size();
+      for (int p = 0; p < num_threshold_candidates; p++) {
+
         vector<tuple<PaillierCipherText, PaillierCipherText, PaillierCipherText,
-                     PaillierCipherText>>
+                     PaillierCipherText, float, float>>
             temp_label_ratio(num_classes);
 
-        for (int c = 0; c < grad_dim; c++) {
-          temp_grad[c] = pk.encrypt<float>(0);
-          temp_hess[c] = pk.encrypt<float>(0);
-        }
-        // for (int c = 0; c < num_classes; c++) {
-        //  temp_left_y_class_cnt[c] = pk.encrypt<float>(0);
-        //  temp_right_y_class_cnt[c] = pk.encrypt<float>(0);
-        // }
-
+        vector<float> temp_left_y_class_cnt(num_classes, 0);
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
-          if (x_col[r] <= percentiles[p]) {
-            for (int c = 0; c < grad_dim; c++) {
-              temp_grad[c] = temp_grad[c] + gradient[idxs[x_col_idxs[r]]][c];
-              temp_hess[c] = temp_hess[c] + hessian[idxs[x_col_idxs[r]]][c];
-            }
+          if (x_col[r] <= threshold_candidates[p]) {
             for (int c = 0; c < num_classes; c++) {
-              cumulative_left_y_class_cnt[c] = cumulative_left_y_class_cnt[c] +
-                                               y_onehot[idxs[x_col_idxs[r]]][c];
+              cumulative_left_y_class_cnt[c] =
+                  cumulative_left_y_class_cnt[c] +
+                  y_onehot->at(idxs[x_col_idxs[r]])[c];
             }
             cumulative_left_size += 1;
           } else {
@@ -232,13 +198,16 @@ struct SecureBoostParty : XGBoostParty {
             break;
           }
         }
+
         for (int c = 0; c < num_classes; c++) {
           cumulative_right_y_class_cnt[c] =
               sum_class_cnt[c] + (cumulative_left_y_class_cnt[c] * -1);
         }
 
+        // TODO: support multi-class
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
+
           for (int c = 0; c < num_classes; c++) {
             temp_label_ratio[c] = make_tuple(
                 cumulative_left_y_class_cnt[c] *
@@ -251,16 +220,16 @@ struct SecureBoostParty : XGBoostParty {
                 (cumulative_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
                     (1.0 / ((float)entire_datasetsize -
                             ((float)not_missing_values_count -
-                             (float)cumulative_left_size))));
+                             (float)cumulative_left_size))),
+                (float)cumulative_left_size,
+                (float)not_missing_values_count - (float)cumulative_left_size);
           }
-
-          split_candidates_grad_hess[i].push_back(
-              make_tuple(temp_grad, temp_hess, temp_label_ratio));
-          temp_thresholds[i].push_back(percentiles[p]);
+          split_cancidates_leftsize_leftposcnt[i].push_back(temp_label_ratio);
+          temp_thresholds[i].push_back(threshold_candidates[p]);
         }
       }
     }
 
-    return split_candidates_grad_hess;
+    return split_cancidates_leftsize_leftposcnt;
   }
 };
