@@ -52,7 +52,7 @@ TEST(SecureForest, SecureForestClassifierTest) {
   // --- Check Initialization --- //
   SecureForestClassifier clf = SecureForestClassifier(
       2, subsample_cols, depth, min_leaf, max_samples_ratio, num_trees,
-      numeric_limits<float>::infinity(), -1, 1);
+      numeric_limits<float>::infinity(), active_party_id, 1);
 
   // --- Check Training --- //
   std::cout << 100 << std::endl;
