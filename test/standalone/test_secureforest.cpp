@@ -11,6 +11,7 @@ TEST(SecureForest, SecureForestClassifierTest) {
   const int num_trees = 1;
   const float subsample_cols = 1.0;
   const float max_samples_ratio = 1.0;
+  const int key_bitsize = 512;
 
   // --- Load Data --- //
   int num_row = 8;
