@@ -79,6 +79,7 @@ struct SecureForestClassifier : TreeModelBase<SecureForestParty> {
         }
       }
     }
+    std::cout << 666 << std::endl;
 
     for (int i = 0; i < num_trees; i++) {
       SecureForestTree tree = SecureForestTree();
