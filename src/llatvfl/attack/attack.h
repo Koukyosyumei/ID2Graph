@@ -359,19 +359,16 @@ inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(
  * @param eta The discount factor.
  * @return SparseMatrixDOK<float>
  */
-inline SparseMatrixDOK<float>
-extract_adjacency_matrix_from_forest(SecureBoostBase *model, bool is_freerider,
-                                     int target_party_id = -1,
-                                     int skip_round = 0, float eta = 0.3,
-                                     int max_num_samples_in_a_chunk = 1000000,
-                                     int edge_weight_between_chunks = 100) {
+inline SparseMatrixDOK<float> extract_adjacency_matrix_from_forest(
+    SecureBoostBase *model, bool is_freerider, int target_party_id = -1,
+    int skip_round = 0, int max_num_samples_in_a_chunk = 1000000,
+    int edge_weight_between_chunks = 100) {
   int num_row = model->estimators[0].num_row;
   SparseMatrixDOK<float> adj_matrix(num_row, num_row, 0.0, true, true);
   for (int i = 0; i < model->estimators.size(); i++) {
     if (i >= skip_round) {
       extract_adjacency_matrix_from_tree(
-          &model->estimators[i], is_freerider, adj_matrix,
-          pow(eta, float(i - skip_round)), target_party_id,
+          &model->estimators[i], is_freerider, adj_matrix, 1.0, target_party_id,
           max_num_samples_in_a_chunk, edge_weight_between_chunks);
     }
   }
