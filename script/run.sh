@@ -136,10 +136,12 @@ echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
-elif [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "s" ]; then
+elif [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ]; then
   cp build/script/train_secureboost build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
   cp build/script/train_randomforest build/script/pipeline_1_training.out
+elif [ "${VALUE_M}" = "secureforest" ] || [ "${VALUE_M}" = "sy" ]; then
+  cp build/script/train_secureforest build/script/pipeline_1_training.out
 else
   echo "m=${VALUE_M} is not supported"
 fi
