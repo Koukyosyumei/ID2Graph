@@ -59,8 +59,6 @@ struct SecureForestNode : Node<SecureForestParty> {
 
     lmir_flag_exclude_passive_parties = use_only_active_party;
 
-    std::cout << 9 << std::endl;
-
     row_count = idxs.size();
     num_parties = parties->size();
 
@@ -87,9 +85,7 @@ struct SecureForestNode : Node<SecureForestParty> {
               .pk.encrypt<float>(class_cnt_within_this_node[c]);
     }
 
-    std::cout << 1 << std::endl;
     tuple<int, int, int> best_split = find_split();
-    std::cout << 2 << std::endl;
 
     if (is_leaf()) {
       is_leaf_flag = 1;

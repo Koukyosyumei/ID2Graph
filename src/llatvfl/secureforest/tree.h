@@ -17,7 +17,6 @@ struct SecureForestTree : Tree<SecureForestNode> {
            int active_party_id = -1, int n_job = 1, int seed = 0) {
     vector<int> idxs(y->size());
     iota(idxs.begin(), idxs.end(), 0);
-    std::cout << 888 << std::endl;
     if (max_samples_ratio < 1.0) {
       mt19937 engine(seed);
       shuffle(idxs.begin(), idxs.end(), engine);
