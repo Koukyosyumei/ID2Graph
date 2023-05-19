@@ -140,8 +140,6 @@ struct SecureForestParty : RandomForestParty {
     int row_count = idxs.size();
     int recoed_id = 0;
 
-    std::cout << 3 << std::endl;
-
     for (int i = 0; i < subsample_col_count; i++) {
       // extract the necessary data
       int k = temp_column_subsample[i];
@@ -159,8 +157,6 @@ struct SecureForestParty : RandomForestParty {
       }
       x_col.resize(not_missing_values_count);
 
-      std::cout << 4 << std::endl;
-
       vector<int> x_col_idxs(not_missing_values_count);
       iota(x_col_idxs.begin(), x_col_idxs.end(), 0);
       sort(x_col_idxs.begin(), x_col_idxs.end(),
@@ -177,8 +173,6 @@ struct SecureForestParty : RandomForestParty {
         cumulative_left_y_class_cnt[c] = pk.encrypt<float>(0);
         cumulative_right_y_class_cnt[c] = pk.encrypt<float>(0);
       }
-
-      std::cout << 4 << std::endl;
 
       // enumerate all threshold value (missing value goto right)
       int current_min_idx = 0;
@@ -204,8 +198,6 @@ struct SecureForestParty : RandomForestParty {
             break;
           }
         }
-
-        std::cout << 5 << std::endl;
 
         for (int c = 0; c < num_classes; c++) {
           cumulative_right_y_class_cnt[c] =
