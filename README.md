@@ -18,14 +18,14 @@ We use the following version for the experiments.
 
 ### 2.1. Build from source
 
-```
+```shell
 pip install -e .
 ./script/build.sh
 ```
 
 ### 2.2. Download datasets
 
-```
+```shell
 ./script/download.sh
 ```
 
@@ -33,7 +33,7 @@ pip install -e .
 
 - Example
 
-```
+```shell
 for VAL_D in breastcancer phishing obesity nursery avila ucicreditcard
 do
   sudo ./script/run.sh -d ${VAL_D} -m r -r 5 -a 1.0 -c 0 -h 6 -e 1.0 -f 0.5 -n -1 -p 5 -z 5 -u ${OUTPUT_DIR} -t result/temp
@@ -76,6 +76,8 @@ done
     -k : (float) weight for community variables.
     -l : (int) maximum number of iterations of Louvain
     -x : (optional) baseline union attack
+    -w : chunk size for memory efficient adjacency matrix
+    -y : intra-chunk edge weight for memory efficient adjacency matrix
 
     -b : (float) epsilon of ID-LMID.
     -c : (int) number of completely secure rounds.
