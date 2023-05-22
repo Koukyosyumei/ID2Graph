@@ -13,28 +13,11 @@ wget -P data/phishing "http://archive.ics.uci.edu/ml/machine-learning-databases/
 mv "data/phishing/Training Dataset.arff" "data/phishing/phishing.data"
 sed -i '1,36d' data/phishing/phishing.data
 
-wget -P data/dota2 https://archive.ics.uci.edu/ml/machine-learning-databases/00367/dota2Dataset.zip
-unzip data/dota2/dota2Dataset.zip -d data/dota2
-
-wget -P data/bank https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip
-unzip data/bank/bank.zip -d data/bank
-
-wget -P data/sepsis https://archive.ics.uci.edu/ml/machine-learning-databases/00628/s41598-020-73558-3_sepsis_survival_dataset.zip
-unzip data/sepsis/s41598-020-73558-3_sepsis_survival_dataset.zip -d data/sepsis
-
 wget -P data/diabetes https://archive.ics.uci.edu/ml/machine-learning-databases/00296/dataset_diabetes.zip
 unzip data/diabetes/dataset_diabetes.zip -d data/diabetes
 mv data/diabetes/dataset_diabetes/diabetic_data.csv data/diabetes/diabetic_data.csv
 
-# wget -P data/indoor https://archive.ics.uci.edu/ml/machine-learning-databases/00377/Ipin2016Dataset.zip
-# unzip data/indoor/Ipin2016Dataset.zip -d data/indoor
-
-# wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/birch1.txt
-# wget -P data/brich1 https://cs.joensuu.fi/sipu/datasets/b1-gt.pa
-
 wget -P data/fars https://www.openml.org/data/download/4965247/fars.arff
-
-# wget -P data/asteroids https://www.openml.org/data/download/21799723/dataset
 
 wget -P data/obesity "https://archive.ics.uci.edu/ml/machine-learning-databases/00544/ObesityDataSet_raw_and_data_sinthetic (2).zip"
 unzip "data/obesity/ObesityDataSet_raw_and_data_sinthetic (2).zip" -d data/obesity
