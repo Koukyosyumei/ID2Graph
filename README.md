@@ -64,7 +64,6 @@ done
 
     -n : (int) number of data records sampled for training.
     -f : (float) ratio of features owned by the active party.
-    -v : (float) ratio of features owned by the passive party. if v=-1, the ratio of local features will be 1 - f.
     -i : (int) setting of feature importance. -1: normal, 1: unbalance
 
     -r : (int) total number of rounds for training.
@@ -74,6 +73,7 @@ done
 
     -e : (float) coefficient of edge weight (tau in our paper).
     -k : (float) weight for community variables.
+    -v : (str) clustering type. `kmeans` or `xmeans`
     -l : (int) maximum number of iterations of Louvain
     -x : (optional) baseline union attack
     -w : chunk size for memory efficient adjacency matrix
