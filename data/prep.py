@@ -296,8 +296,8 @@ if __name__ == "__main__":
                 "PAY_AMT5",
                 "PAY_AMT6",
             ]
-        ].val.values[:1000]
-        y = y.values[:1000]
+        ].values
+        y = df["default.payment.next.month"].values
 
     elif parsed_args.dataset_type == "breastcancer":
         data = load_breast_cancer()
