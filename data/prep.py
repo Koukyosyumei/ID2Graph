@@ -306,7 +306,7 @@ if __name__ == "__main__":
 
     elif parsed_args.dataset_type == "mnist":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                         "mnist_784.arff"), header=None)
+                         "mnist_784.arff"), header=None, skiprows=797)
         df = sampling(df, 784, parsed_args)
         X = df[list(range(784))].values
         y = df[784].values
