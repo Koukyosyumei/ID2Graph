@@ -5,7 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 from sklearn import datasets
-from sklearn.datasets import load_breast_cancer, load_digits, fetch_lfw_people
+from sklearn.datasets import fetch_lfw_people, load_breast_cancer, load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 

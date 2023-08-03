@@ -1,13 +1,13 @@
 import argparse
 
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from pyclustering.cluster.xmeans import xmeans
 
 from llatvfl.clustering import get_f_p_r
-
-from matplotlib import pyplot as plt
 
 N_INIT = 10
 label2maker = {0: "o", 1: "x"}
@@ -90,6 +90,11 @@ def add_args(parser):
         type=int,
     )
     parser.add_argument(
+        "-v",
+        "--clustering_type",
+        type=str,
+    )
+    parser.add_argument(
         "-k",
         "--weight_for_community_variables",
         type=float,
@@ -138,16 +143,25 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
-    kmeans = clustering_cls(
-        n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
-    ).fit(X_train_minmax)
-    c_score_baseline = metrics.completeness_score(y_train, kmeans.labels_)
-    h_score_baseline = metrics.homogeneity_score(y_train, kmeans.labels_)
-    v_score_baseline = metrics.v_measure_score(y_train, kmeans.labels_)
+    if parsed_args.clustering_type == "kmeans":
+        kmeans = KMeans(
+            n_clusters=num_classes, n_init=N_INIT,
+            random_state=parsed_args.seed
+        ).fit(X_train_minmax)
+        baseline_labels = kmeans.labels_
+    elif parsed_args.clustering_type == "xmeans":
+        xm = xmeans(data=X_train_minmax, tolerance=0.0001)
+        xm.process()
+        baseline_labels = xm.predict(X_train_minmax)
 
-    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_train, kmeans.labels_)
-    f_score_baseline = metrics.fowlkes_mallows_score(y_train, kmeans.labels_)
-    cm_matrix = metrics.cluster.contingency_matrix(y_train, kmeans.labels_)
+    c_score_baseline = metrics.completeness_score(y_train, baseline_labels)
+    h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)
+    v_score_baseline = metrics.v_measure_score(y_train, baseline_labels)
+
+    _, p_score_baseline, ip_score_baseline = get_f_p_r(
+        y_train, baseline_labels)
+    f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
+    cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
 
     # visualize_clusters(
     #    X_train_minmax,
@@ -168,20 +182,37 @@ if __name__ == "__main__":
             for k in temp_nodes_in_comm:
                 X_com[int(k), i] += parsed_args.weight_for_community_variables
 
-    kmeans_with_com = clustering_cls(
-        n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
-    ).fit(np.hstack([X_train_minmax, X_com]))
+    if parsed_args.clustering_type == "kmeans":
+        kmeans_with_com = KMeans(
+            n_clusters=num_classes, n_init=N_INIT,
+            random_state=parsed_args.seed
+        ).fit(np.hstack([X_train_minmax, X_com]))
+        with_com_labels = kmeans_with_com.labels_
+    elif parsed_args.clustering_type == "xmeans":
+        xm_with_com = xmeans(data=np.hstack(
+            [X_train_minmax, X_com]), tolerance=0.0001)
+        xm_with_com.process()
+        clusters = xm_with_com.get_clusters()
+        cluster_size = len(clusters)
+        kmeans_with_com = KMeans(
+            n_clusters=cluster_size, n_init=N_INIT,
+            random_state=parsed_args.seed
+        ).fit(np.hstack([X_train_minmax, X_com]))
+        with_com_labels = kmeans_with_com.labels_
+        # with_com_labels = xm_with_com.predict(
+        #    np.hstack([X_train_minmax, X_com]))
+
     c_score_with_com = metrics.completeness_score(
-        y_train, kmeans_with_com.labels_)
+        y_train, with_com_labels)
     h_score_with_com = metrics.homogeneity_score(
-        y_train, kmeans_with_com.labels_)
+        y_train, with_com_labels)
     v_score_with_com = metrics.v_measure_score(
-        y_train, kmeans_with_com.labels_)
+        y_train, with_com_labels)
 
     _, p_score_with_com, ip_score_with_com = get_f_p_r(
-        y_train, kmeans_with_com.labels_)
+        y_train, with_com_labels)
     f_score_with_com = metrics.fowlkes_mallows_score(
-        y_train, kmeans_with_com.labels_)
+        y_train, with_com_labels)
 
     # visualize_clusters(
     #    np.hstack([X_train_minmax, X_com]),
