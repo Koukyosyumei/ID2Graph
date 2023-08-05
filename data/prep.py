@@ -4,8 +4,7 @@ import random
 
 import numpy as np
 import pandas as pd
-from sklearn import datasets
-from sklearn.datasets import fetch_lfw_people, load_breast_cancer, load_digits
+from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
@@ -304,24 +303,18 @@ if __name__ == "__main__":
         X = data["data"]
         y = data["target"]
 
-    elif parsed_args.dataset_type == "mnist":
+    elif parsed_args.dataset_type == "fmnist":
         df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                         "mnist_784.arff"), header=None, skiprows=797)
+                                      "phpnBqZGZ"), header=None, skiprows=804)
         df = sampling(df, 784, parsed_args)
         X = df[list(range(784))].values
         y = df[784].values
-        col_alloc = [list(range(int(784 * parsed_args.feature_num_ratio_of_active_party))),
-                     list(range(int(784 * parsed_args.feature_num_ratio_of_active_party), 784))]
-
-    elif parsed_args.dataset_type == "face":
-        data = fetch_lfw_people(min_faces_per_person=70, resize=0.4)
-        X = data.data
-        y = data.target
 
     elif parsed_args.dataset_type == "obesity":
         df = pd.read_csv(
             os.path.join(
-                parsed_args.path_to_dir, "ObesityDataSet_raw_and_data_sinthetic.csv"
+                parsed_args.path_to_dir,
+                "ObesityDataSet_raw_and_data_sinthetic.csv"
             )
         )
         df["NObeyesdad"] = LabelEncoder().fit_transform(df["NObeyesdad"].values)
