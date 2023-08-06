@@ -309,6 +309,8 @@ if __name__ == "__main__":
         df = sampling(df, 784, parsed_args)
         X = df[list(range(784))].values
         y = df[784].values
+        col_alloc = [list(range(int(784 * parsed_args.feature_num_ratio_of_active_party))),
+                     list(range(int(784 * parsed_args.feature_num_ratio_of_active_party), 784))]
 
     elif parsed_args.dataset_type == "obesity":
         df = pd.read_csv(
