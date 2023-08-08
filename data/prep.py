@@ -199,6 +199,37 @@ if __name__ == "__main__":
         X = df[list(range(30))].values
         y = df[30].values
 
+    elif parsed_args.dataset_type == "pdspeech":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                         "pd_speech_features.csv"), skiprows=1)
+        X = df.drop(["id", "class"], axis=1).values
+        y = df["class"].values
+
+    elif parsed_args.dataset_type == "arrhythmia":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "arrhythmia.data"), header=None)
+        df = sampling(df, 279, parsed_args)
+        X = df[list(range(279))].values
+        y = df[279].values - 1
+
+    elif parsed_args.dataset_type == "madelon":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                         "madelon_train.data"), header=None, sep=" ")
+        X = df.values
+        print(X.shape)
+        y = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                        "madelon_train.labels"), header=None)
+        print(y)
+        y = (y + 1) / 2
+        y = y[0].astype(int).values
+
+    elif parsed_args.dataset_type == "cnae":
+        df = pd.read_csv(os.path.join(
+            parsed_args.path_to_dir, "CNAE-9.data"), header=None)
+        df = sampling(df, 0, parsed_args)
+        X = df[list(range(1, 857))].values
+        y = df[0].values
+
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir,
@@ -272,10 +303,20 @@ if __name__ == "__main__":
         X = data["data"]
         y = data["target"]
 
+    elif parsed_args.dataset_type == "fmnist":
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
+                                      "phpnBqZGZ"), header=None, skiprows=804)
+        df = sampling(df, 784, parsed_args)
+        X = df[list(range(784))].values
+        y = df[784].values
+        col_alloc = [list(range(int(784 * parsed_args.feature_num_ratio_of_active_party))),
+                     list(range(int(784 * parsed_args.feature_num_ratio_of_active_party), 784))]
+
     elif parsed_args.dataset_type == "obesity":
         df = pd.read_csv(
             os.path.join(
-                parsed_args.path_to_dir, "ObesityDataSet_raw_and_data_sinthetic.csv"
+                parsed_args.path_to_dir,
+                "ObesityDataSet_raw_and_data_sinthetic.csv"
             )
         )
         df["NObeyesdad"] = LabelEncoder().fit_transform(df["NObeyesdad"].values)

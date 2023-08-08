@@ -99,7 +99,7 @@ while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:w:y:xgq OPT; do
   esac
 done
 
-PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -s ${VALUE_S} -i ${VALUE_I}"
+PREPCMD="python3 ./data/prep.py -d ${VALUE_D} -p ./data/${VALUE_D}/ -n ${VALUE_N} -f ${VALUE_F} -s ${VALUE_S} -i ${VALUE_I}"
 eval ${PREPCMD}
 
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
@@ -124,7 +124,7 @@ if [ "${FLG_X}" = "TRUE" ]; then
   python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
 else
   echo "Start Clustering trial=${VALUE_S}"
-  CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -s ${VALUE_S}"
+  CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S}"
   eval ${CLSCMD} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Clustering is complete trial=${VALUE_S}"
 fi

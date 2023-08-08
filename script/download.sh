@@ -21,3 +21,5 @@ wget -P data/fars https://www.openml.org/data/download/4965247/fars.arff
 
 wget -P data/obesity "https://archive.ics.uci.edu/ml/machine-learning-databases/00544/ObesityDataSet_raw_and_data_sinthetic (2).zip"
 unzip "data/obesity/ObesityDataSet_raw_and_data_sinthetic (2).zip" -d data/obesity
+
+wget -P data/fmnist https://www.openml.org/data/download/18238735/phpnBqZGZ
