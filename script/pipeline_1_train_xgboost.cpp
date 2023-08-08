@@ -38,6 +38,7 @@ float epsilon_ldp = -1;
 float mi_bound = numeric_limits<float>::infinity();
 int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
+bool save_tree_html = false;
 bool split_labels = false;
 bool is_freerider = false;
 bool use_uniontree = false;
