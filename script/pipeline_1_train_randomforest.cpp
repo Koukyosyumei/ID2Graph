@@ -218,6 +218,7 @@ int main(int argc, char *argv[]) {
           y_train_splitted.push_back(y_train[i] + (float)num_classes / 2);
         }
       }
+      clf.fit(parties, y_train_splitted);
     } else {
       clf.fit(parties, y_train);
     }
