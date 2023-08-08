@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
   }
   vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
   vector<float> y_train(num_row_train);
+  vector<float> y_train_splitted;
   vector<float> y_hat;
   vector<RandomForestParty> parties(num_party);
 
@@ -210,7 +211,6 @@ int main(int argc, char *argv[]) {
     lp_1st.fit(clf, parties, y_train, y_hat);
   } else {
     if (split_labels) {
-      std::vector<float> y_train_splitted;
       for (int i = 0; i < y_train.size(); i++) {
         if (i % 2 == 0) {
           y_train_splitted.push_back(y_train[i]);
