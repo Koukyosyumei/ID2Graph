@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
   vector<float> y_hat;
   vector<RandomForestParty> parties(num_party);
 
+  int num_classes_true = num_classes;
   if (split_labels) {
     num_classes *= 2;
   }
@@ -250,7 +251,6 @@ int main(int argc, char *argv[]) {
 
   vector<vector<float>> predict_proba_train;
   if (split_labels) {
-    int num_classes_true = num_classes / 2;
     vector<vector<float>> predict_proba_train_splitted =
         clf.predict_proba(X_train);
     predict_proba_train.resize(predict_proba_train_splitted.size());
@@ -270,7 +270,6 @@ int main(int argc, char *argv[]) {
 
   vector<vector<float>> predict_proba_val;
   if (split_labels) {
-    int num_classes_true = num_classes / 2;
     vector<vector<float>> predict_proba_val_splitted = clf.predict_proba(X_val);
     predict_proba_val.resize(predict_proba_val_splitted.size());
     for (int i = 0; i < predict_proba_val_splitted.size(); i++) {

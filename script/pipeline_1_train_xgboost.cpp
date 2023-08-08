@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
   vector<float> y_hat;
   vector<XGBoostParty> parties(num_party);
 
+  int num_classes_true = num_classes;
   if (split_labels) {
     num_classes *= 2;
   }
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
         if (i % 2 == 0) {
           y_train_splitted.push_back(y_train[i]);
         } else {
-          y_train_splitted.push_back(y_train[i] + (float)num_classes / 2);
+          y_train_splitted.push_back(y_train[i] + (float)num_classes_true);
         }
       }
       clf.fit(parties, y_train_splitted);
@@ -260,7 +261,6 @@ int main(int argc, char *argv[]) {
 
   vector<vector<float>> predict_proba_train;
   if (split_labels) {
-    int num_classes_true = num_classes / 2;
     vector<vector<float>> predict_proba_train_splitted =
         clf.predict_proba(X_train);
     predict_proba_train.resize(predict_proba_train_splitted.size());
@@ -280,7 +280,6 @@ int main(int argc, char *argv[]) {
 
   vector<vector<float>> predict_proba_val;
   if (split_labels) {
-    int num_classes_true = num_classes / 2;
     vector<vector<float>> predict_proba_val_splitted = clf.predict_proba(X_val);
     predict_proba_val.resize(predict_proba_val_splitted.size());
     for (int i = 0; i < predict_proba_val_splitted.size(); i++) {
@@ -299,7 +298,7 @@ int main(int argc, char *argv[]) {
 
   result_file.close();
 
-  // clf.free_intermediate_resources();
+  clf.free_intermediate_resources();
 
   if (use_uniontree) {
     vector<int> result = extract_uniontree_from_forest<XGBoostClassifier>(
