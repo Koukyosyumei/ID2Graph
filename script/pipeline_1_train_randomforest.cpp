@@ -35,6 +35,7 @@ float epsilon_ldp = -1;
 int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
 bool save_tree_html = false;
+bool split_labels = false;
 bool is_freerider = false;
 bool use_uniontree = false;
 int max_num_samples_in_a_chunk = 1000000;
@@ -87,7 +88,7 @@ void parse_args(int argc, char *argv[]) {
       save_adj_mat = true;
       break;
     case 'q':
-      save_tree_html = true;
+      split_labels = true;
       break;
     default:
       printf("unknown parameter %s is specified", optarg);
@@ -113,6 +114,10 @@ int main(int argc, char *argv[]) {
   vector<float> y_train(num_row_train);
   vector<float> y_hat;
   vector<RandomForestParty> parties(num_party);
+
+  if (split_labels) {
+    num_classes *= 2;
+  }
 
   int temp_count_feature = 0;
   for (int i = 0; i < num_party; i++) {
@@ -204,7 +209,18 @@ int main(int argc, char *argv[]) {
     LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
     lp_1st.fit(clf, parties, y_train, y_hat);
   } else {
-    clf.fit(parties, y_train);
+    if (split_labels) {
+      std::vector<float> y_train_splitted;
+      for (int i = 0; i < y_train.size(); i++) {
+        if (i % 2 == 0) {
+          y_train_splitted.push_back(y_train[i]);
+        } else {
+          y_train_splitted.push_back(y_train[i] + (float)num_classes / 2);
+        }
+      }
+    } else {
+      clf.fit(parties, y_train);
+    }
   }
   end = chrono::system_clock::now();
   float elapsed =
@@ -231,12 +247,41 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
+  vector<vector<float>> predict_proba_train;
+  if (split_labels) {
+    int num_classes_true = num_classes / 2;
+    vector<vector<float>> predict_proba_train_splitted =
+        clf.predict_proba(X_train);
+    predict_proba_train.resize(predict_proba_train_splitted.size());
+    for (int i = 0; i < predict_proba_train_splitted.size(); i++) {
+      predict_proba_train[i].resize(num_classes_true);
+      for (int j = 0; j < num_classes; j++) {
+        predict_proba_train[i][j % num_classes_true] =
+            predict_proba_train_splitted[i][j];
+      }
+    }
+  } else {
+    predict_proba_train = clf.predict_proba(X_train);
+  }
   vector<int> y_true_train(y_train.begin(), y_train.end());
   result_file << "Train AUC,"
               << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
 
-  vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
+  vector<vector<float>> predict_proba_val;
+  if (split_labels) {
+    int num_classes_true = num_classes / 2;
+    vector<vector<float>> predict_proba_val_splitted = clf.predict_proba(X_val);
+    predict_proba_val.resize(predict_proba_val_splitted.size());
+    for (int i = 0; i < predict_proba_val_splitted.size(); i++) {
+      predict_proba_val[i].resize(num_classes_true);
+      for (int j = 0; j < num_classes; j++) {
+        predict_proba_val[i][j % num_classes_true] =
+            predict_proba_val_splitted[i][j];
+      }
+    }
+  } else {
+    predict_proba_val = clf.predict_proba(X_val);
+  }
   vector<int> y_true_val(y_val.begin(), y_val.end());
   result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val)
               << "\n";
