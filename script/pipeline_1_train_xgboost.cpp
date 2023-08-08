@@ -231,8 +231,9 @@ int main(int argc, char *argv[]) {
         }
       }
       clf.fit(parties, y_train_splitted);
+    } else {
+      clf.fit(parties, y_train);
     }
-    clf.fit(parties, y_train);
   }
   end = chrono::system_clock::now();
   float elapsed =
