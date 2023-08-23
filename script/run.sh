@@ -138,7 +138,7 @@ if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ]; then
   cp build/script/train_secureboost build/script/pipeline_1_training.out
-elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
+elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ] || [ "${VALUE_M}" = "repair" ]; then
   cp build/script/train_randomforest build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "secureforest" ] || [ "${VALUE_M}" = "sr" ]; then
   cp build/script/train_secureforest build/script/pipeline_1_training.out

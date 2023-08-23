@@ -262,6 +262,7 @@ struct RandomForestNode : Node<RandomForestParty> {
     }
 
     if (use_only_active_party) {
+      std::cout << "a " << active_party_id << std::endl;
       find_split_per_party(active_party_id, 1, tot_cnt, temp_y_class_cnt);
     } else {
       if (n_job == 1) {
@@ -347,8 +348,8 @@ struct RandomForestNode : Node<RandomForestParty> {
     if (!(((left->not_splitted_flag && right->not_splitted_flag)) ||
           (left->lmir_flag_exclude_passive_parties &&
            right->lmir_flag_exclude_passive_parties))) {
-      idxs.clear();
-      idxs.shrink_to_fit();
+      // idxs.clear();
+      // idxs.shrink_to_fit();
     }
   }
 

@@ -15,6 +15,7 @@
 #include "llatvfl/attack/baseline.h"
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/lpmst/lpmst.h"
+#include "llatvfl/selfrepairing/selfrepairing.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
@@ -37,12 +38,13 @@ bool save_adj_mat = false;
 bool save_tree_html = false;
 bool is_freerider = false;
 bool use_uniontree = false;
+bool self_repair = false;
 int max_num_samples_in_a_chunk = 1000000;
 int edge_weight_between_chunks = 100;
 
 void parse_args(int argc, char *argv[]) {
   int opt;
-  while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:y:xgq")) != -1) {
+  while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:y:xgqs")) != -1) {
     switch (opt) {
     case 'f':
       folderpath = string(optarg);
@@ -88,6 +90,9 @@ void parse_args(int argc, char *argv[]) {
       break;
     case 'q':
       save_tree_html = true;
+      break;
+    case 's':
+      self_repair = true;
       break;
     default:
       printf("unknown parameter %s is specified", optarg);
@@ -205,6 +210,9 @@ int main(int argc, char *argv[]) {
     lp_1st.fit(clf, parties, y_train, y_hat);
   } else {
     clf.fit(parties, y_train);
+  }
+  if (self_repair) {
+    selfrepair_forest(clf, &y_train);
   }
   end = chrono::system_clock::now();
   float elapsed =
