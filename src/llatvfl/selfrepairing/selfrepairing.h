@@ -45,8 +45,7 @@ inline void selfrepair_tree(RandomForestTree &tree, vector<float> *original_y) {
 
     if (!temp_node->is_leaf_flag) {
       if (mismatch_preds(temp_node->left, original_y) ||
-          mismatch_preds(temp_node->right, original_y) ||
-          temp_node->is_all_active_within_subsequent_children) {
+          mismatch_preds(temp_node->right, original_y)) {
         root_of_problems.push_back(temp_node);
       } else {
         que.push(temp_node->left);
