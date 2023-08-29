@@ -33,6 +33,8 @@ struct RandomForestNode : Node<RandomForestParty> {
   float entire_datasetsize = 0;
   vector<float> entire_class_cnt;
 
+  bool is_all_active_within_subsequent_children = false;
+
   RandomForestNode() {}
   RandomForestNode(vector<RandomForestParty> *parties_, vector<float> *y_,
                    int num_classes_, vector<int> &idxs_, int depth_,
@@ -350,6 +352,16 @@ struct RandomForestNode : Node<RandomForestParty> {
            right->lmir_flag_exclude_passive_parties))) {
       // idxs.clear();
       // idxs.shrink_to_fit();
+    }
+
+    if ((left->is_leaf_flag == 1) && (right->is_leaf_flag == 1) &&
+        (party_id == active_party_id)) {
+      is_all_active_within_subsequent_children = true;
+    }
+    if ((left->is_all_active_within_subsequent_children) &&
+        (right->is_all_active_within_subsequent_children) &&
+        (party_id == active_party_id)) {
+      is_all_active_within_subsequent_children = true;
     }
   }
 
