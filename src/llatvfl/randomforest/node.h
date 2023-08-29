@@ -264,7 +264,6 @@ struct RandomForestNode : Node<RandomForestParty> {
     }
 
     if (use_only_active_party) {
-      std::cout << "a " << active_party_id << std::endl;
       find_split_per_party(active_party_id, 1, tot_cnt, temp_y_class_cnt);
     } else {
       if (n_job == 1) {
