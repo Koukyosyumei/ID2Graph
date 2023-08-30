@@ -108,7 +108,7 @@ RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VA
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ]; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
-if [ "${VALUE_M}" = "repair" ]; then
+if [ "${VALUE_M}" = "g" ] || [ "${VALUE_M}" = "graftingforest" ] ; then
   RUNCMD+=" -s"  
 fi
 if [ "${FLG_G}" = "TRUE" ]; then
