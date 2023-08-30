@@ -62,9 +62,9 @@ struct XGBoostBase : TreeModelBase<XGBoostParty> {
     n_job = n_job_;
     save_loss = save_loss_;
 
-    if (mi_bound < 0) {
-      mi_bound = numeric_limits<float>::infinity();
-    }
+    // if (mi_bound < 0) {
+    //  mi_bound = numeric_limits<float>::infinity();
+    // }
 
     if (num_classes == 2) {
       lossfunc_obj = new BCELoss();
