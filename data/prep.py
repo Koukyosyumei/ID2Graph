@@ -198,7 +198,7 @@ if __name__ == "__main__":
         X = df[list(range(30))].values
         y = df[30].values
 
-    elif parsed_args.dataset_type == "pdspeech":
+    elif parsed_args.dataset_type == "parkinson":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "pd_speech_features.csv"), skiprows=1
         )
