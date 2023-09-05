@@ -211,7 +211,6 @@ struct Party {
     feature_opt_id =
         temp_column_subsample[feature_opt_pos % subsample_col_count];
     threshold_opt = temp_thresholds[feature_opt_pos][threshold_opt_pos];
-
     if (use_missing_value) {
       if (feature_opt_pos > subsample_col_count) {
         missing_dir = 1;
@@ -221,7 +220,6 @@ struct Party {
     } else {
       missing_dir = -1;
     }
-
     lookup_table.emplace(
         lookup_table.size(),
         make_tuple(feature_opt_id, threshold_opt, missing_dir));

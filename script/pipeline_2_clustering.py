@@ -23,12 +23,9 @@ def visualize_clusters(X, y_true, num_classes, title, saved_path, h=0.02, eps=0.
     kmeans = clustering_cls(
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(reduced_data)
-    x_min, x_max = reduced_data[:, 0].min(
-    ) - eps, reduced_data[:, 0].max() + eps
-    y_min, y_max = reduced_data[:, 1].min(
-    ) - eps, reduced_data[:, 1].max() + eps
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                         np.arange(y_min, y_max, h))
+    x_min, x_max = reduced_data[:, 0].min() - eps, reduced_data[:, 0].max() + eps
+    y_min, y_max = reduced_data[:, 1].min() - eps, reduced_data[:, 1].max() + eps
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
     Z = kmeans.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
     plt.figure(1)
@@ -145,8 +142,7 @@ if __name__ == "__main__":
 
     if parsed_args.clustering_type == "kmeans":
         kmeans = KMeans(
-            n_clusters=num_classes, n_init=N_INIT,
-            random_state=parsed_args.seed
+            n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
         ).fit(X_train_minmax)
         baseline_labels = kmeans.labels_
     elif parsed_args.clustering_type == "xmeans":
@@ -158,8 +154,7 @@ if __name__ == "__main__":
     h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)
     v_score_baseline = metrics.v_measure_score(y_train, baseline_labels)
 
-    _, p_score_baseline, ip_score_baseline = get_f_p_r(
-        y_train, baseline_labels)
+    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_train, baseline_labels)
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
 
@@ -184,35 +179,27 @@ if __name__ == "__main__":
 
     if parsed_args.clustering_type == "kmeans":
         kmeans_with_com = KMeans(
-            n_clusters=num_classes, n_init=N_INIT,
-            random_state=parsed_args.seed
+            n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
         ).fit(np.hstack([X_train_minmax, X_com]))
         with_com_labels = kmeans_with_com.labels_
     elif parsed_args.clustering_type == "xmeans":
-        xm_with_com = xmeans(data=np.hstack(
-            [X_train_minmax, X_com]), tolerance=0.0001)
+        xm_with_com = xmeans(data=np.hstack([X_train_minmax, X_com]), tolerance=0.0001)
         xm_with_com.process()
         clusters = xm_with_com.get_clusters()
         cluster_size = len(clusters)
         kmeans_with_com = KMeans(
-            n_clusters=cluster_size, n_init=N_INIT,
-            random_state=parsed_args.seed
+            n_clusters=cluster_size, n_init=N_INIT, random_state=parsed_args.seed
         ).fit(np.hstack([X_train_minmax, X_com]))
         with_com_labels = kmeans_with_com.labels_
         # with_com_labels = xm_with_com.predict(
         #    np.hstack([X_train_minmax, X_com]))
 
-    c_score_with_com = metrics.completeness_score(
-        y_train, with_com_labels)
-    h_score_with_com = metrics.homogeneity_score(
-        y_train, with_com_labels)
-    v_score_with_com = metrics.v_measure_score(
-        y_train, with_com_labels)
+    c_score_with_com = metrics.completeness_score(y_train, with_com_labels)
+    h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
+    v_score_with_com = metrics.v_measure_score(y_train, with_com_labels)
 
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(
-        y_train, with_com_labels)
-    f_score_with_com = metrics.fowlkes_mallows_score(
-        y_train, with_com_labels)
+    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
+    f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
 
     # visualize_clusters(
     #    np.hstack([X_train_minmax, X_com]),

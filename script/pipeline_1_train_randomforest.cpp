@@ -15,6 +15,7 @@
 #include "llatvfl/attack/baseline.h"
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/lpmst/lpmst.h"
+#include "llatvfl/selfrepairing/selfrepairing.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
@@ -37,12 +38,13 @@ bool save_adj_mat = false;
 bool save_tree_html = false;
 bool is_freerider = false;
 bool use_uniontree = false;
+bool self_repair = false;
 int max_num_samples_in_a_chunk = 1000000;
 int edge_weight_between_chunks = 100;
 
 void parse_args(int argc, char *argv[]) {
   int opt;
-  while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:y:xgq")) != -1) {
+  while ((opt = getopt(argc, argv, "f:p:r:h:j:c:e:l:o:b:w:y:xgqs")) != -1) {
     switch (opt) {
     case 'f':
       folderpath = string(optarg);
@@ -88,6 +90,9 @@ void parse_args(int argc, char *argv[]) {
       break;
     case 'q':
       save_tree_html = true;
+      break;
+    case 's':
+      self_repair = true;
       break;
     default:
       printf("unknown parameter %s is specified", optarg);
@@ -212,39 +217,6 @@ int main(int argc, char *argv[]) {
   printf("Training is complete %f [ms] trial=%s\n", elapsed,
          fileprefix.c_str());
 
-  for (int i = 0; i < clf.estimators.size(); i++) {
-    result_file << "round " << i + 1 << ": " << 0 << "\n";
-  }
-
-  for (int i = 0; i < clf.estimators.size(); i++) {
-    result_file << "Tree-" << i + 1 << ": "
-                << clf.estimators[i].get_leaf_purity() << "\n";
-    result_file << clf.estimators[i].print(false, true).c_str() << "\n";
-
-    if (save_tree_html) {
-      std::ofstream tree_html_file;
-      string tree_html_filepath =
-          folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
-      tree_html_file.open(tree_html_filepath, std::ios::out);
-      tree_html_file << clf.estimators[i].to_html().c_str();
-      tree_html_file.close();
-    }
-  }
-
-  vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
-  vector<int> y_true_train(y_train.begin(), y_train.end());
-  result_file << "Train AUC,"
-              << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
-
-  vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
-  vector<int> y_true_val(y_val.begin(), y_val.end());
-  result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val)
-              << "\n";
-
-  result_file.close();
-
-  clf.free_intermediate_resources();
-
   if (use_uniontree) {
     vector<int> result = extract_uniontree_from_forest<RandomForestClassifier>(
         &clf, 1, skip_round);
@@ -302,4 +274,41 @@ int main(int argc, char *argv[]) {
     }
     com_file.close();
   }
+
+  if (self_repair) {
+    selfrepair_forest(clf, &y_train);
+  }
+
+  for (int i = 0; i < clf.estimators.size(); i++) {
+    result_file << "round " << i + 1 << ": " << 0 << "\n";
+  }
+
+  for (int i = 0; i < clf.estimators.size(); i++) {
+    result_file << "Tree-" << i + 1 << ": "
+                << clf.estimators[i].get_leaf_purity() << "\n";
+    result_file << clf.estimators[i].print(false, true).c_str() << "\n";
+
+    if (save_tree_html) {
+      std::ofstream tree_html_file;
+      string tree_html_filepath =
+          folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
+      tree_html_file.open(tree_html_filepath, std::ios::out);
+      tree_html_file << clf.estimators[i].to_html().c_str();
+      tree_html_file.close();
+    }
+  }
+
+  vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
+  vector<int> y_true_train(y_train.begin(), y_train.end());
+  result_file << "Train AUC,"
+              << ovr_roc_auc_score(predict_proba_train, y_true_train) << "\n";
+
+  vector<vector<float>> predict_proba_val = clf.predict_proba(X_val);
+  vector<int> y_true_val(y_val.begin(), y_val.end());
+  result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val)
+              << "\n";
+
+  result_file.close();
+
+  clf.free_intermediate_resources();
 }

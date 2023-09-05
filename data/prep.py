@@ -65,8 +65,7 @@ def sampling_col_alloc(
     col_num, feature_num_ratio_of_active_party, feature_num_ratio_of_passive_party
 ):
     shufled_col_indicies = random.sample(list(range(col_num)), col_num)
-    col_num_of_active_party = max(
-        1, int(feature_num_ratio_of_active_party * col_num))
+    col_num_of_active_party = max(1, int(feature_num_ratio_of_active_party * col_num))
     if feature_num_ratio_of_passive_party < 0:
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
@@ -79,7 +78,7 @@ def sampling_col_alloc(
         col_alloc = [
             shufled_col_indicies[:col_num_of_active_party],
             shufled_col_indicies[
-                col_num_of_active_party: (
+                col_num_of_active_party : (
                     min(
                         col_num_of_active_party + col_num_of_passive_party,
                         col_num,
@@ -199,41 +198,45 @@ if __name__ == "__main__":
         X = df[list(range(30))].values
         y = df[30].values
 
-    elif parsed_args.dataset_type == "pdspeech":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                         "pd_speech_features.csv"), skiprows=1)
+    elif parsed_args.dataset_type == "parkinson":
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "pd_speech_features.csv"), skiprows=1
+        )
         X = df.drop(["id", "class"], axis=1).values
         y = df["class"].values
 
     elif parsed_args.dataset_type == "arrhythmia":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "arrhythmia.data"), header=None)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "arrhythmia.data"), header=None
+        )
         df = sampling(df, 279, parsed_args)
         X = df[list(range(279))].values
         y = df[279].values - 1
 
     elif parsed_args.dataset_type == "madelon":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                         "madelon_train.data"), header=None, sep=" ")
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "madelon_train.data"),
+            header=None,
+            sep=" ",
+        )
         X = df.values
-        print(X.shape)
-        y = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                        "madelon_train.labels"), header=None)
-        print(y)
+        y = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "madelon_train.labels"), header=None
+        )
         y = (y + 1) / 2
         y = y[0].astype(int).values
 
     elif parsed_args.dataset_type == "cnae":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "CNAE-9.data"), header=None)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "CNAE-9.data"), header=None
+        )
         df = sampling(df, 0, parsed_args)
         X = df[list(range(1, 857))].values
         y = df[0].values
 
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir,
-                         "Sensorless_drive_diagnosis.txt"),
+            os.path.join(parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt"),
             sep=" ",
             header=None,
         )
@@ -254,9 +257,11 @@ if __name__ == "__main__":
         )
         X_d = df.drop(8, axis=1)
         X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int)
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int
+        )
         X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int)
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int
+        )
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -265,8 +270,7 @@ if __name__ == "__main__":
         y = df[8].values
 
     elif parsed_args.dataset_type == "ucicreditcard":
-        df = pd.read_csv(os.path.join(
-            parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
+        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
         df = sampling(df, "default.payment.next.month", parsed_args)
 
         X = df[
@@ -304,19 +308,23 @@ if __name__ == "__main__":
         y = data["target"]
 
     elif parsed_args.dataset_type == "fmnist":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir,
-                                      "phpnBqZGZ"), header=None, skiprows=804)
+        df = pd.read_csv(
+            os.path.join(parsed_args.path_to_dir, "phpnBqZGZ"),
+            header=None,
+            skiprows=804,
+        )
         df = sampling(df, 784, parsed_args)
         X = df[list(range(784))].values
         y = df[784].values
-        col_alloc = [list(range(int(784 * parsed_args.feature_num_ratio_of_active_party))),
-                     list(range(int(784 * parsed_args.feature_num_ratio_of_active_party), 784))]
+        col_alloc = [
+            list(range(int(784 * parsed_args.feature_num_ratio_of_active_party))),
+            list(range(int(784 * parsed_args.feature_num_ratio_of_active_party), 784)),
+        ]
 
     elif parsed_args.dataset_type == "obesity":
         df = pd.read_csv(
             os.path.join(
-                parsed_args.path_to_dir,
-                "ObesityDataSet_raw_and_data_sinthetic.csv"
+                parsed_args.path_to_dir, "ObesityDataSet_raw_and_data_sinthetic.csv"
             )
         )
         df["NObeyesdad"] = LabelEncoder().fit_transform(df["NObeyesdad"].values)
@@ -328,9 +336,11 @@ if __name__ == "__main__":
         )
         X_d = df.drop("NObeyesdad", axis=1)
         X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int)
+            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int
+        )
         X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int)
+            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int
+        )
         col_alloc = [
             list(range(X_a.shape[1])),
             list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
@@ -381,8 +391,7 @@ if __name__ == "__main__":
         pass
     else:
         fti = np.load(
-            os.path.join(parsed_args.path_to_dir,
-                         f"{parsed_args.dataset_type}_fti.npy")
+            os.path.join(parsed_args.path_to_dir, f"{parsed_args.dataset_type}_fti.npy")
         )
 
         if parsed_args.feature_importance == 1:
@@ -390,8 +399,7 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] *
-                        parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -401,8 +409,7 @@ if __name__ == "__main__":
             active_col = fti_idx[
                 : min(
                     int(
-                        X_train.shape[1] *
-                        parsed_args.feature_num_ratio_of_active_party
+                        X_train.shape[1] * parsed_args.feature_num_ratio_of_active_party
                     ),
                     X_train.shape[1] - 1,
                 )
@@ -433,8 +440,7 @@ if __name__ == "__main__":
                 ]
             )
 
-        col_alloc = [active_col, list(
-            set(range(X_val.shape[1])) - set(active_col))]
+        col_alloc = [active_col, list(set(range(X_val.shape[1])) - set(active_col))]
 
     convert_df_to_input(
         X_train,

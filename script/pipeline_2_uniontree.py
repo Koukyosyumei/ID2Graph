@@ -92,12 +92,9 @@ if __name__ == "__main__":
     kmeans_with_com = clustering_cls(
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
-    c_score_with_com = metrics.completeness_score(
-        y_train, kmeans_with_com.labels_)
-    h_score_with_com = metrics.homogeneity_score(
-        y_train, kmeans_with_com.labels_)
-    v_score_with_com = metrics.v_measure_score(
-        y_train, kmeans_with_com.labels_)
+    c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
+    h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
+    v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
 
     f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
         y_train, kmeans_with_com.labels_

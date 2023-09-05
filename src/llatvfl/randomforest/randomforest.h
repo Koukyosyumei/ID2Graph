@@ -40,9 +40,9 @@ struct RandomForestClassifier : TreeModelBase<RandomForestParty> {
     n_job = n_job_;
     seed = seed_;
 
-    if (mi_bound < 0) {
-      mi_bound = numeric_limits<float>::infinity();
-    }
+    // if (mi_bound < 0) {
+    //  mi_bound = numeric_limits<float>::infinity();
+    // }
   }
 
   void load_estimators(vector<RandomForestTree> &_estimators) {

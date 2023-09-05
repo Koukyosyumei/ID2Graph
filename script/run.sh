@@ -16,7 +16,7 @@ VALUE_J=1              # minimum number of samples within a leaf.
 VALUE_H=6              # maximum depth
 VALUE_A=0.3            # learning rate of XGBoost.
 VALUE_E=0.6            # coefficient of edge weight (tau in our paper).
-VALUE_K=1.0            # weight for community variables.
+VALUE_K=5.0            # weight for community variables.
 VALUE_L=100            # maximum number of iterations of Louvain
 VALUE_C=0              # number of completely secure rounds.
 VALUE_B=-1             # epsilon of ID-LMID.
@@ -138,7 +138,7 @@ if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ]; then
   cp build/script/train_secureboost build/script/pipeline_1_training.out
-elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ]; then
+elif [ "${VALUE_M}" = "randomforest" ] || [ "${VALUE_M}" = "r" ] || [ "${VALUE_M}" = "graftingforest" ] || [ "${VALUE_M}" = "g" ]; then
   cp build/script/train_randomforest build/script/pipeline_1_training.out
 elif [ "${VALUE_M}" = "secureforest" ] || [ "${VALUE_M}" = "sr" ]; then
   cp build/script/train_secureforest build/script/pipeline_1_training.out
