@@ -1,11 +1,13 @@
 import argparse
 
+import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from pyclustering.cluster.xmeans import xmeans
+from node2vec import Node2Vec
 
 from llatvfl.clustering import get_f_p_r
 
@@ -23,9 +25,12 @@ def visualize_clusters(X, y_true, num_classes, title, saved_path, h=0.02, eps=0.
     kmeans = clustering_cls(
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(reduced_data)
-    x_min, x_max = reduced_data[:, 0].min() - eps, reduced_data[:, 0].max() + eps
-    y_min, y_max = reduced_data[:, 1].min() - eps, reduced_data[:, 1].max() + eps
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+    x_min, x_max = reduced_data[:, 0].min(
+    ) - eps, reduced_data[:, 0].max() + eps
+    y_min, y_max = reduced_data[:, 1].min(
+    ) - eps, reduced_data[:, 1].max() + eps
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
     Z = kmeans.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
     plt.figure(1)
@@ -80,6 +85,12 @@ def add_args(parser):
         "-q",
         "--path_to_com_file",
         type=str,
+    )
+    parser.add_argument(
+        "-g",
+        "--path_to_adj_file",
+        type=str,
+        default=None
     )
     parser.add_argument(
         "-s",
@@ -154,7 +165,8 @@ if __name__ == "__main__":
     h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)
     v_score_baseline = metrics.v_measure_score(y_train, baseline_labels)
 
-    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_train, baseline_labels)
+    _, p_score_baseline, ip_score_baseline = get_f_p_r(
+        y_train, baseline_labels)
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
 
@@ -177,13 +189,36 @@ if __name__ == "__main__":
             for k in temp_nodes_in_comm:
                 X_com[int(k), i] += parsed_args.weight_for_community_variables
 
+    if parsed_args.path_to_adj_file is not None:
+        with open(parsed_args.path_to_adj_file, mode="r") as f:
+            lines = f.readlines()
+            node_num = int(lines[0])
+
+            adj_mat = np.zeros((node_num, node_num))
+            for j in range(node_num):
+                temp_row = lines[1 + j].split(" ")[:-1]
+                temp_adj_num = int(temp_row[0])
+                for k in range(temp_adj_num):
+                    adj_mat[j, int(temp_row[2 * k + 1])
+                            ] += float(temp_row[2 * (k + 1)])
+                    adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
+                        j, int(temp_row[2 * k + 1])
+                    ]
+        G = nx.from_numpy_array(adj_mat)
+        node2vec = Node2Vec(G, dimensions=64,
+                            walk_length=30, num_walks=200)
+        model = node2vec.fit(window=10, min_count=1, batch_words=4)
+        embeddings = [model.wv[j] for j in range(node_num)]
+        X_train_minmax = np.hstack([X_train_minmax, X_com])
+
     if parsed_args.clustering_type == "kmeans":
         kmeans_with_com = KMeans(
             n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
         ).fit(np.hstack([X_train_minmax, X_com]))
         with_com_labels = kmeans_with_com.labels_
     elif parsed_args.clustering_type == "xmeans":
-        xm_with_com = xmeans(data=np.hstack([X_train_minmax, X_com]), tolerance=0.0001)
+        xm_with_com = xmeans(data=np.hstack(
+            [X_train_minmax, X_com]), tolerance=0.0001)
         xm_with_com.process()
         clusters = xm_with_com.get_clusters()
         cluster_size = len(clusters)
@@ -198,7 +233,8 @@ if __name__ == "__main__":
     h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
     v_score_with_com = metrics.v_measure_score(y_train, with_com_labels)
 
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
+    _, p_score_with_com, ip_score_with_com = get_f_p_r(
+        y_train, with_com_labels)
     f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
 
     # visualize_clusters(
