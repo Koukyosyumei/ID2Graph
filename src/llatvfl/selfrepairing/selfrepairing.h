@@ -14,7 +14,7 @@ inline bool mismatch_preds(RandomForestNode *node, vector<float> *original_y) {
   }
 
   int noised_argmax, original_argmax;
-  int max_val = 0;
+  float max_val = 0;
   for (int i = 0; i < noised_val.size(); i++) {
     if (noised_val[i] > max_val) {
       max_val = noised_val[i];
@@ -32,13 +32,36 @@ inline bool mismatch_preds(RandomForestNode *node, vector<float> *original_y) {
   return noised_argmax != original_argmax;
 }
 
+inline void mark_contaminated_nodes(RandomForestNode *node,
+                                    vector<RandomForestNode *> &target_nodes,
+                                    vector<float> *original_y) {
+  if (node->is_leaf()) {
+    node->is_all_subsequent_children_contaminated =
+        mismatch_preds(node, original_y);
+    return;
+  } else {
+    mark_contaminated_nodes(node->left, target_nodes, original_y);
+    mark_contaminated_nodes(node->right, target_nodes, original_y);
+    if (node->left->is_all_subsequent_children_contaminated ||
+        node->right->is_all_subsequent_children_contaminated) {
+      if (mismatch_preds(node, original_y)) {
+        node->is_all_subsequent_children_contaminated = true;
+      } else {
+        target_nodes.push_back(node);
+      }
+    }
+  }
+}
+
 inline void selfrepair_tree(RandomForestTree &tree, vector<float> *original_y) {
-  queue<RandomForestNode *> que;
-  que.push(&tree.dtree);
+  // queue<RandomForestNode *> que;
+  // que.push(&tree.dtree);
 
-  RandomForestNode *temp_node;
+  // RandomForestNode *temp_node;
   std::vector<RandomForestNode *> root_of_problems;
+  mark_contaminated_nodes(&tree.dtree, root_of_problems, original_y);
 
+  /*
   while (!que.empty()) {
     temp_node = que.front();
     que.pop();
@@ -53,6 +76,7 @@ inline void selfrepair_tree(RandomForestTree &tree, vector<float> *original_y) {
       }
     }
   }
+  */
 
   for (RandomForestNode *node : root_of_problems) {
 
