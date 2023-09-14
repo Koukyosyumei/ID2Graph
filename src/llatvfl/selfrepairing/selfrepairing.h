@@ -14,7 +14,7 @@ inline bool mismatch_preds(RandomForestNode *node, vector<float> *original_y) {
   }
 
   int noised_argmax, original_argmax;
-  int max_val = 0;
+  float max_val = 0;
   for (int i = 0; i < noised_val.size(); i++) {
     if (noised_val[i] > max_val) {
       max_val = noised_val[i];
