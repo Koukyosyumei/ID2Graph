@@ -34,6 +34,7 @@ struct RandomForestNode : Node<RandomForestParty> {
   vector<float> entire_class_cnt;
 
   bool is_all_active_within_subsequent_children = false;
+  bool is_all_subsequent_children_contaminated = false;
 
   RandomForestNode() {}
   RandomForestNode(vector<RandomForestParty> *parties_, vector<float> *y_,
