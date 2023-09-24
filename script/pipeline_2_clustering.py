@@ -97,6 +97,7 @@ def add_args(parser):
         type=float,
         default=1.0,
     )
+    parser.add_argument("-g", "--graph_plot", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -158,13 +159,14 @@ if __name__ == "__main__":
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
 
-    # visualize_clusters(
-    #    X_train_minmax,
-    #    y_train,
-    #    num_classes,
-    #    "CL",
-    #    f"{parsed_args.path_to_input_file.split('.')[0]}_CL.png",
-    # )
+    if parsed_args.graph_plot:
+        visualize_clusters(
+            X_train_minmax,
+            y_train,
+            num_classes,
+            "CL",
+            f"{parsed_args.path_to_input_file.split('.')[0]}_CL.png",
+        )
 
     with open(parsed_args.path_to_com_file, mode="r") as f:
         lines = f.readlines()
@@ -201,13 +203,14 @@ if __name__ == "__main__":
     _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
     f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
 
-    # visualize_clusters(
-    #    np.hstack([X_train_minmax, X_com]),
-    #    y_train,
-    #    num_classes,
-    #    "ID2Graph",
-    #    f"{parsed_args.path_to_input_file.split('.')[0]}_ID2Graph.png",
-    # )
+    if parsed_args.graph_plot:
+        visualize_clusters(
+            np.hstack([X_train_minmax, X_com]),
+            y_train,
+            num_classes,
+            "ID2Graph",
+            f"{parsed_args.path_to_input_file.split('.')[0]}_ID2Graph.png",
+        )
 
     print(
         f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"
