@@ -205,35 +205,6 @@ if __name__ == "__main__":
         X = df.drop(["id", "class"], axis=1).values
         y = df["class"].values
 
-    elif parsed_args.dataset_type == "arrhythmia":
-        df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "arrhythmia.data"), header=None
-        )
-        df = sampling(df, 279, parsed_args)
-        X = df[list(range(279))].values
-        y = df[279].values - 1
-
-    elif parsed_args.dataset_type == "madelon":
-        df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "madelon_train.data"),
-            header=None,
-            sep=" ",
-        )
-        X = df.values
-        y = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "madelon_train.labels"), header=None
-        )
-        y = (y + 1) / 2
-        y = y[0].astype(int).values
-
-    elif parsed_args.dataset_type == "cnae":
-        df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "CNAE-9.data"), header=None
-        )
-        df = sampling(df, 0, parsed_args)
-        X = df[list(range(1, 857))].values
-        y = df[0].values
-
     elif parsed_args.dataset_type == "drive":
         df = pd.read_csv(
             os.path.join(parsed_args.path_to_dir, "Sensorless_drive_diagnosis.txt"),
@@ -243,64 +214,6 @@ if __name__ == "__main__":
 
         X = df[list(range(48))].values
         y = df[48].values - 1
-
-    elif parsed_args.dataset_type == "nursery":
-        df = pd.read_csv(
-            os.path.join(parsed_args.path_to_dir, "nursery.data"), header=None
-        )
-        df[8] = LabelEncoder().fit_transform(df[8].values)
-
-        col_alloc_origin = sampling_col_alloc(
-            col_num=df.shape[1] - 1,
-            feature_num_ratio_of_active_party=parsed_args.feature_num_ratio_of_active_party,
-            feature_num_ratio_of_passive_party=parsed_args.feature_num_ratio_of_passive_party,
-        )
-        X_d = df.drop(8, axis=1)
-        X_a = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[0]]], drop_first=True, dtype=int
-        )
-        X_p = pd.get_dummies(
-            X_d[X_d.columns[col_alloc_origin[1]]], drop_first=True, dtype=int
-        )
-        col_alloc = [
-            list(range(X_a.shape[1])),
-            list(range(X_a.shape[1], X_a.shape[1] + X_p.shape[1])),
-        ]
-        X = pd.concat([X_a, X_p], axis=1).values
-        y = df[8].values
-
-    elif parsed_args.dataset_type == "ucicreditcard":
-        df = pd.read_csv(os.path.join(parsed_args.path_to_dir, "UCI_Credit_Card.csv"))
-        df = sampling(df, "default.payment.next.month", parsed_args)
-
-        X = df[
-            [
-                "LIMIT_BAL",
-                "SEX",
-                "EDUCATION",
-                "MARRIAGE",
-                "AGE",
-                "PAY_0",
-                "PAY_2",
-                "PAY_3",
-                "PAY_4",
-                "PAY_5",
-                "PAY_6",
-                "BILL_AMT1",
-                "BILL_AMT2",
-                "BILL_AMT3",
-                "BILL_AMT4",
-                "BILL_AMT5",
-                "BILL_AMT6",
-                "PAY_AMT1",
-                "PAY_AMT2",
-                "PAY_AMT3",
-                "PAY_AMT4",
-                "PAY_AMT5",
-                "PAY_AMT6",
-            ]
-        ].values
-        y = df["default.payment.next.month"].values
 
     elif parsed_args.dataset_type == "breastcancer":
         data = load_breast_cancer()
