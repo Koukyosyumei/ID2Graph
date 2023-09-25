@@ -34,13 +34,13 @@ pip install -e .
 - Example
 
 ```shell
-for VAL_D in breastcancer phishing obesity nursery avila ucicreditcard
+for VAL_D in breastcancer parkinson phishing obesity avila
 do
   sudo ./script/run.sh -d ${VAL_D} -m r -r 5 -a 1.0 -c 0 -h 6 -e 1.0 -f 0.5 -n -1 -p 5 -z 5 -u ${OUTPUT_DIR} -t result/temp
   sudo ./script/run.sh -d ${VAL_D} -m x -r 5 -a 0.3 -c 0 -h 6 -e 0.6 -f 0.5 -n -1 -p 5 -z 5 -u ${OUTPUT_DIR} -t result/temp
 done
 
-for VAL_D in drive fars pucrio
+for VAL_D in drive fars pucrio fmnist
 do
   sudo ./script/run.sh -d ${VAL_D} -m r -r 5 -a 1.0 -c 0 -h 6 -e 1.0 -f 0.5 -n -1 -p 1 -z 5 -w 1000 -y 100 -u ${OUTPUT_DIR} -t result/temp
   sudo ./script/run.sh -d ${VAL_D} -m x -r 5 -a 0.3 -c 0 -h 6 -e 0.6 -f 0.5 -n -1 -p 1 -z 5 -w 1000 -y 100 -u ${OUTPUT_DIR} -t result/temp
@@ -52,7 +52,7 @@ done
 ```
     -u : (str) path to the folder to save the final results.
     -d : (str) name of dataset.
-    -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost
+    -m : (str) type of training algorithm. `r`: Random Forest, `x`: XGBoost, `g`: GraftingForest
 ```
 
 - Advanced Arguments
@@ -83,7 +83,7 @@ done
     -c : (int) number of completely secure rounds.
     -o : (float) epsilon of LP-MST.
 
-    -g : (optional) draw the extracted graph.
+    -g : (optional) draw the extracted clusters.
     -q : (optional) draw trees as html files.
 ```
 
