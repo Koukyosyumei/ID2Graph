@@ -6,6 +6,7 @@ add_executable(train_randomforest pipeline_1_train_randomforest.cpp)
 add_executable(train_secureboost pipeline_1_train_secureboost.cpp)
 add_executable(train_xgboost pipeline_1_train_xgboost.cpp)
 
+target_link_libraries(train_noattack_secureforest boost_random pthread llatvfl)
 target_link_libraries(train_secureforest boost_random pthread llatvfl)
 target_link_libraries(train_randomforest boost_random pthread llatvfl)
 target_link_libraries(train_secureboost boost_random pthread llatvfl)
