@@ -1,10 +1,12 @@
 #pragma once
 #include "../randomforest/randomforest.h"
+#include "../secureforest/secureforest.h"
 #include <algorithm>
 #include <limits>
 #include <queue>
 
-inline bool mismatch_preds(RandomForestNode *node, vector<float> *original_y) {
+template <typename N>
+inline bool mismatch_preds(N *node, vector<float> *original_y) {
   std::vector<float> noised_val = node->val;
   vector<float> original_val(node->num_classes, 0);
 
@@ -32,12 +34,12 @@ inline bool mismatch_preds(RandomForestNode *node, vector<float> *original_y) {
   return noised_argmax != original_argmax;
 }
 
-inline void mark_contaminated_nodes(RandomForestNode *node,
-                                    vector<RandomForestNode *> &target_nodes,
+template <typename N>
+inline void mark_contaminated_nodes(N *node, vector<N *> &target_nodes,
                                     vector<float> *original_y) {
   if (node->is_leaf()) {
     node->is_all_subsequent_children_contaminated =
-        mismatch_preds(node, original_y);
+        mismatch_preds<N>(node, original_y);
     return;
   } else {
     mark_contaminated_nodes(node->left, target_nodes, original_y);
@@ -53,32 +55,16 @@ inline void mark_contaminated_nodes(RandomForestNode *node,
   }
 }
 
-inline void selfrepair_tree(RandomForestTree &tree, vector<float> *original_y) {
+template <typename T, typename N>
+inline void selfrepair_tree(T &tree, vector<float> *original_y) {
   // queue<RandomForestNode *> que;
   // que.push(&tree.dtree);
 
   // RandomForestNode *temp_node;
-  std::vector<RandomForestNode *> root_of_problems;
-  mark_contaminated_nodes(&tree.dtree, root_of_problems, original_y);
+  std::vector<N *> root_of_problems;
+  mark_contaminated_nodes<N>(&tree.dtree, root_of_problems, original_y);
 
-  /*
-  while (!que.empty()) {
-    temp_node = que.front();
-    que.pop();
-
-    if (!temp_node->is_leaf_flag) {
-      if (mismatch_preds(temp_node->left, original_y) ||
-          mismatch_preds(temp_node->right, original_y)) {
-        root_of_problems.push_back(temp_node);
-      } else {
-        que.push(temp_node->left);
-        que.push(temp_node->right);
-      }
-    }
-  }
-  */
-
-  for (RandomForestNode *node : root_of_problems) {
+  for (N *node : root_of_problems) {
 
     node->best_party_id = -1;
     node->best_col_id = -1;
@@ -124,6 +110,13 @@ inline void selfrepair_tree(RandomForestTree &tree, vector<float> *original_y) {
 inline void selfrepair_forest(RandomForestClassifier &clf,
                               std::vector<float> *original_y) {
   for (RandomForestTree &tree : clf.estimators) {
-    selfrepair_tree(tree, original_y);
+    selfrepair_tree<RandomForestTree, RandomForestNode>(tree, original_y);
+  }
+}
+
+inline void selfrepair_forest(SecureForestClassifier &clf,
+                              std::vector<float> *original_y) {
+  for (SecureForestTree &tree : clf.estimators) {
+    selfrepair_tree<SecureForestTree, SecureForestNode>(tree, original_y);
   }
 }
