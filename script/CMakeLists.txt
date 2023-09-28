@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
+add_executable(train_noattack_secureforest pipeline_1_train_noattack_secureforest.cpp)
 add_executable(train_secureforest pipeline_1_train_secureforest.cpp)
 add_executable(train_randomforest pipeline_1_train_randomforest.cpp)
 add_executable(train_secureboost pipeline_1_train_secureboost.cpp)
