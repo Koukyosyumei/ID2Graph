@@ -94,6 +94,7 @@ void parse_args(int argc, char *argv[]) {
       break;
     case 's':
       self_repair = true;
+      break;
     default:
       printf("unknown parameter %s is specified", optarg);
       break;
