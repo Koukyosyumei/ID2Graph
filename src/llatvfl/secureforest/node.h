@@ -38,6 +38,9 @@ struct SecureForestNode : Node<SecureForestParty> {
   vector<float> class_cnt_within_this_node;
   vector<PaillierCipherText> class_cnt_within_this_node_encrypted;
 
+  bool is_all_active_within_subsequent_children = false;
+  bool is_all_subsequent_children_contaminated = false;
+
   SecureForestNode() {}
   SecureForestNode(vector<SecureForestParty> *parties_, vector<float> *y_,
                    int num_classes_,
