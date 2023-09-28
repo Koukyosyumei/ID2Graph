@@ -16,6 +16,7 @@
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/lpmst/lpmst.h"
 #include "llatvfl/paillier/keygenerator.h"
+#include "llatvfl/selfrepairing/selfrepairing.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
 
