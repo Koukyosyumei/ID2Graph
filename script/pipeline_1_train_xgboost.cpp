@@ -254,9 +254,10 @@ int main(int argc, char *argv[]) {
 
   int nc = 0;
   if (num_classes == 2) {
-    nc += 2 * y_train.size();
+    nc += (boosting_rounds - completely_secure_round) * 2 * y_train.size();
   } else {
-    nc += 2 * num_classes * y_train.size();
+    nc += (boosting_rounds - completely_secure_round) * 2 * num_classes *
+          y_train.size();
   }
   for (int i = 0; i < clf.estimators.size(); i++) {
     nc += clf.estimators[i].dtree.num_communicated_ciphertext;
