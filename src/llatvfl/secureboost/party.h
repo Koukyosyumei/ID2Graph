@@ -7,15 +7,19 @@ using namespace std;
 struct SecureBoostParty : XGBoostParty {
   PaillierPublicKey pk;
   PaillierSecretKey sk;
+  bool send_label_ratio = true;
 
   SecureBoostParty() {}
   SecureBoostParty(vector<vector<float>> &x_, int num_classes_,
                    vector<int> &feature_id_, int &party_id_, int min_leaf_,
                    float subsample_cols_, int num_precentile_bin_ = 256,
-                   bool use_missing_value_ = false, int seed_ = 0)
+                   bool use_missing_value_ = false, int seed_ = 0,
+                   bool send_label_ratio_ = true)
       : XGBoostParty(x_, num_classes_, feature_id_, party_id_, min_leaf_,
                      subsample_cols_, num_precentile_bin_, use_missing_value_,
-                     seed_) {}
+                     seed_) {
+    send_label_ratio = send_label_ratio_;
+  }
 
   void set_publickey(PaillierPublicKey pk_) { pk = pk_; }
 
@@ -85,7 +89,10 @@ struct SecureBoostParty : XGBoostParty {
         // float temp_right_size = 0;
         // vector<float> temp_left_y_class_cnt(num_classes, 0);
         // vector<float> temp_right_y_class_cnt(num_classes, 0);
-        vector<tuple<float, float, float, float>> temp_label_ratio(num_classes);
+        vector<tuple<float, float, float, float>> temp_label_ratio;
+        if (send_label_ratio) {
+          temp_label_ratio.resize(num_classes);
+        }
 
         for (int r = current_min_idx; r < not_missing_values_count; r++) {
           if (x_col[r] <= percentiles[p]) {
@@ -93,7 +100,10 @@ struct SecureBoostParty : XGBoostParty {
               temp_grad[c] += gradient[idxs[x_col_idxs[r]]][c];
               temp_hess[c] += hessian[idxs[x_col_idxs[r]]][c];
             }
-            cumulative_left_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] += 1.0;
+            if (send_label_ratio) {
+              cumulative_left_y_class_cnt[int(y->at(idxs[x_col_idxs[r]]))] +=
+                  1.0;
+            }
             cumulative_left_size += 1;
           } else {
             current_min_idx = r;
@@ -101,25 +111,30 @@ struct SecureBoostParty : XGBoostParty {
           }
         }
 
-        for (int c = 0; c < num_classes; c++) {
-          cumulative_right_y_class_cnt[c] =
-              sum_class_cnt[c] - cumulative_left_y_class_cnt[c];
+        if (send_label_ratio) {
+          for (int c = 0; c < num_classes; c++) {
+            cumulative_right_y_class_cnt[c] =
+                sum_class_cnt[c] - cumulative_left_y_class_cnt[c];
+          }
         }
 
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
-          for (int c = 0; c < num_classes; c++) {
-            temp_label_ratio[c] = make_tuple(
-                cumulative_left_y_class_cnt[c] / (float)cumulative_left_size,
-                cumulative_right_y_class_cnt[c] /
-                    ((float)not_missing_values_count -
-                     (float)cumulative_left_size),
-                (entire_class_cnt[c] - cumulative_left_y_class_cnt[c]) /
-                    ((float)entire_datasetsize - (float)cumulative_left_size),
-                (entire_class_cnt[c] - cumulative_right_y_class_cnt[c]) /
-                    ((float)entire_datasetsize -
-                     ((float)not_missing_values_count -
-                      (float)cumulative_left_size)));
+
+          if (send_label_ratio) {
+            for (int c = 0; c < num_classes; c++) {
+              temp_label_ratio[c] = make_tuple(
+                  cumulative_left_y_class_cnt[c] / (float)cumulative_left_size,
+                  cumulative_right_y_class_cnt[c] /
+                      ((float)not_missing_values_count -
+                       (float)cumulative_left_size),
+                  (entire_class_cnt[c] - cumulative_left_y_class_cnt[c]) /
+                      ((float)entire_datasetsize - (float)cumulative_left_size),
+                  (entire_class_cnt[c] - cumulative_right_y_class_cnt[c]) /
+                      ((float)entire_datasetsize -
+                       ((float)not_missing_values_count -
+                        (float)cumulative_left_size)));
+            }
           }
 
           split_candidates_grad_hess[i].push_back(
@@ -186,11 +201,16 @@ struct SecureBoostParty : XGBoostParty {
       // get percentiles of x_col
       vector<float> percentiles = get_threshold_candidates(x_col);
 
-      vector<PaillierCipherText> cumulative_left_y_class_cnt(num_classes);
-      vector<PaillierCipherText> cumulative_right_y_class_cnt(num_classes);
-      for (int c = 0; c < num_classes; c++) {
-        cumulative_left_y_class_cnt[c] = pk.encrypt<float>(0);
-        cumulative_right_y_class_cnt[c] = pk.encrypt<float>(0);
+      vector<PaillierCipherText> cumulative_left_y_class_cnt;
+      vector<PaillierCipherText> cumulative_right_y_class_cnt;
+
+      if (send_label_ratio) {
+        cumulative_left_y_class_cnt.resize(num_classes);
+        cumulative_right_y_class_cnt.resize(num_classes);
+        for (int c = 0; c < num_classes; c++) {
+          cumulative_left_y_class_cnt[c] = pk.encrypt<float>(0);
+          cumulative_right_y_class_cnt[c] = pk.encrypt<float>(0);
+        }
       }
 
       // enumerate all threshold value (missing value goto right)
@@ -205,7 +225,10 @@ struct SecureBoostParty : XGBoostParty {
         // vector<PaillierCipherText> temp_right_y_class_cnt(num_classes);
         vector<tuple<PaillierCipherText, PaillierCipherText, PaillierCipherText,
                      PaillierCipherText>>
-            temp_label_ratio(num_classes);
+            temp_label_ratio;
+        if (send_label_ratio) {
+          temp_label_ratio.resize(num_classes);
+        }
 
         for (int c = 0; c < grad_dim; c++) {
           temp_grad[c] = pk.encrypt<float>(0);
@@ -223,10 +246,12 @@ struct SecureBoostParty : XGBoostParty {
                   temp_grad[c] + gradient->at(idxs[x_col_idxs[r]])[c];
               temp_hess[c] = temp_hess[c] + hessian->at(idxs[x_col_idxs[r]])[c];
             }
-            for (int c = 0; c < num_classes; c++) {
-              cumulative_left_y_class_cnt[c] =
-                  cumulative_left_y_class_cnt[c] +
-                  y_onehot->at(idxs[x_col_idxs[r]])[c];
+            if (send_label_ratio) {
+              for (int c = 0; c < num_classes; c++) {
+                cumulative_left_y_class_cnt[c] =
+                    cumulative_left_y_class_cnt[c] +
+                    y_onehot->at(idxs[x_col_idxs[r]])[c];
+              }
             }
             cumulative_left_size += 1;
           } else {
@@ -234,26 +259,33 @@ struct SecureBoostParty : XGBoostParty {
             break;
           }
         }
-        for (int c = 0; c < num_classes; c++) {
-          cumulative_right_y_class_cnt[c] =
-              sum_class_cnt[c] + (cumulative_left_y_class_cnt[c] * -1);
+
+        if (send_label_ratio) {
+          for (int c = 0; c < num_classes; c++) {
+            cumulative_right_y_class_cnt[c] =
+                sum_class_cnt[c] + (cumulative_left_y_class_cnt[c] * -1);
+          }
         }
 
         if (cumulative_left_size >= min_leaf &&
             row_count - cumulative_left_size >= min_leaf) {
-          for (int c = 0; c < num_classes; c++) {
-            temp_label_ratio[c] = make_tuple(
-                cumulative_left_y_class_cnt[c] *
-                    (1.0 / (float)cumulative_left_size),
-                cumulative_right_y_class_cnt[c] *
-                    (1.0 / ((float)not_missing_values_count -
-                            (float)cumulative_left_size)),
-                (cumulative_left_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
-                    (1.0 / ((float)entire_datasetsize - cumulative_left_size)),
-                (cumulative_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
-                    (1.0 / ((float)entire_datasetsize -
-                            ((float)not_missing_values_count -
-                             (float)cumulative_left_size))));
+
+          if (send_label_ratio) {
+            for (int c = 0; c < num_classes; c++) {
+              temp_label_ratio[c] = make_tuple(
+                  cumulative_left_y_class_cnt[c] *
+                      (1.0 / (float)cumulative_left_size),
+                  cumulative_right_y_class_cnt[c] *
+                      (1.0 / ((float)not_missing_values_count -
+                              (float)cumulative_left_size)),
+                  (cumulative_left_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                      (1.0 /
+                       ((float)entire_datasetsize - cumulative_left_size)),
+                  (cumulative_right_y_class_cnt[c] * -1 + entire_class_cnt[c]) *
+                      (1.0 / ((float)entire_datasetsize -
+                              ((float)not_missing_values_count -
+                               (float)cumulative_left_size))));
+            }
           }
 
           split_candidates_grad_hess[i].push_back(
