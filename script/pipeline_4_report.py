@@ -92,6 +92,11 @@ if __name__ == "__main__":
         train_auc = [float(s.strip()) for s in f.readlines()]
     with open(os.path.join(parsed_args.path_to_dir, "temp_val_auc.out"), mode="r") as f:
         val_auc = [float(s.strip()) for s in f.readlines()]
+    try:
+        with open(os.path.join(parsed_args.path_to_dir, "temp_ct.out"), mode="r") as f:
+            ct = [float(s.strip()) for s in f.readlines()]
+    except:
+        ct = []
 
     print(
         f"AUC (train): {np.round(np.mean(train_auc), decimals=4)}±{np.round(np.std(train_auc), decimals=4)}"
@@ -132,3 +137,9 @@ if __name__ == "__main__":
             our_std = np.round(leak_csv[f"our_{score_type}"].std(), decimals=4)
             print(f"{score_type} (baseline): {baseline_mean}±{baseline_std}")
             print(f"{score_type} (our): {our_mean}±{our_std}")
+    try:
+        print(
+            f"CT: {np.round(np.mean(ct), decimals=4)}±{np.round(np.std(ct), decimals=4)}"
+        )
+    except:
+        pass
