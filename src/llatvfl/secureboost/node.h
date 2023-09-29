@@ -190,7 +190,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                       .sk.decrypt<float>(
                           get<1>(encrypted_search_result[j][k])[c]);
             }
-            if (mi_bound == numeric_limits<float>::infinity()) {
+            if (mi_bound != numeric_limits<float>::infinity()) {
               for (int c = 0; c < num_classes; c++) {
                 temp_label_ratio_decrypted[c] = make_tuple(
                     parties->at(active_party_id)
@@ -243,7 +243,7 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             temp_left_hess[c] += get<1>(search_results[j][k])[c];
           }
 
-          if (mi_bound == numeric_limits<float>::infinity()) {
+          if (mi_bound != numeric_limits<float>::infinity()) {
             for (int c = 0; c < num_classes; c++) {
               temp_left_class_in_ratio[c] =
                   get<0>(get<2>(search_results[j][k])[c]);
