@@ -244,7 +244,8 @@ struct XGBoostNode : Node<XGBoostParty> {
           if (temp_party_id != active_party_id) {
             num_communicated_ciphertext += 2 * num_classes;
 
-            if (mi_bound != numeric_limits<float>::infinity()) {
+            if ((mi_bound != numeric_limits<float>::infinity()) &&
+                (num_communicated_ciphertext != -1)) {
               num_communicated_ciphertext += num_classes;
             }
           }
