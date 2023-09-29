@@ -220,12 +220,13 @@ int main(int argc, char *argv[]) {
     y_hat.reserve(num_row_train);
     LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
     lp_1st.fit(clf, parties, y_train, y_hat);
+
+    if (self_repair) {
+      selfrepair_forest(clf, &y_train);
+    }
+
   } else {
     clf.fit(parties, y_train);
-  }
-
-  if (self_repair) {
-    selfrepair_forest(clf, &y_train);
   }
 
   end = chrono::system_clock::now();
