@@ -308,6 +308,17 @@ int main(int argc, char *argv[]) {
   result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val)
               << "\n";
 
+  int nc = 0;
+  if (num_classes == 2) {
+    nc += y_train.size();
+  } else {
+    nc += num_classes * y_train.size();
+  }
+  for (int i = 0; i < clf.estimators.size(); i++) {
+    nc += clf.estimators[i].dtree.num_communicated_ciphertext;
+  }
+  result_file << "#CT," << nc << "\n";
+
   result_file.close();
 
   clf.free_intermediate_resources();
