@@ -105,10 +105,10 @@ eval ${PREPCMD}
 cp "./data/${VALUE_D}/${VALUE_D}_${VALUE_S}.in" "${VALUE_P}/${VALUE_S}_data.in"
 
 RUNCMD="build/script/pipeline_1_training.out -f ${VALUE_P} -p ${VALUE_S} -r ${VALUE_R} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -c ${VALUE_C} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -w ${VALUE_W} -y ${VALUE_Y}"
-if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ]; then
+if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ] || [ "${VALUE_M}" = "secureboost" ] || [ "${VALUE_M}" = "sx" ] || [ "${VALUE_M}" = "tsx" ] ; then
   RUNCMD+=" -a ${VALUE_A}"
 fi
-if [ "${VALUE_M}" = "g" ] || [ "${VALUE_M}" = "graftingforest" ] ; then
+if [ "${VALUE_M}" = "g" ] || [ "${VALUE_M}" = "tsg" ] || [ "${VALUE_M}" = "graftingforest" ]; then
   RUNCMD+=" -s"  
 fi
 # if [ "${FLG_G}" = "TRUE" ]; then

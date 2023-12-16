@@ -94,6 +94,11 @@ struct SecureBoostBase : TreeModelBase<SecureBoostParty> {
       std::cout << e.what() << std::endl;
     }
 
+    for (int i = 0; i < parties.size(); i++) {
+      parties[i].send_label_ratio =
+          (mi_bound != numeric_limits<float>::infinity());
+    }
+
     int row_count = y.size();
 
     vector<float> prior(num_classes, 0);

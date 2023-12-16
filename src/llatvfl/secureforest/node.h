@@ -38,6 +38,9 @@ struct SecureForestNode : Node<SecureForestParty> {
   vector<float> class_cnt_within_this_node;
   vector<PaillierCipherText> class_cnt_within_this_node_encrypted;
 
+  bool is_all_active_within_subsequent_children = false;
+  bool is_all_subsequent_children_contaminated = false;
+
   SecureForestNode() {}
   SecureForestNode(vector<SecureForestParty> *parties_, vector<float> *y_,
                    int num_classes_,
@@ -426,8 +429,18 @@ struct SecureForestNode : Node<SecureForestParty> {
     if (!(((left->not_splitted_flag && right->not_splitted_flag)) ||
           (left->lmir_flag_exclude_passive_parties &&
            right->lmir_flag_exclude_passive_parties))) {
-      idxs.clear();
-      idxs.shrink_to_fit();
+      // idxs.clear();
+      // idxs.shrink_to_fit();
+    }
+
+    if ((left->is_leaf_flag == 1) && (right->is_leaf_flag == 1) &&
+        (party_id == active_party_id)) {
+      is_all_active_within_subsequent_children = true;
+    }
+    if ((left->is_all_active_within_subsequent_children) &&
+        (right->is_all_active_within_subsequent_children) &&
+        (party_id == active_party_id)) {
+      is_all_active_within_subsequent_children = true;
     }
   }
 

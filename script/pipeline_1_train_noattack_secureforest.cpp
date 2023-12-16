@@ -15,6 +15,7 @@
 #include "llatvfl/attack/baseline.h"
 #include "llatvfl/louvain/louvain.h"
 #include "llatvfl/lpmst/lpmst.h"
+#include "llatvfl/paillier/keygenerator.h"
 #include "llatvfl/selfrepairing/selfrepairing.h"
 #include "llatvfl/utils/metric.h"
 using namespace std;
@@ -37,8 +38,8 @@ int maximum_nb_pass_done = 100;
 bool save_adj_mat = false;
 bool save_tree_html = false;
 bool is_freerider = false;
-bool use_uniontree = false;
 bool self_repair = false;
+bool use_uniontree = false;
 int max_num_samples_in_a_chunk = 1000000;
 int edge_weight_between_chunks = 100;
 
@@ -117,7 +118,7 @@ int main(int argc, char *argv[]) {
   vector<vector<float>> X_train(num_row_train, vector<float>(num_col));
   vector<float> y_train(num_row_train);
   vector<float> y_hat;
-  vector<RandomForestParty> parties(num_party);
+  vector<SecureForestParty> parties(num_party);
 
   int temp_count_feature = 0;
   for (int i = 0; i < num_party; i++) {
@@ -145,7 +146,7 @@ int main(int argc, char *argv[]) {
       }
       temp_count_feature += 1;
     }
-    RandomForestParty party(x, num_classes, feature_idxs, i, min_leaf,
+    SecureForestParty party(x, num_classes, feature_idxs, i, min_leaf,
                             subsample_cols);
     parties[i] = party;
   }
@@ -189,6 +190,17 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  PaillierKeyGenerator keygenerator = PaillierKeyGenerator(128);
+  pair<PaillierPublicKey, PaillierSecretKey> keypair =
+      keygenerator.generate_keypair();
+  PaillierPublicKey pk = keypair.first;
+  PaillierSecretKey sk = keypair.second;
+
+  for (int i = 0; i < num_party; i++) {
+    parties[i].set_publickey(pk);
+  }
+  parties[0].set_secretkey(sk);
+
   std::ofstream result_file;
   string result_filepath = folderpath + "/" + fileprefix + "_result.ans";
   result_file.open(result_filepath, std::ios::out);
@@ -198,7 +210,7 @@ int main(int argc, char *argv[]) {
   result_file << "party size," << num_party << "\n";
 
   // --- Check Initialization --- //
-  RandomForestClassifier clf = RandomForestClassifier(
+  SecureForestClassifier clf = SecureForestClassifier(
       num_classes, subsample_cols, depth, min_leaf, max_samples_ratio,
       num_trees, mi_bound, 0, n_job, 0);
   printf("Start training trial=%s\n", fileprefix.c_str());
@@ -208,76 +220,20 @@ int main(int argc, char *argv[]) {
     y_hat.reserve(num_row_train);
     LPMST lp_1st(m_lpmst, epsilon_ldp, 0);
     lp_1st.fit(clf, parties, y_train, y_hat);
+
+    if (self_repair) {
+      selfrepair_forest(clf, &y_train);
+    }
+
   } else {
     clf.fit(parties, y_train);
   }
+
   end = chrono::system_clock::now();
   float elapsed =
       chrono::duration_cast<chrono::milliseconds>(end - start).count();
   printf("Training is complete %f [ms] trial=%s\n", elapsed,
          fileprefix.c_str());
-
-  if (use_uniontree) {
-    vector<int> result = extract_uniontree_from_forest<RandomForestClassifier>(
-        &clf, 1, skip_round);
-    std::ofstream union_file;
-    string filepath = folderpath + "/" + fileprefix + "_union.out";
-    union_file.open(filepath, std::ios::out);
-    for (int i = 0; i < num_row_train; i++) {
-      union_file << result[i] << " ";
-    }
-    union_file.close();
-  } else {
-    printf("Start graph extraction trial=%s\n", fileprefix.c_str());
-    start = chrono::system_clock::now();
-    SparseMatrixDOK<float> adj_matrix = extract_adjacency_matrix_from_forest(
-        &clf, is_freerider, 1, skip_round, max_num_samples_in_a_chunk,
-        edge_weight_between_chunks);
-
-    std::ofstream s_file;
-    string s_filepath = folderpath + "/" + fileprefix + ".sratio";
-    s_file.open(s_filepath, std::ios::out);
-    s_file << adj_matrix.zero_node_counter / adj_matrix.node_counter << "\n";
-    s_file.close();
-
-    if (save_adj_mat) {
-      adj_matrix.save(folderpath + "/" + fileprefix + "_adj_mat.txt");
-    }
-
-    printf("Graph construction.... trial==%s\n", fileprefix.c_str());
-    Graph g = Graph(adj_matrix);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Graph extraction is complete %f [ms] trial=%s\n", elapsed,
-           fileprefix.c_str());
-
-    printf("Start community detection trial=%s\n", fileprefix.c_str());
-    start = chrono::system_clock::now();
-    Louvain louvain = Louvain(maximum_nb_pass_done);
-    louvain.fit(g);
-    end = chrono::system_clock::now();
-    elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Community detection is complete %f [ms] trial=%s\n", elapsed,
-           fileprefix.c_str());
-
-    printf("Saving extracted communities trial=%s\n", fileprefix.c_str());
-    std::ofstream com_file;
-    string filepath = folderpath + "/" + fileprefix + "_communities.out";
-    com_file.open(filepath, std::ios::out);
-    com_file << g.nodes.size() << "\n";
-    com_file << num_row_train << "\n";
-    for (int i = 0; i < g.nodes.size(); i++) {
-      for (int j = 0; j < g.nodes[i].size(); j++) {
-        com_file << g.nodes[i][j] << " ";
-      }
-      com_file << "\n";
-    }
-    com_file.close();
-  }
-
-  if (self_repair) {
-    selfrepair_forest(clf, &y_train);
-  }
 
   for (int i = 0; i < clf.estimators.size(); i++) {
     result_file << "round " << i + 1 << ": " << 0 << "\n";
@@ -287,15 +243,6 @@ int main(int argc, char *argv[]) {
     result_file << "Tree-" << i + 1 << ": "
                 << clf.estimators[i].get_leaf_purity() << "\n";
     result_file << clf.estimators[i].print(false, true).c_str() << "\n";
-
-    if (save_tree_html) {
-      std::ofstream tree_html_file;
-      string tree_html_filepath =
-          folderpath + "/" + fileprefix + "_" + to_string(i) + "_tree.html";
-      tree_html_file.open(tree_html_filepath, std::ios::out);
-      tree_html_file << clf.estimators[i].to_html().c_str();
-      tree_html_file.close();
-    }
   }
 
   vector<vector<float>> predict_proba_train = clf.predict_proba(X_train);
@@ -307,17 +254,6 @@ int main(int argc, char *argv[]) {
   vector<int> y_true_val(y_val.begin(), y_val.end());
   result_file << "Val AUC," << ovr_roc_auc_score(predict_proba_val, y_true_val)
               << "\n";
-
-  int nc = 0;
-  if (num_classes == 2) {
-    nc += y_train.size();
-  } else {
-    nc += num_classes * y_train.size();
-  }
-  for (int i = 0; i < clf.estimators.size(); i++) {
-    nc += clf.estimators[i].dtree.num_communicated_ciphertext;
-  }
-  result_file << "#CT," << nc << "\n";
 
   result_file.close();
 

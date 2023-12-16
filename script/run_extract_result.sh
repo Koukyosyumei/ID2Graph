@@ -16,3 +16,4 @@ done
 
 cat ${VALUE_O}/*_result.ans | grep -oP '(?<=Train AUC,)(.*)' >"${VALUE_O}/temp_train_auc.out"
 cat ${VALUE_O}/*_result.ans | grep -oP '(?<=Val AUC,)(.*)' >"${VALUE_O}/temp_val_auc.out"
+cat ${VALUE_O}/*_result.ans | grep -oP '(?<=#CT,)(.*)' >"${VALUE_O}/temp_ct.out"

@@ -39,6 +39,7 @@ struct XGBoostNode : Node<XGBoostParty> {
 
   float entire_datasetsize = 0;
   vector<float> entire_class_cnt;
+  int num_communicated_ciphertext = 0;
 
   XGBoostNode() {}
   XGBoostNode(vector<XGBoostParty> *parties_, vector<float> *y_,
@@ -240,6 +241,15 @@ struct XGBoostNode : Node<XGBoostParty> {
         }
 
         for (int k = 0; k < search_results[j].size(); k++) {
+          if (temp_party_id != active_party_id) {
+            num_communicated_ciphertext += 2 * num_classes;
+
+            if ((mi_bound != numeric_limits<float>::infinity()) &&
+                (mi_bound != -1)) {
+              num_communicated_ciphertext += num_classes;
+            }
+          }
+
           for (int c = 0; c < grad_dim; c++) {
             temp_left_grad[c] += get<0>(search_results[j][k])[c];
             temp_left_hess[c] += get<1>(search_results[j][k])[c];
@@ -409,6 +419,9 @@ struct XGBoostNode : Node<XGBoostParty> {
       idxs.clear();
       idxs.shrink_to_fit();
     }
+
+    num_communicated_ciphertext += left->num_communicated_ciphertext;
+    num_communicated_ciphertext += right->num_communicated_ciphertext;
   }
 
   /**

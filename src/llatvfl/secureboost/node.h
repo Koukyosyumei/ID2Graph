@@ -190,20 +190,22 @@ struct SecureBoostNode : Node<SecureBoostParty> {
                       .sk.decrypt<float>(
                           get<1>(encrypted_search_result[j][k])[c]);
             }
-            for (int c = 0; c < num_classes; c++) {
-              temp_label_ratio_decrypted[c] = make_tuple(
-                  parties->at(active_party_id)
-                      .sk.decrypt<float>(
-                          get<0>(get<2>(encrypted_search_result[j][k])[c])),
-                  parties->at(active_party_id)
-                      .sk.decrypt<float>(
-                          get<1>(get<2>(encrypted_search_result[j][k])[c])),
-                  parties->at(active_party_id)
-                      .sk.decrypt<float>(
-                          get<2>(get<2>(encrypted_search_result[j][k])[c])),
-                  parties->at(active_party_id)
-                      .sk.decrypt<float>(
-                          get<3>(get<2>(encrypted_search_result[j][k])[c])));
+            if (mi_bound != numeric_limits<float>::infinity()) {
+              for (int c = 0; c < num_classes; c++) {
+                temp_label_ratio_decrypted[c] = make_tuple(
+                    parties->at(active_party_id)
+                        .sk.decrypt<float>(
+                            get<0>(get<2>(encrypted_search_result[j][k])[c])),
+                    parties->at(active_party_id)
+                        .sk.decrypt<float>(
+                            get<1>(get<2>(encrypted_search_result[j][k])[c])),
+                    parties->at(active_party_id)
+                        .sk.decrypt<float>(
+                            get<2>(get<2>(encrypted_search_result[j][k])[c])),
+                    parties->at(active_party_id)
+                        .sk.decrypt<float>(
+                            get<3>(get<2>(encrypted_search_result[j][k])[c])));
+              }
             }
             search_results[j][k] =
                 make_tuple(temp_grad_decrypted, temp_hess_decrypted,
@@ -241,25 +243,27 @@ struct SecureBoostNode : Node<SecureBoostParty> {
             temp_left_hess[c] += get<1>(search_results[j][k])[c];
           }
 
-          for (int c = 0; c < num_classes; c++) {
-            temp_left_class_in_ratio[c] =
-                get<0>(get<2>(search_results[j][k])[c]);
-            temp_right_class_in_ratio[c] =
-                get<1>(get<2>(search_results[j][k])[c]);
-            temp_left_class_out_ratio[c] =
-                get<2>(get<2>(search_results[j][k])[c]);
-            temp_right_class_out_ratio[c] =
-                get<3>(get<2>(search_results[j][k])[c]);
-          }
+          if (mi_bound != numeric_limits<float>::infinity()) {
+            for (int c = 0; c < num_classes; c++) {
+              temp_left_class_in_ratio[c] =
+                  get<0>(get<2>(search_results[j][k])[c]);
+              temp_right_class_in_ratio[c] =
+                  get<1>(get<2>(search_results[j][k])[c]);
+              temp_left_class_out_ratio[c] =
+                  get<2>(get<2>(search_results[j][k])[c]);
+              temp_right_class_out_ratio[c] =
+                  get<3>(get<2>(search_results[j][k])[c]);
+            }
 
-          if ((temp_party_id != active_party_id) &&
-              ((!is_satisfied_with_lmir_bound_from_ratio(
-                   num_classes, mi_bound, temp_left_class_in_ratio,
-                   temp_left_class_out_ratio, prior)) ||
-               (!is_satisfied_with_lmir_bound_from_ratio(
-                   num_classes, mi_bound, temp_right_class_in_ratio,
-                   temp_right_class_out_ratio, prior)))) {
-            continue;
+            if ((temp_party_id != active_party_id) &&
+                ((!is_satisfied_with_lmir_bound_from_ratio(
+                     num_classes, mi_bound, temp_left_class_in_ratio,
+                     temp_left_class_out_ratio, prior)) ||
+                 (!is_satisfied_with_lmir_bound_from_ratio(
+                     num_classes, mi_bound, temp_right_class_in_ratio,
+                     temp_right_class_out_ratio, prior)))) {
+              continue;
+            }
           }
 
           skip_flag = false;

@@ -35,6 +35,7 @@ struct RandomForestNode : Node<RandomForestParty> {
 
   bool is_all_active_within_subsequent_children = false;
   bool is_all_subsequent_children_contaminated = false;
+  int num_communicated_ciphertext = 0;
 
   RandomForestNode() {}
   RandomForestNode(vector<RandomForestParty> *parties_, vector<float> *y_,
@@ -213,6 +214,11 @@ struct RandomForestNode : Node<RandomForestParty> {
 
         temp_num_search_results_j = search_results[j].size();
         for (int k = 0; k < temp_num_search_results_j; k++) {
+
+          if (temp_party_id != active_party_id) {
+            num_communicated_ciphertext += num_classes;
+          }
+
           temp_left_size += search_results[j][k].first;
           temp_right_size = tot_cnt - temp_left_size;
 
@@ -363,6 +369,9 @@ struct RandomForestNode : Node<RandomForestParty> {
         (party_id == active_party_id)) {
       is_all_active_within_subsequent_children = true;
     }
+
+    num_communicated_ciphertext += left->num_communicated_ciphertext;
+    num_communicated_ciphertext += right->num_communicated_ciphertext;
   }
 
   /**
