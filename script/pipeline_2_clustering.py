@@ -232,8 +232,9 @@ if __name__ == "__main__":
             h_score_with_com,
             v_score_with_com,
             p_score_with_com,
+            ip_score_with_com,
             f_score_with_com,
-        ) = (0, 0, 0, 0, 0)
+        ) = (0, 0, 0, 0, 0, 0)
 
     """
     if parsed_args.graph_plot:
