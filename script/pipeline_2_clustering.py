@@ -97,7 +97,7 @@ def add_args(parser):
         type=float,
         default=1.0,
     )
-    parser.add_argument("-g", "--graph_plot", action="store_true")
+    parser.add_argument("-g", "--id2cluster", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -112,6 +112,22 @@ if __name__ == "__main__":
     print(
         "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
     )
+
+    if parsed_args.id2cluster:
+        path_to_adj_file = parsed_args.path_to_input_file[:-8] + "_adj_mat.txt"
+        with open(path_to_adj_file, mode="r") as f:
+            lines = f.readlines()
+            node_num = int(lines[0])
+
+            adj_mat = np.zeros((node_num, node_num))
+            for j in range(node_num):
+                temp_row = lines[1 + j].split(" ")[:-1]
+                temp_adj_num = int(temp_row[0])
+                for k in range(temp_adj_num):
+                    adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
+                    adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
+                        j, int(temp_row[2 * k + 1])
+                    ]
 
     with open(parsed_args.path_to_input_file, mode="r") as f:
         lines = f.readlines()
@@ -134,6 +150,8 @@ if __name__ == "__main__":
                 )
             ]
         )
+        if parsed_args.id2cluster:
+            X_train = adj_mat
         min_max_scaler = preprocessing.MinMaxScaler()
         X_train_minmax = min_max_scaler.fit_transform(X_train.T)
 
@@ -159,6 +177,7 @@ if __name__ == "__main__":
     f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
     cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
 
+    """
     if parsed_args.graph_plot:
         visualize_clusters(
             X_train_minmax,
@@ -167,42 +186,56 @@ if __name__ == "__main__":
             "CL",
             f"{parsed_args.path_to_input_file.split('.')[0]}_CL.png",
         )
+    """
 
-    with open(parsed_args.path_to_com_file, mode="r") as f:
-        lines = f.readlines()
-        comm_num = int(lines[0])
-        node_num = int(lines[1])
-        X_com = np.zeros((num_row, comm_num))
+    if not parsed_args.id2cluster:
+        with open(parsed_args.path_to_com_file, mode="r") as f:
+            lines = f.readlines()
+            comm_num = int(lines[0])
+            node_num = int(lines[1])
+            X_com = np.zeros((num_row, comm_num))
 
-        for i in range(comm_num):
-            temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
-            for k in temp_nodes_in_comm:
-                X_com[int(k), i] += parsed_args.weight_for_community_variables
+            for i in range(comm_num):
+                temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
+                for k in temp_nodes_in_comm:
+                    X_com[int(k), i] += parsed_args.weight_for_community_variables
 
-    if parsed_args.clustering_type == "kmeans":
-        kmeans_with_com = KMeans(
-            n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
-        ).fit(np.hstack([X_train_minmax, X_com]))
-        with_com_labels = kmeans_with_com.labels_
-    elif parsed_args.clustering_type == "xmeans":
-        xm_with_com = xmeans(data=np.hstack([X_train_minmax, X_com]), tolerance=0.0001)
-        xm_with_com.process()
-        clusters = xm_with_com.get_clusters()
-        cluster_size = len(clusters)
-        kmeans_with_com = KMeans(
-            n_clusters=cluster_size, n_init=N_INIT, random_state=parsed_args.seed
-        ).fit(np.hstack([X_train_minmax, X_com]))
-        with_com_labels = kmeans_with_com.labels_
-        # with_com_labels = xm_with_com.predict(
-        #    np.hstack([X_train_minmax, X_com]))
+        if parsed_args.clustering_type == "kmeans":
+            kmeans_with_com = KMeans(
+                n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
+            ).fit(np.hstack([X_train_minmax, X_com]))
+            with_com_labels = kmeans_with_com.labels_
+        elif parsed_args.clustering_type == "xmeans":
+            xm_with_com = xmeans(
+                data=np.hstack([X_train_minmax, X_com]), tolerance=0.0001
+            )
+            xm_with_com.process()
+            clusters = xm_with_com.get_clusters()
+            cluster_size = len(clusters)
+            kmeans_with_com = KMeans(
+                n_clusters=cluster_size, n_init=N_INIT, random_state=parsed_args.seed
+            ).fit(np.hstack([X_train_minmax, X_com]))
+            with_com_labels = kmeans_with_com.labels_
+            # with_com_labels = xm_with_com.predict(
+            #    np.hstack([X_train_minmax, X_com]))
 
-    c_score_with_com = metrics.completeness_score(y_train, with_com_labels)
-    h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
-    v_score_with_com = metrics.v_measure_score(y_train, with_com_labels)
+        c_score_with_com = metrics.completeness_score(y_train, with_com_labels)
+        h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
+        v_score_with_com = metrics.v_measure_score(y_train, with_com_labels)
 
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
-    f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
+        _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
+        f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
 
+    else:
+        (
+            c_score_with_com,
+            h_score_with_com,
+            v_score_with_com,
+            p_score_with_com,
+            f_score_with_com,
+        ) = (0, 0, 0, 0, 0)
+
+    """
     if parsed_args.graph_plot:
         visualize_clusters(
             np.hstack([X_train_minmax, X_com]),
@@ -211,6 +244,7 @@ if __name__ == "__main__":
             "ID2Graph",
             f"{parsed_args.path_to_input_file.split('.')[0]}_ID2Graph.png",
         )
+    """
 
     print(
         f"{c_score_baseline},{h_score_baseline},{v_score_baseline},{p_score_baseline},{ip_score_baseline},{f_score_baseline},{c_score_with_com},{h_score_with_com},{v_score_with_com},{p_score_with_com},{ip_score_with_com},{f_score_with_com}"

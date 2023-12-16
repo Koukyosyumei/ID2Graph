@@ -111,9 +111,9 @@ fi
 if [ "${VALUE_M}" = "g" ] || [ "${VALUE_M}" = "tsg" ] || [ "${VALUE_M}" = "graftingforest" ]; then
   RUNCMD+=" -s"  
 fi
-# if [ "${FLG_G}" = "TRUE" ]; then
-#  RUNCMD+=" -g"
-# fi
+if [ "${FLG_G}" = "TRUE" ]; then
+  RUNCMD+=" -g"
+fi
 if [ "${FLG_Q}" = "TRUE" ]; then
   RUNCMD+=" -q"
 fi
@@ -128,9 +128,9 @@ if [ "${FLG_X}" = "TRUE" ]; then
 else
   echo "Start Clustering trial=${VALUE_S}"
   CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S}"
-  if [ "${FLG_G}" = "TRUE" ]; then
-    CLSCMD+=" -g"
-  fi
+  # if [ "${FLG_G}" = "TRUE" ]; then
+  #  CLSCMD+=" -g"
+  # fi
   eval ${CLSCMD} >"${VALUE_P}/${VALUE_S}_leak.csv"
   echo "Clustering is complete trial=${VALUE_S}"
 fi

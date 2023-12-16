@@ -205,4 +205,4 @@ for s in $(seq 1 ${VALUE_Z}); do
 done
 
 wait
-rm -rf ${TEMPD}
+# rm -rf ${TEMPD}
