@@ -200,24 +200,7 @@ if __name__ == "__main__":
                 for k in temp_nodes_in_comm:
                     X_com[int(k)] = i
 
-        if parsed_args.clustering_type == "kmeans":
-            kmeans_with_com = KMeans(
-                n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
-            ).fit(np.hstack([X_train_minmax, X_com]))
-            with_com_labels = kmeans_with_com.labels_
-        elif parsed_args.clustering_type == "xmeans":
-            xm_with_com = xmeans(
-                data=np.hstack([X_train_minmax, X_com]), tolerance=0.0001
-            )
-            xm_with_com.process()
-            clusters = xm_with_com.get_clusters()
-            cluster_size = len(clusters)
-            kmeans_with_com = KMeans(
-                n_clusters=cluster_size, n_init=N_INIT, random_state=parsed_args.seed
-            ).fit(np.hstack([X_train_minmax, X_com]))
-            with_com_labels = kmeans_with_com.labels_
-            # with_com_labels = xm_with_com.predict(
-            #    np.hstack([X_train_minmax, X_com]))
+        with_com_labels = X_com
 
         c_score_with_com = metrics.completeness_score(y_train, with_com_labels)
         h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
