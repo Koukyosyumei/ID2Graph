@@ -193,12 +193,12 @@ if __name__ == "__main__":
             lines = f.readlines()
             comm_num = int(lines[0])
             node_num = int(lines[1])
-            X_com = np.zeros((num_row, comm_num))
+            X_com = [0 for _ in range(num_row)]
 
             for i in range(comm_num):
                 temp_nodes_in_comm = lines[i + 2].split(" ")[:-1]
                 for k in temp_nodes_in_comm:
-                    X_com[int(k), i] += parsed_args.weight_for_community_variables
+                    X_com[int(k)] = i
 
         if parsed_args.clustering_type == "kmeans":
             kmeans_with_com = KMeans(
