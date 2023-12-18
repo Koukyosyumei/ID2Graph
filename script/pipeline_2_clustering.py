@@ -113,22 +113,6 @@ if __name__ == "__main__":
         "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
     )
 
-    if parsed_args.id2cluster:
-        path_to_adj_file = parsed_args.path_to_input_file[:-8] + "_adj_mat.txt"
-        with open(path_to_adj_file, mode="r") as f:
-            lines = f.readlines()
-            node_num = int(lines[0])
-
-            adj_mat = np.zeros((node_num, node_num))
-            for j in range(node_num):
-                temp_row = lines[1 + j].split(" ")[:-1]
-                temp_adj_num = int(temp_row[0])
-                for k in range(temp_adj_num):
-                    adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
-                    adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
-                        j, int(temp_row[2 * k + 1])
-                    ]
-
     with open(parsed_args.path_to_input_file, mode="r") as f:
         lines = f.readlines()
         first_line = lines[0].split(" ")
@@ -150,10 +134,26 @@ if __name__ == "__main__":
                 )
             ]
         )
+
         if parsed_args.id2cluster:
-            X_train = adj_mat
-        min_max_scaler = preprocessing.MinMaxScaler()
-        X_train_minmax = min_max_scaler.fit_transform(X_train.T)
+            path_to_adj_file = parsed_args.path_to_input_file[:-8] + "_adj_mat.txt"
+            with open(path_to_adj_file, mode="r") as f:
+                lines_adjmat = f.readlines()
+                node_num = int(lines_adjmat[0])
+
+                adj_mat = np.zeros((num_row, num_row))
+                for j in range(node_num):
+                    temp_row = lines_adjmat[1 + j].split(" ")[:-1]
+                    temp_adj_num = int(temp_row[0])
+                    for k in range(temp_adj_num):
+                        adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
+                        adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
+                            j, int(temp_row[2 * k + 1])
+                        ]
+            X_train_minmax = adj_mat
+        else:
+            min_max_scaler = preprocessing.MinMaxScaler()
+            X_train_minmax = min_max_scaler.fit_transform(X_train.T)
 
         y_train = lines[num_col + num_party + 1].split(" ")
         y_train = np.array([int(y) for y in y_train])
