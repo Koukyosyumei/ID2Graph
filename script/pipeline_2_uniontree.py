@@ -4,8 +4,10 @@ import numpy as np
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder
+from scipy import sparse
 
-from llatvfl.clustering import get_f_p_r
+from llatvfl.clustering import get_f_p_r, SSEMeans
+
 
 # from matplotlib import pyplot as plt
 N_INIT = 10
@@ -35,8 +37,6 @@ def add_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
-
-    clustering_cls = KMeans
 
     print(
         "baseline_c,baseline_h,baseline_v,baseline_p,baseline_ip,baseline_f,our_c,our_h,our_v,our_p,our_ip,our_f"
@@ -70,6 +70,21 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
+    path_to_adj_file = parsed_args.path_to_input_file[:-8] + "_adj_mat.txt"
+    with open(path_to_adj_file, mode="r") as f:
+        lines_adjmat = f.readlines()
+        node_num = int(lines_adjmat[0])
+
+        adj_mat = sparse.lil_matrix((num_row, num_row))
+        for j in range(node_num):
+            temp_row = lines_adjmat[1 + j].split(" ")[:-1]
+            temp_adj_num = int(temp_row[0])
+            for k in range(temp_adj_num):
+                adj_mat[j, int(temp_row[2 * k + 1])] += float(temp_row[2 * (k + 1)])
+                adj_mat[int(temp_row[2 * k + 1]), j] = adj_mat[
+                    j, int(temp_row[2 * k + 1])
+                ]
+
     with open(parsed_args.path_to_union_file, mode="r") as f:
         lines = f.readlines()
         union_clusters = lines[0].split(" ")[:-1]
@@ -84,6 +99,7 @@ if __name__ == "__main__":
         y_train, union_clusters
     )
 
+    """
     num_union = len(np.unique(union_clusters))
     X_com = np.zeros((num_row, num_union))
     for i in range(num_row):
@@ -92,12 +108,15 @@ if __name__ == "__main__":
     kmeans_with_com = clustering_cls(
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
-    c_score_with_com = metrics.completeness_score(y_train, kmeans_with_com.labels_)
-    h_score_with_com = metrics.homogeneity_score(y_train, kmeans_with_com.labels_)
-    v_score_with_com = metrics.v_measure_score(y_train, kmeans_with_com.labels_)
+    """
+    smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
+
+    c_score_with_com = metrics.completeness_score(y_train, smeans.labels_)
+    h_score_with_com = metrics.homogeneity_score(y_train, smeans.labels_)
+    v_score_with_com = metrics.v_measure_score(y_train, smeans.labels_)
 
     f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
-        y_train, kmeans_with_com.labels_
+        y_train, smeans.labels_
     )
 
     print(
