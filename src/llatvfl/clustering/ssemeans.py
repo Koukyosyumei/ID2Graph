@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 
 
 class SSEMeans:
-    def __init__(self, n=15, random_state=42):
+    def __init__(self, n=20, random_state=42):
         self.n = n
         self.random_state = 42
 

@@ -109,7 +109,7 @@ if __name__ == "__main__":
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
     """
-    smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
+    smeans = SSEMeans(random_state=parsed_args.seed).fit(adj_mat)
 
     c_score_with_com = metrics.completeness_score(y_train, smeans.labels_)
     h_score_with_com = metrics.homogeneity_score(y_train, smeans.labels_)
