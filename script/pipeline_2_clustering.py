@@ -150,13 +150,14 @@ if __name__ == "__main__":
         ).fit(X_train_minmax)
         baseline_labels = kmeans.labels_
     elif parsed_args.clustering_type == "xmeans":
-        xm = xmeans(data=X_train_minmax, tolerance=0.0001)
-        xm.process()
-        baseline_labels = xm.predict(X_train_minmax)
     """
 
-    smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
-    baseline_labels = smeans.labels_
+    xm = xmeans(data=X_train_minmax, tolerance=0.0001)
+    xm.process()
+    baseline_labels = xm.predict(X_train_minmax)
+
+    # smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
+    # baseline_labels = smeans.labels_
     
     c_score_baseline = metrics.completeness_score(y_train, baseline_labels)
     h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)

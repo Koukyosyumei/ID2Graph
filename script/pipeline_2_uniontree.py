@@ -1,10 +1,12 @@
 import argparse
 
 import numpy as np
+import sklearn
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder
 from scipy import sparse
+from pyclustering.cluster.xmeans import xmeans
 
 from llatvfl.clustering import get_f_p_r, SSEMeans
 
@@ -109,14 +111,19 @@ if __name__ == "__main__":
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
     """
-    smeans = SSEMeans(random_state=parsed_args.seed).fit(adj_mat)
+    clf = sklearn.decomposition.TruncatedSVD(100)
+    adj_mat = clf.fit_transform(adj_mat)
 
-    c_score_with_com = metrics.completeness_score(y_train, smeans.labels_)
-    h_score_with_com = metrics.homogeneity_score(y_train, smeans.labels_)
-    v_score_with_com = metrics.v_measure_score(y_train, smeans.labels_)
+    xm = xmeans(data=adj_mat, tolerance=0.0001)
+    xm.process()
+    baseline_labels_ = xm.predict(adj_mat)
+
+    c_score_with_com = metrics.completeness_score(y_train, baseline_labels_)
+    h_score_with_com = metrics.homogeneity_score(y_train, baseline_labels_)
+    v_score_with_com = metrics.v_measure_score(y_train, baseline_labels_)
 
     f_score_with_com, p_score_with_com, ip_score_with_com = get_f_p_r(
-        y_train, smeans.labels_
+        y_train, baseline_labels_
     )
 
     print(
