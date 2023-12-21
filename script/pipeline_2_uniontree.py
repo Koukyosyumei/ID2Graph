@@ -111,8 +111,12 @@ if __name__ == "__main__":
         n_clusters=num_classes, n_init=N_INIT, random_state=parsed_args.seed
     ).fit(np.hstack([X_train_minmax, X_com]))
     """
-    clf = sklearn.decomposition.TruncatedSVD(50)
-    adj_mat = clf.fit_transform(adj_mat)
+
+    if num_row > 10000:
+        clf = sklearn.decomposition.TruncatedSVD(50)
+        adj_mat = clf.fit_transform(adj_mat)
+    else:
+        adj_mat = adj_mat.toarray()
 
     xm = xmeans(data=adj_mat, tolerance=0.0001)
     xm.process()
