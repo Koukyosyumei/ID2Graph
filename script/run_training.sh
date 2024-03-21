@@ -111,9 +111,9 @@ fi
 if [ "${VALUE_M}" = "g" ] || [ "${VALUE_M}" = "tsg" ] || [ "${VALUE_M}" = "graftingforest" ]; then
   RUNCMD+=" -s"  
 fi
-# if [ "${FLG_G}" = "TRUE" ]; then
-#  RUNCMD+=" -g"
-# fi
+if [ "${FLG_G}" = "TRUE" ]; then
+  RUNCMD+=" -g"
+fi
 if [ "${FLG_Q}" = "TRUE" ]; then
   RUNCMD+=" -q"
 fi

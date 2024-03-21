@@ -8,7 +8,7 @@ VALUE_P=5              # number of parallelly executed experiments.
 VALUE_D="breastcancer" # name of dataset.
 VALUE_N=-1             # number of data records sampled for training.
 VALUE_F=0.5            # ratio of features owned by the active party.
-VALUE_V="kmeans"       # clustering type
+VALUE_V="ssemeans"       # clustering type
 VALUE_I=-1             # setting of feature importance. -1: normal, 1: unbalance
 VALUE_M="xgboost"      # type of training algorithm. `r`: Random Forest, `x`: XGBoost, `s`: SecureBoost
 VALUE_R=5              # total number of rounds for training.
@@ -132,7 +132,7 @@ done
 RESUD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_U})
 TEMPD=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX --tmpdir=${VALUE_T})
 
-echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nw,${VALUE_W}\ny,${VALUE_Y}\nx,${FLG_X}" >"${RESUD}/param.csv"
+echo -e "d,${VALUE_D}\nm,${VALUE_M}\nr,${VALUE_R}\nc,${VALUE_C}\na,${VALUE_A}\nh,${VALUE_H}\nb,${VALUE_B}\ni,${VALUE_I}\ne,${VALUE_E}\nl,${VALUE_L}\no,${VALUE_O}\nn,${VALUE_N}\nf,${VALUE_F}\nv,${VALUE_V}\nk,${VALUE_K}\nj,${VALUE_J}\nz,${VALUE_Z}\nw,${VALUE_W}\ny,${VALUE_Y}\nx,${FLG_X}\ng,${FLG_G}" >"${RESUD}/param.csv"
 
 if [ "${VALUE_M}" = "xgboost" ] || [ "${VALUE_M}" = "x" ]; then
   cp build/script/train_xgboost build/script/pipeline_1_training.out
