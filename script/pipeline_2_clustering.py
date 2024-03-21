@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
     # smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
     # baseline_labels = smeans.labels_
-    
+
     c_score_baseline = metrics.completeness_score(y_train, baseline_labels)
     h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)
     v_score_baseline = metrics.v_measure_score(y_train, baseline_labels)
