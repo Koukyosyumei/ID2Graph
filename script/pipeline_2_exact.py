@@ -48,6 +48,17 @@ def add_args(parser):
     return args
 
 
+def matching(a, b, c):
+    unique_val_of_a = np.unique(a)
+    result = np.copy(c)
+    for i in unique_val_of_a:
+        b_i = b[np.where(a == i)]
+        unique, freq = np.unique(b_i, return_counts=True)
+        mode = unique[np.argmax(freq)]
+        result[np.where(c == i)] = mode
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parsed_args = add_args(parser)
@@ -110,29 +121,24 @@ if __name__ == "__main__":
     public_idxs = random.sample(list(range(num_train)), num_train_aux)
     private_idxs = list(set(list(range(num_train))) - set(public_idxs))
 
-    clf_baseline = RandomForestClassifier(random_state=parsed_args.seed)
-    clf_baseline.fit(X_train_minmax[public_idxs], y_train[public_idxs])
-    y_pred_baseline = clf_baseline.predict(X_train_minmax[private_idxs])
-    f1_baseline = f1_score(y_pred_baseline, y_train[private_idxs], average="micro")
+    f1_cluster = f1_score(
+        matching(
+            np.array(baseline_labels)[public_idxs],
+            y_train[public_idxs],
+            np.array(baseline_labels)[private_idxs],
+        ),
+        y_train[private_idxs],
+        average="micro",
+    )
 
-    clf_cluster = RandomForestClassifier(random_state=parsed_args.seed)
-    clf_cluster.fit(
-        np.hstack([X_train_minmax, np.array(baseline_labels).reshape(-1, 1)])[public_idxs],
-        y_train[public_idxs],
+    f1_graph = f1_score(
+        matching(
+            np.array(with_com_labels)[public_idxs],
+            y_train[public_idxs],
+            np.array(with_com_labels)[private_idxs],
+        ),
+        y_train[private_idxs],
+        average="micro",
     )
-    y_pred_cluster = clf_cluster.predict(
-        np.hstack([X_train_minmax, np.array(baseline_labels).reshape(-1, 1)])[private_idxs]
-    )
-    f1_cluster = f1_score(y_pred_cluster, y_train[private_idxs], average="micro")
 
-    clf_graph = RandomForestClassifier(random_state=parsed_args.seed)
-    clf_graph.fit(
-        np.hstack([X_train_minmax, np.array(with_com_labels).reshape(-1, 1)])[public_idxs],
-        y_train[public_idxs],
-    )
-    y_pred_graph = clf_graph.predict(
-        np.hstack([X_train_minmax, np.array(with_com_labels).reshape(-1, 1)])[private_idxs]
-    )
-    f1_graph = f1_score(y_pred_graph, y_train[private_idxs], average="micro")
-
-    print(f"{f1_baseline},{f1_cluster},{f1_graph},0,0,0,0,0,0,0,0,0")
+    print(f"0,0,0,0,0,{f1_cluster},0,0,0,0,0,{f1_graph}")
