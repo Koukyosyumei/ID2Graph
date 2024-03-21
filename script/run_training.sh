@@ -1,4 +1,4 @@
-while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:w:y:xgq OPT; do
+while getopts d:m:p:n:f:v:r:c:a:h:b:j:e:l:o:z:k:s:i:w:y:x:gq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -117,14 +117,17 @@ fi
 if [ "${FLG_Q}" = "TRUE" ]; then
   RUNCMD+=" -q"
 fi
-if [ "${FLG_X}" = "TRUE" ]; then
+if [ "${VALUE_X}" = "union" ]; then
   RUNCMD+=" -x"
 fi
 eval ${RUNCMD} <"${VALUE_P}/${VALUE_S}_data.in"
 
-if [ "${FLG_X}" = "TRUE" ]; then
+if [ "${VALUE_X}" = "union" ]; then
   echo "Start Union Tree Attack trial=${VALUE_S}"
   python3 script/pipeline_2_uniontree.py -p "${VALUE_P}/${VALUE_S}_data.in" -q "${VALUE_P}/${VALUE_S}_union.out" -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+elif [ "${VALUE_X}" = "exact" ]; then
+  echo "Start Exact Label Inference trial=${VALUE_S}"
+  python3 script/pipeline_2_exact.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
 else
   echo "Start Clustering trial=${VALUE_S}"
   CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S}"

@@ -23,8 +23,9 @@ VALUE_B=-1             # epsilon of ID-LMID.
 VALUE_O=-1             # epsilon of LP-MST.
 VALUE_W=1000000
 VALUE_Y=100
+VALUE_X="graph"
 
-while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:w:y:xgq OPT; do
+while getopts d:m:r:c:a:h:j:n:f:v:e:l:o:z:t:u:p:b:k:i:w:y:x:gq OPT; do
   case $OPT in
   "d")
     FLG_D="TRUE"
@@ -151,10 +152,7 @@ else
 fi
 
 for s in $(seq 1 ${VALUE_Z}); do
-  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -i ${VALUE_I} -w ${VALUE_W} -y ${VALUE_Y}"
-  if [ "${FLG_X}" = "TRUE" ]; then
-    TRAINCMD+=" -x"
-  fi
+  TRAINCMD="script/run_training.sh -s ${s} -d ${VALUE_D} -m ${VALUE_M} -p ${TEMPD} -r ${VALUE_R} -c ${VALUE_C} -a ${VALUE_A} -h ${VALUE_H} -b ${VALUE_B} -j ${VALUE_J} -n ${VALUE_N} -f ${VALUE_F} -v ${VALUE_V} -e ${VALUE_E} -l ${VALUE_L} -o ${VALUE_O} -k ${VALUE_K} -i ${VALUE_I} -w ${VALUE_W} -y ${VALUE_Y} -x ${VALUE_X}"
   if [ "${FLG_G}" = "TRUE" ]; then
     TRAINCMD+=" -g"
   fi
