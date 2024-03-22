@@ -22,6 +22,6 @@ add_executable(${TEST_NAME} ${TEST_RUNNER})
 
 target_link_libraries(${TEST_NAME} gtest gtest_main boost_random boost_mpi boost_serialization pthread llatvfl)
 
-set_property(TARGET ${TEST_NAME} PROPERTY CROSSCOMPILING_EMULATOR 'mpirun --allow-run-as-root -np 2')
+set_property(TARGET ${TEST_NAME} PROPERTY CROSSCOMPILING_EMULATOR 'mpirun --allow-run-as-root --oversubscribe -np 2')
 
 gtest_discover_tests(${TEST_NAME})

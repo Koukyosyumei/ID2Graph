@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from sklearn import metrics, preprocessing
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsClassifier
 from pyclustering.cluster.xmeans import xmeans
 from scipy import sparse
 
@@ -143,6 +144,21 @@ if __name__ == "__main__":
         y_train = np.array([int(y) for y in y_train])
         unique_labels = np.unique(y_train)
 
+        num_row_val = lines[num_col + num_party + 2]
+        X_test = np.array(
+            [
+                lines[col_idx][:-1].split(" ")
+                for col_idx in range(
+                    num_col + num_party + 3,
+                    num_col + num_party + 3
+                    + int(lines[start_line_num_of_active_party - 1][:-1]),
+                )
+            ]
+        )
+        X_test_minmax = min_max_scaler.fit_transform(X_test.T)
+        y_test = lines[-1].split(" ")
+        y_test = np.array([int(y) for y in y_test])
+    
     """
     if parsed_args.clustering_type == "kmeans":
         kmeans = KMeans(
@@ -155,17 +171,20 @@ if __name__ == "__main__":
     xm = xmeans(data=X_train_minmax, tolerance=0.0001)
     xm.process()
     baseline_labels = xm.predict(X_train_minmax)
+    neigh = KNeighborsClassifier()
+    neigh.fit(X_train_minmax, y_train)
+    baseline_labels = neigh.predict(X_test_minmax)
 
     # smeans = SSEMeans(random_state=parsed_args.seed).fit(X_train_minmax)
     # baseline_labels = smeans.labels_
 
-    c_score_baseline = metrics.completeness_score(y_train, baseline_labels)
-    h_score_baseline = metrics.homogeneity_score(y_train, baseline_labels)
-    v_score_baseline = metrics.v_measure_score(y_train, baseline_labels)
+    c_score_baseline = metrics.completeness_score(y_test, baseline_labels)
+    h_score_baseline = metrics.homogeneity_score(y_test, baseline_labels)
+    v_score_baseline = metrics.v_measure_score(y_test, baseline_labels)
 
-    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_train, baseline_labels)
-    f_score_baseline = metrics.fowlkes_mallows_score(y_train, baseline_labels)
-    cm_matrix = metrics.cluster.contingency_matrix(y_train, baseline_labels)
+    _, p_score_baseline, ip_score_baseline = get_f_p_r(y_test, baseline_labels)
+    f_score_baseline = metrics.fowlkes_mallows_score(y_test, baseline_labels)
+    cm_matrix = metrics.cluster.contingency_matrix(y_test, baseline_labels)
 
     """
     if parsed_args.graph_plot:
@@ -190,13 +209,16 @@ if __name__ == "__main__":
                 X_com[int(k)] = i
 
     with_com_labels = X_com
+    neigh = KNeighborsClassifier()
+    neigh.fit(X_train_minmax, with_com_labels)
+    with_com_labels = neigh.predict(X_test_minmax)
+    
+    c_score_with_com = metrics.completeness_score(y_test, with_com_labels)
+    h_score_with_com = metrics.homogeneity_score(y_test, with_com_labels)
+    v_score_with_com = metrics.v_measure_score(y_test, with_com_labels)
 
-    c_score_with_com = metrics.completeness_score(y_train, with_com_labels)
-    h_score_with_com = metrics.homogeneity_score(y_train, with_com_labels)
-    v_score_with_com = metrics.v_measure_score(y_train, with_com_labels)
-
-    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_train, with_com_labels)
-    f_score_with_com = metrics.fowlkes_mallows_score(y_train, with_com_labels)
+    _, p_score_with_com, ip_score_with_com = get_f_p_r(y_test, with_com_labels)
+    f_score_with_com = metrics.fowlkes_mallows_score(y_test, with_com_labels)
 
     if parsed_args.graph_plot:
         visualize_clusters(
