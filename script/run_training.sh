@@ -128,6 +128,9 @@ if [ "${VALUE_X}" = "union" ]; then
 elif [ "${VALUE_X}" = "exact" ]; then
   echo "Start Exact Label Inference trial=${VALUE_S}"
   python3 script/pipeline_2_exact.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
+elif [ "${VALUE_X}" = "knn" ]; then
+  echo "Start KNN trial=${VALUE_S}"
+  python3 script/pipeline_2_knn.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S} >"${VALUE_P}/${VALUE_S}_leak.csv"
 else
   echo "Start Clustering trial=${VALUE_S}"
   CLSCMD="python3 script/pipeline_2_clustering.py -p ${VALUE_P}/${VALUE_S}_data.in -q ${VALUE_P}/${VALUE_S}_communities.out -k ${VALUE_K} -v ${VALUE_V} -s ${VALUE_S}"
